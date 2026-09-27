@@ -342,6 +342,21 @@ async def test_public_preview_metadata_and_guide(live_contract):
     assert redir_company.status_code == 301
     assert redir_company.headers["location"] == "/company/team"
 
+    # Test /product and /platform pages
+    product_resp = await client.get("/product")
+    assert product_resp.status_code == 200
+    assert "SpeedInfer Platform" in product_resp.text
+    assert "Inference Gateway" in product_resp.text
+    assert "Model Registry" in product_resp.text
+    assert "Continuous iteration-level batching" in product_resp.text
+    assert "PagedAttention" in product_resp.text
+    assert "Zero Data Retention" in product_resp.text
+
+    platform_resp = await client.get("/platform")
+    assert platform_resp.status_code == 200
+    assert "SpeedInfer Platform" in platform_resp.text
+
+
 
 
 @pytest.mark.asyncio

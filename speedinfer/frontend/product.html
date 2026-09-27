@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SpeedInfer Platform — Software-Defined AI Inference &amp; Model Orchestration</title>
+  <meta name="description" content="An enterprise-grade software platform for AI model inference, continuous batching, KV-cache acceleration, and fine-tuning workflows built on NVIDIA accelerated computing.">
+  <link rel="canonical" href="https://speedinfer.com/product">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="SpeedInfer">
+  <meta property="og:title" content="SpeedInfer Platform — Software-Defined AI Inference &amp; Model Orchestration">
+  <meta property="og:description" content="The intelligent software layer between developer applications and accelerated GPU infrastructure.">
+  <meta property="og:url" content="https://speedinfer.com/product">
+  <meta property="og:image" content="https://speedinfer.com/static/assets/speedinfer-social-v1.png">
+  <meta property="og:image:type" content="image/png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="SpeedInfer Platform — Software-Defined AI Inference">
+  <meta name="twitter:description" content="Software-defined inference gateway, continuous batching, model registry, and fine-tuning workflows.">
+  <meta name="twitter:image" content="https://speedinfer.com/static/assets/speedinfer-social-v1.png">
+  <link rel="icon" href="/static/assets/speedinfer-icon.svg">
+  <link rel="stylesheet" href="/static/css/polish.css?v=20260928-product">
+  <link rel="stylesheet" href="/static/css/theme.css?v=20260928-product">
+  <link rel="stylesheet" href="/static/css/styles.css?v=20260928-product">
+  <link rel="stylesheet" href="/static/css/responsive.css?v=20260928-product">
+  <link rel="stylesheet" href="/static/css/identity.css?v=20260928-product">
+  <link rel="stylesheet" href="/static/css/product.css?v=20260928-product">
+</head>
+<body class="product-page">
+
+  <!-- Top bar -->
+  <div class="product-topbar">
+    SOFTWARE-DEFINED AI INFERENCE LAYER · BUILT ON NVIDIA ACCELERATED COMPUTING
+    <a href="/docs">Explore Interactive API Docs ↗</a>
+  </div>
+
+  <!-- Header -->
+  <header class="site-header site-width">
+    <a href="/" class="wordmark" aria-label="SpeedInfer home">
+      <span class="brand-symbol">
+        <svg viewBox="0 0 32 32" fill="none" aria-hidden="true">
+          <path d="M7 8h20L17 16H5l10 8h10" stroke="currentColor" stroke-width="5" stroke-linejoin="round"/>
+        </svg>
+      </span>SpeedInfer<span class="wordmark-period">.</span>
+    </a>
+    <nav aria-label="Main navigation">
+      <a href="/product" aria-current="page" style="font-weight:700; color:var(--text-primary); text-decoration:underline; text-underline-offset:6px;">Product</a>
+      <a href="/#gateway">Gateway</a>
+      <a href="/#pricing">Pricing</a>
+      <a href="/#benchmark-board">Benchmarks</a>
+      <a href="/company/team">Company</a>
+      <a href="/guide">Guide</a>
+      <a href="/docs">Docs ↗</a>
+    </nav>
+    <div class="site-actions">
+      <a class="text-button" href="/">Home</a>
+      <a class="btn ink-button" href="/app">Developer Console <span>↗</span></a>
+    </div>
+  </header>
+
+  <main class="site-width">
+
+    <!-- Hero Section -->
+    <section class="product-hero">
+      <div class="hero-content">
+        <div class="product-eyebrow">
+          <span class="pulse-dot"></span>
+          SPEEDINFER PLATFORM · SOFTWARE ARCHITECTURE
+        </div>
+        <h1>
+          Software-Defined Inference.<br>
+          <em>Engineered for Scale.</em>
+        </h1>
+        <p class="lead">
+          SpeedInfer is an enterprise software platform and orchestration layer that connects developer applications to high-performance AI models. We provide continuous batching, KV-cache acceleration, dynamic routing, usage metering, and fine-tuning workflows in one unified control plane.
+        </p>
+        <div class="product-actions">
+          <a class="btn ink-button" href="/app">Launch Developer Console <span>↗</span></a>
+          <a class="outline-link" href="#pillars">Explore Core Capabilities <span>↓</span></a>
+        </div>
+      </div>
+
+      <!-- Hero Visual Representation -->
+      <div class="code-box">
+        <div class="code-header">
+          <div class="code-dots"><span></span><span></span><span></span></div>
+          <span>OpenAI SDK · Python Integration</span>
+        </div>
+        <pre><code><span class="kw">from</span> openai <span class="kw">import</span> OpenAI
+
+<span class="comment"># SpeedInfer is a drop-in software layer</span>
+client = OpenAI(
+    base_url=<span class="str">"https://speedinfer.com/v1"</span>,
+    api_key=os.environ[<span class="str">"SPEEDINFER_API_KEY"</span>]
+)
+
+response = client.chat.completions.create(
+    model=<span class="str">"deepseek-r1"</span>,
+    messages=[{<span class="str">"role"</span>: <span class="str">"user"</span>, <span class="str">"content"</span>: <span class="str">"Explain prefix caching."</span>}],
+    stream=<span class="kw">True</span>
+)
+
+<span class="comment"># Sub-50ms TTFT streaming response</span>
+<span class="kw">for</span> chunk <span class="kw">in</span> response:
+    <span class="fn">print</span>(chunk.choices[0].delta.content <span class="kw">or</span> <span class="str">""</span>, end=<span class="str">""</span>, flush=<span class="kw">True</span>)</code></pre>
+      </div>
+    </section>
+
+    <!-- Strategic Positioning: Software Layer, Not Bare-Metal Reseller -->
+    <section class="positioning-banner">
+      <div class="positioning-col">
+        <h3><span style="font-size:22px;">⚙️</span> An Intelligent Software Operating Layer</h3>
+        <p>
+          SpeedInfer is built from the ground up as a software platform. Rather than reselling raw hardware, we build the algorithms, batching schedulers, caching memory systems, authentication gates, and metering pipelines that make foundation models fast, cost-effective, and safe for mission-critical enterprise applications.
+        </p>
+      </div>
+      <div class="positioning-col contrast">
+        <h3><span style="font-size:22px;">⚡</span> Accelerated on NVIDIA Computing</h3>
+        <p>
+          Our runtime engine integrates natively with <strong>NVIDIA TensorRT-LLM, NVIDIA Triton, CUDA 12+, and PagedAttention</strong>. By scheduling inference at the iteration level and reusing prompt KV cache blocks across requests, SpeedInfer achieves deterministic sub-50ms TTFT and optimal hardware saturation.
+        </p>
+      </div>
+    </section>
+
+    <!-- Architecture Stack Flow Diagram -->
+    <section class="stack-section">
+      <div class="eyebrow-text">MODULAR ARCHITECTURE</div>
+      <h2>The SpeedInfer Software Stack</h2>
+      <p class="lead-stack">
+        A multi-layered control plane and accelerated execution pipeline designed for ultra-low latency, zero data retention, and elastic scalability.
+      </p>
+
+      <div class="stack-layers">
+        
+        <div class="stack-layer">
+          <div class="layer-meta">
+            <span class="layer-num">LAYER 01</span>
+            <h4>Application &amp; SDKs</h4>
+          </div>
+          <div class="layer-content">
+            <p>Direct compatibility with existing codebases using OpenAI, LangChain, LlamaIndex, vLLM client, or raw HTTPS requests.</p>
+            <div class="layer-badges">
+              <span>OpenAI SDK (Python &amp; TS)</span>
+              <span>RESTful /v1 API</span>
+              <span>SSE Streaming</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="stack-layer highlight">
+          <div class="layer-meta">
+            <span class="layer-num">LAYER 02</span>
+            <h4>Inference Gateway</h4>
+          </div>
+          <div class="layer-content">
+            <p>Handles constant-time HMAC-SHA256 authentication, pre-flight credit verification, dual token-bucket rate limiting (RPM/TPM), and smart fallback routing.</p>
+            <div class="layer-badges">
+              <span>Constant-Time Auth</span>
+              <span>Token-Bucket Rate Limiter</span>
+              <span>Pre-Flight Hold</span>
+              <span>Atomic Redis Lua</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="stack-layer highlight">
+          <div class="layer-meta">
+            <span class="layer-num">LAYER 03</span>
+            <h4>Orchestration &amp; Caching</h4>
+          </div>
+          <div class="layer-content">
+            <p>Iteration-level continuous batching, dynamic prompt prefix caching, and workload-aware routing across active worker nodes.</p>
+            <div class="layer-badges">
+              <span>Continuous Batching</span>
+              <span>KV-Cache / Prefix Reuse</span>
+              <span>Sub-50ms TTFT Engine</span>
+              <span>Model Registry</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="stack-layer">
+          <div class="layer-meta">
+            <span class="layer-num">LAYER 04</span>
+            <h4>Hardware Acceleration</h4>
+          </div>
+          <div class="layer-content">
+            <p>Native integration with NVIDIA accelerated computing architectures (Hopper, Blackwell, Ada Lovelace) via CUDA and TensorRT-LLM.</p>
+            <div class="layer-badges">
+              <span>NVIDIA TensorRT-LLM</span>
+              <span>NVIDIA Triton</span>
+              <span>CUDA 12+</span>
+              <span>FP8 / AWQ / GPTQ</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- Core Product Pillars -->
+    <section class="pillars-section" id="pillars">
+      <div class="section-head">
+        <div class="eyebrow-text">PRODUCT CAPABILITIES</div>
+        <h2>Six Core Pillars of the Platform</h2>
+        <p>
+          Every component is engineered for production reliability, transparent developer metering, and enterprise compliance.
+        </p>
+      </div>
+
+      <div class="pillars-grid">
+
+        <!-- Pillar 1: Inference Gateway -->
+        <article class="pillar-card">
+          <div>
+            <div class="pillar-top">
+              <span class="pillar-num">01 / GATEWAY</span>
+              <span class="pillar-icon">⌘</span>
+            </div>
+            <h3>Inference Gateway</h3>
+            <p class="pillar-desc">
+              High-throughput, OpenAI-compatible REST and Server-Sent Events (SSE) API gateway with sub-millisecond overhead.
+            </p>
+            <ul class="feature-checklist">
+              <li><span class="check">✓</span> <strong>OpenAI-compatible endpoints</strong> for instant drop-in integration</li>
+              <li><span class="check">✓</span> <strong>HMAC-SHA256 constant-time auth</strong> with secret salt verification</li>
+              <li><span class="check">✓</span> <strong>Dual token-bucket rate limiting</strong> enforcing granular RPM and TPM limits</li>
+              <li><span class="check">✓</span> <strong>Atomic Redis Lua metering</strong> ensuring zero double-spending or held locks</li>
+              <li><span class="check">✓</span> <strong>Intelligent provider fallback</strong> to maintain uninterrupted service availability</li>
+            </ul>
+          </div>
+          <div class="pillar-tags">
+            <span>FastAPI</span>
+            <span>Redis Lua</span>
+            <span>SSE Streaming</span>
+            <span>REST API</span>
+          </div>
+        </article>
+
+        <!-- Pillar 2: Model Registry -->
+        <article class="pillar-card">
+          <div>
+            <div class="pillar-top">
+              <span class="pillar-num">02 / REGISTRY</span>
+              <span class="pillar-icon">📚</span>
+            </div>
+            <h3>Model Registry &amp; Catalog</h3>
+            <p class="pillar-desc">
+              Dynamic model catalog supporting hot-registration, versioning, and real-time backend worker health tracking.
+            </p>
+            <ul class="feature-checklist">
+              <li><span class="check">✓</span> <strong>Hot dynamic model registration</strong> with zero gateway downtime</li>
+              <li><span class="check">✓</span> <strong>State lifecycle management</strong> (Active, Degraded, Offline)</li>
+              <li><span class="check">✓</span> <strong>Automated worker health probing</strong> via active <code>/ready</code> health checks</li>
+              <li><span class="check">✓</span> <strong>Unified model catalog</strong> indexing 33+ open weights and external provider families</li>
+              <li><span class="check">✓</span> <strong>Dynamic alias routing</strong> (e.g. <code>deepseek</code>, <code>llama</code>, <code>qwen</code>)</li>
+            </ul>
+          </div>
+          <div class="pillar-tags">
+            <span>Model Catalog</span>
+            <span>Health Probes</span>
+            <span>Hot Reloading</span>
+            <span>Aliasing</span>
+          </div>
+        </article>
+
+        <!-- Pillar 3: Inference Orchestration -->
+        <article class="pillar-card">
+          <div>
+            <div class="pillar-top">
+              <span class="pillar-num">03 / RUNTIME</span>
+              <span class="pillar-icon">⚡</span>
+            </div>
+            <h3>Inference Orchestration &amp; Runtime</h3>
+            <p class="pillar-desc">
+              High-efficiency scheduling and memory optimization delivering deterministic sub-50ms TTFT on NVIDIA architectures.
+            </p>
+            <ul class="feature-checklist">
+              <li><span class="check">✓</span> <strong>Continuous iteration-level batching</strong> for massive concurrent request density</li>
+              <li><span class="check">✓</span> <strong>Prompt &amp; KV Cache reuse</strong> eliminating redundant prefill computation</li>
+              <li><span class="check">✓</span> <strong>PagedAttention memory management</strong> preventing GPU memory fragmentation</li>
+              <li><span class="check">✓</span> <strong>Modern architectures</strong>: DeepSeek V3/R1 (MoE &amp; MLA), Llama 3/4, Qwen 2.5/3, Nemotron</li>
+              <li><span class="check">✓</span> <strong>Hardware quantization</strong>: native FP8, AWQ, and GPTQ acceleration</li>
+            </ul>
+          </div>
+          <div class="pillar-tags">
+            <span>Continuous Batching</span>
+            <span>KV-Cache Reuse</span>
+            <span>Sub-50ms TTFT</span>
+            <span>FP8 / MoE</span>
+          </div>
+        </article>
+
+        <!-- Pillar 4: Model Workflows & Fine-Tuning -->
+        <article class="pillar-card">
+          <div>
+            <div class="pillar-top">
+              <span class="pillar-num">04 / WORKFLOWS</span>
+              <span class="pillar-icon">🎯</span>
+            </div>
+            <h3>Model Workflows &amp; Fine-Tuning</h3>
+            <p class="pillar-desc">
+              Full lifecycle orchestration from raw JSONL training data to fine-tuned adapters and private deployment.
+            </p>
+            <ul class="feature-checklist">
+              <li><span class="check">✓</span> <strong>LoRA &amp; QLoRA fine-tuning pipelines</strong> with MLflow parameter tracking</li>
+              <li><span class="check">✓</span> <strong>Tiered compute pricing</strong> calculated transparently by model parameter size</li>
+              <li><span class="check">✓</span> <strong>Automated dataset validation</strong> for JSONL schema and chat templates</li>
+              <li><span class="check">✓</span> <strong>Adapter weight merging</strong> and automated export to vLLM-compatible Safetensors</li>
+              <li><span class="check">✓</span> <strong>S3-compatible private storage</strong> for custom datasets and adapter weights</li>
+            </ul>
+          </div>
+          <div class="pillar-tags">
+            <span>LoRA / QLoRA</span>
+            <span>Dataset Validation</span>
+            <span>Safetensors</span>
+            <span>Private Endpoints</span>
+          </div>
+        </article>
+
+        <!-- Pillar 5: Observability & Tracing -->
+        <article class="pillar-card">
+          <div>
+            <div class="pillar-top">
+              <span class="pillar-num">05 / TELEMETRY</span>
+              <span class="pillar-icon">📊</span>
+            </div>
+            <h3>Observability &amp; Audit Engine</h3>
+            <p class="pillar-desc">
+              Real-time telemetry, per-request latency profiling, token throughput accounting, and immutable audit ledgers.
+            </p>
+            <ul class="feature-checklist">
+              <li><span class="check">✓</span> <strong>Sub-50ms TTFT measurement</strong> and per-second token generation velocity</li>
+              <li><span class="check">✓</span> <strong>End-to-end request tracing</strong> with <code>x-request-id</code> and timing headers</li>
+              <li><span class="check">✓</span> <strong>Error telemetry and bounded backoff</strong> for graceful client recovery</li>
+              <li><span class="check">✓</span> <strong>Immutable usage ledger</strong> tracking every single prompt and completion token</li>
+              <li><span class="check">✓</span> <strong>Worker queue depth</strong> and cluster saturation metrics</li>
+            </ul>
+          </div>
+          <div class="pillar-tags">
+            <span>TTFT Telemetry</span>
+            <span>Request Tracing</span>
+            <span>Immutable Ledger</span>
+            <span>Audit Trail</span>
+          </div>
+        </article>
+
+        <!-- Pillar 6: Developer Control & Governance -->
+        <article class="pillar-card">
+          <div>
+            <div class="pillar-top">
+              <span class="pillar-num">06 / GOVERNANCE</span>
+              <span class="pillar-icon">🔒</span>
+            </div>
+            <h3>Developer Control &amp; Governance</h3>
+            <p class="pillar-desc">
+              Granular role-based security, spend controls, and enterprise-grade Zero Data Retention guarantees.
+            </p>
+            <ul class="feature-checklist">
+              <li><span class="check">✓</span> <strong>Granular API key scopes</strong> (<code>chat:completions</code>, <code>storage:write</code>, <code>training:submit</code>)</li>
+              <li><span class="check">✓</span> <strong>Prepaid balance protections</strong> and customizable spend quotas</li>
+              <li><span class="check">✓</span> <strong>Strict Zero Data Retention (ZDR)</strong>: prompts processed ephemerally in volatile GPU RAM</li>
+              <li><span class="check">✓</span> <strong>Zero customer data training</strong>: customer inputs are never retained or fine-tuned on</li>
+              <li><span class="check">✓</span> <strong>GDPR &amp; CCPA compliant architecture</strong> with on-demand data purging</li>
+            </ul>
+          </div>
+          <div class="pillar-tags">
+            <span>Granular Scopes</span>
+            <span>ZDR Guarantee</span>
+            <span>Spend Quotas</span>
+            <span>GDPR / CCPA</span>
+          </div>
+        </article>
+
+      </div>
+    </section>
+
+    <!-- Supported Model Architectures -->
+    <section class="stack-section" style="background:#203527; margin-top:20px;">
+      <div class="eyebrow-text">STATE-OF-THE-ART ARCHITECTURES</div>
+      <h2>Engineered for Modern Foundation Models</h2>
+      <p class="lead-stack">
+        Optimized execution kernels tailored for Mixture-of-Experts (MoE), Multi-Head Latent Attention (MLA), and long-context architectures.
+      </p>
+
+      <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(min(240px, 100%), 1fr)); gap:20px;">
+        <div style="background:rgba(255,255,255,0.06); padding:24px; border-radius:12px; border:1px solid rgba(220,248,144,0.15);">
+          <h4 style="margin:0 0 8px; color:#dcf890; font-size:18px;">DeepSeek V3 &amp; R1</h4>
+          <p style="font-size:13.5px; color:#c7d6c2; margin:0; line-height:1.6;">Native support for Multi-Head Latent Attention (MLA) and 256-expert Mixture-of-Experts routing.</p>
+        </div>
+        <div style="background:rgba(255,255,255,0.06); padding:24px; border-radius:12px; border:1px solid rgba(220,248,144,0.15);">
+          <h4 style="margin:0 0 8px; color:#dcf890; font-size:18px;">Meta Llama Family</h4>
+          <p style="font-size:13.5px; color:#c7d6c2; margin:0; line-height:1.6;">Full support for Llama 3.1, 3.2, 3.3, and upcoming Llama 4 Scout/Maverick architectures with GQA.</p>
+        </div>
+        <div style="background:rgba(255,255,255,0.06); padding:24px; border-radius:12px; border:1px solid rgba(220,248,144,0.15);">
+          <h4 style="margin:0 0 8px; color:#dcf890; font-size:18px;">Qwen 2.5 &amp; Qwen3</h4>
+          <p style="font-size:13.5px; color:#c7d6c2; margin:0; line-height:1.6;">Optimized bilingual and multilingual reasoning pipelines with up to 128K context window support.</p>
+        </div>
+        <div style="background:rgba(255,255,255,0.06); padding:24px; border-radius:12px; border:1px solid rgba(220,248,144,0.15);">
+          <h4 style="margin:0 0 8px; color:#dcf890; font-size:18px;">NVIDIA Nemotron</h4>
+          <p style="font-size:13.5px; color:#c7d6c2; margin:0; line-height:1.6;">High-efficiency synthetic data generation and agentic reasoning models optimized for TensorRT-LLM.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Closing Call to Action -->
+    <section class="product-cta">
+      <div>
+        <h2>Build on SpeedInfer Today</h2>
+        <p>Create an account, generate an API key, and start streaming completions in under two minutes.</p>
+      </div>
+      <div style="display:flex; gap:16px; flex-wrap:wrap;">
+        <a class="btn ink-button" href="/app">Start Building <span>↗</span></a>
+        <a class="btn btn-secondary" href="/docs">View API Reference <span>↗</span></a>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="site-footer site-width">
+    <div>
+      <a class="wordmark" href="/">SpeedInfer.</a>
+      <p>Open intelligence. In your hands.</p>
+    </div>
+    <nav aria-label="Footer navigation">
+      <a href="/product" aria-current="page">Product</a>
+      <a href="/#pricing">Pricing</a>
+      <a href="/#benchmark-board">Benchmarks</a>
+      <a href="/company/team">Company &amp; Team</a>
+      <a href="/guide">Developer guide</a>
+      <a href="/terms">Terms</a>
+      <a href="/privacy">Privacy</a>
+      <a href="/docs">Docs ↗</a>
+      <a href="mailto:sales@speedinfer.com">Contact ↗</a>
+    </nav>
+    <small>© 2026 Megsy for Digital Platforms Development and E-Commerce L.L.C · Operating SpeedInfer · Cairo, Egypt</small>
+  </footer>
+
+</body>
+</html>

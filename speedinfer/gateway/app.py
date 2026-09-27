@@ -392,6 +392,21 @@ def create_app() -> FastAPI:
                 return FileResponse(docs_file)
             return FileResponse(frontend_dir / "guide.html")
 
+        @fastapi_app.api_route("/product", methods=["GET", "HEAD"], include_in_schema=False)
+        @fastapi_app.api_route(
+            "/product/{full_path:path}", methods=["GET", "HEAD"], include_in_schema=False
+        )
+        @fastapi_app.api_route("/platform", methods=["GET", "HEAD"], include_in_schema=False)
+        @fastapi_app.api_route(
+            "/platform/{full_path:path}", methods=["GET", "HEAD"], include_in_schema=False
+        )
+        async def serve_product_page(full_path: str = "") -> FileResponse:
+            product_file = frontend_dir / "product.html"
+            if product_file.exists():
+                return FileResponse(product_file)
+            return FileResponse(frontend_dir / "index.html")
+
+
         @fastapi_app.api_route("/company/team", methods=["GET", "HEAD"], include_in_schema=False)
         @fastapi_app.api_route(
             "/company/team/{full_path:path}", methods=["GET", "HEAD"], include_in_schema=False

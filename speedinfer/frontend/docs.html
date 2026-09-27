@@ -1020,8 +1020,7 @@ print(response.choices[0].message.content)</code></pre>
       <h2 class="article-title">Fine-Tuning Qwen 2.5 with LoRA and QLoRA on SpeedInfer (تدريب النماذج)</h2>
       <div class="article-body">
         <p>
-          SpeedInfer allows training custom adapters without managing GPU infrastructure or Docker containers. 
-          Upload your JSONL dataset, specify rank dimension (e.g. <code>r=16, alpha=32</code>), and receive a served model.
+          SpeedInfer allows training and fine-tuning custom adapters without managing raw GPU infrastructure or Docker containers. Upload your JSONL dataset, configure LoRA parameters (e.g. <code>r=16, alpha=32</code>), track metrics in real time, and deploy your fine-tuned model directly to an inference endpoint.
         </p>
         <h3>1. Prepare your dataset (train.jsonl)</h3>
         <pre><code>{"messages": [{"role": "system", "content": "You are a customer support agent."}, {"role": "user", "content": "Where is my order?"}, {"role": "assistant", "content": "Please provide your order ID."}]}
@@ -1102,8 +1101,7 @@ for await (const chunk of stream) {
       <h2 class="article-title">Scalable Object Storage for Checkpoints and RAG Datasets (التخزين السحابي)</h2>
       <div class="article-body">
         <p>
-          SpeedInfer Buckets provide high-speed S3-compatible storage co-located with GPU compute clusters.
-          Eliminate data egress costs and latency when feeding datasets to fine-tuning pipelines.
+          SpeedInfer Buckets provide high-speed S3-compatible storage co-located with GPU compute clusters. Eliminate data egress costs and latency when feeding datasets to fine-tuning and inference pipelines.
         </p>
         <pre><code># Create bucket
 curl -X POST https://speedinfer.com/v1/buckets \
