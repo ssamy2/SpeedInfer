@@ -51,6 +51,7 @@ async def test_frontend_spa_serving():
         homepage = (await client.get("/")).text
         assert 'base_url="https://speedinfer.com/v1"' in homepage
         assert "localhost:8000" not in homepage
+        assert 'class="hero-technical-links"' in homepage
         for linked_route in (
             "/architecture",
             "/nvidia",
