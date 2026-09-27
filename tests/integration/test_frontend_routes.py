@@ -48,6 +48,21 @@ async def test_frontend_spa_serving():
         for route in routes:
             assert (await client.get(route)).status_code == 200
 
+        homepage = (await client.get("/")).text
+        assert 'base_url="https://speedinfer.com/v1"' in homepage
+        assert "localhost:8000" not in homepage
+        for linked_route in (
+            "/architecture",
+            "/nvidia",
+            "/docs/inference-workers",
+            "/docs/nvidia",
+        ):
+            assert f'href="{linked_route}"' in homepage
+
+        docs_page = (await client.get("/docs")).text
+        assert "https://speedinfer.com/v1" in docs_page
+        assert "localhost:8000" not in docs_page
+
         for route, marker in (
             ("/architecture", "Control Plane"),
             ("/docs/inference-workers", "Connected inference workers"),

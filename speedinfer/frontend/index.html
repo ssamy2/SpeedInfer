@@ -39,7 +39,7 @@
     <a class="skip-link" href="#platform">Skip to content</a>
     <div class="sales-topbar"><div><span>FOR ENTERPRISE TEAMS</span><p>Planning a private deployment or high-volume workload?</p><button data-contact="sales">Talk to sales <b>↗</b></button><a href="mailto:Sales@speedinfer.com" data-sales-email>Sales@speedinfer.com</a></div></div>
     <header class="site-header"><a href="#" class="wordmark" aria-label="SpeedInfer home"><span class="brand-symbol"> <svg viewBox="0 0 32 32" fill="none" aria-hidden="true"><path d="M7 8h20L17 16H5l10 8h10" stroke="currentColor" stroke-width="5" stroke-linejoin="round"/></svg></span>SpeedInfer<span class="wordmark-period">.</span></a>
-      <nav aria-label="Main navigation"><a href="/product">Product</a><a href="#gateway">Gateway</a><a href="#pricing">Pricing</a><a href="#benchmarks" data-benchmarks-link>Benchmarks</a><a href="#platform">Platform</a><a href="#security">Security</a><a href="/company/team">Team</a><a href="#developers">Developers</a><a href="#contact">Contact</a><a href="/docs">Docs ↗</a></nav>
+      <nav aria-label="Main navigation"><a href="/product">Product</a><a href="#gateway">Gateway</a><a href="#pricing">Pricing</a><a href="#platform">Platform</a><a href="/architecture">Architecture</a><a href="/nvidia">NVIDIA</a><a href="#security">Security</a><a href="/company/team">Team</a><a href="/docs">Docs ↗</a></nav>
       <div class="site-actions"><button class="text-button" data-auth="login">Log in</button><button class="btn ink-button" data-auth="register">Start building <span>↗</span></button></div>
     </header>
     <main>
@@ -157,6 +157,16 @@ for chunk in stream:
         <div class="technology-note"><span>PLATFORM FOUNDATION</span><p>OpenAI-compatible API · Model catalog · Token usage accounting · Developer workspace</p><small>Specific model-serving technology and performance depend on the connected worker.</small></div>
       </section>
 
+      <section class="technology-hub site-width" id="technology-resources" aria-labelledby="technology-resources-title">
+        <div class="section-heading"><div><div class="eyebrow">07 — TECHNOLOGY &amp; DOCUMENTATION</div><h2 id="technology-resources-title">Explore the system.<br><em>Follow every request.</em></h2></div><p>Move from the public API to the control plane, connected workers, and NVIDIA runtime documentation through one organized path.</p></div>
+        <div class="technology-hub-grid">
+          <a class="technology-hub-card technology-hub-featured" href="/architecture"><span>01 / SYSTEM</span><h3>Architecture</h3><p>See how authentication, routing, worker selection, streaming, and usage metering fit together.</p><b>Explore architecture <i>↗</i></b></a>
+          <a class="technology-hub-card" href="/nvidia"><span>02 / ACCELERATION</span><h3>NVIDIA integration</h3><p>Review the implemented path for connected CUDA, Triton, and TensorRT-LLM workers.</p><b>View NVIDIA path <i>↗</i></b></a>
+          <a class="technology-hub-card" href="/docs/inference-workers"><span>03 / OPERATIONS</span><h3>Inference workers</h3><p>Configure worker registration, compatible-model routing, health checks, and availability.</p><b>Open worker docs <i>↗</i></b></a>
+          <a class="technology-hub-card" href="/docs/nvidia"><span>04 / NVIDIA DOCS</span><h3>Runtime guides</h3><p>Connect and verify CUDA, Triton Inference Server, and TensorRT-LLM runtimes.</p><b>Read runtime guides <i>↗</i></b></a>
+        </div>
+      </section>
+
       <section class="security-trust-section site-width" id="security" style="padding-block: 50px 30px;">
         <div class="section-heading">
           <div>
@@ -201,12 +211,12 @@ for chunk in stream:
       </section>
 
       <section class="contact-section" id="contact"><div class="site-width">
-        <div class="section-heading"><div><div class="eyebrow">07 — LET’S BUILD TOGETHER</div><h2>Big plans.<br>Start a conversation.</h2></div><p>Tell us what you’re building, ask a technical question, or get help with your workspace. Our team follows up by email.</p></div>
+        <div class="section-heading"><div><div class="eyebrow">08 — LET’S BUILD TOGETHER</div><h2>Big plans.<br>Start a conversation.</h2></div><p>Tell us what you’re building, ask a technical question, or get help with your workspace. Our team follows up by email.</p></div>
         <div class="contact-grid"><article class="contact-card sales-card"><div class="contact-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M3 7h18v13H3zM8 7V4h8v3M3 12l9 4 9-4"/></svg></div><span class="eyebrow">FOR YOUR NEXT DEPLOYMENT</span><h3>Talk to sales.</h3><p>Discuss your models, expected traffic, private inference requirements, and commercial options.</p><a class="email-link" href="mailto:Sales@speedinfer.com" data-sales-email>Sales@speedinfer.com ↗</a><button class="btn ink-button" data-contact="sales">Submit a sales request <span>↗</span></button><small>Prefer a form? Share your requirements and receive a reply by email.</small></article>
         <article class="contact-card"><div class="contact-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M4 13v-1a8 8 0 0 1 16 0v1M4 12H2v6h4v-6H4zm16 0h2v6h-4v-6h2zm0 6v2h-6"/></svg></div><span class="eyebrow">A LITTLE HELP GOES A LONG WAY</span><h3>We’re here to help.</h3><p>Report an issue, get help connecting to the API, or ask a general question about SpeedInfer.</p><a class="email-link" href="mailto:Support@speedinfer.com" data-support-email>Support@speedinfer.com ↗</a><button class="btn btn-secondary" data-contact="support">Send a support request <span>↗</span></button><small>Include the request ID and error message. Keep API keys and passwords private.</small></article></div>
       </div></section>
       <section class="closing-cta site-width"><div class="eyebrow">THE NEXT THING STARTS WITH YOU</div><h2>Build something<br>worth speeding up.</h2><button class="btn ink-button" data-auth="register">Start building <span>↗</span></button><div class="cta-mark" aria-hidden="true">↗</div></section>
-    </main><footer class="site-footer site-width"><div><a class="wordmark" href="#">SpeedInfer.</a><p>Open intelligence. In your hands.</p></div><div><a href="/product">Product</a><a href="#pricing">Pricing</a><a href="#platform">Platform</a><a href="#security">Security &amp; Compliance</a><a href="/company/team">Team &amp; Corporate Backing</a><a href="#company">About the platform</a><a href="#contact">Contact</a><a href="/terms">Terms of Service</a><a href="/privacy">Privacy &amp; Data Handling</a><a href="/docs">API documentation ↗</a><button class="text-button" data-auth="login">Developer console ↗</button></div><small>© 2026 Megsy for Digital Platforms Development and E-Commerce L.L.C (Operating SpeedInfer). Cairo, Egypt. <span class="location-badge">Cairo, Egypt</span></small></footer>
+    </main><footer class="site-footer site-width"><div><a class="wordmark" href="#">SpeedInfer.</a><p>Open intelligence. In your hands.</p></div><div><a href="/product">Product</a><a href="/architecture">Architecture</a><a href="/nvidia">NVIDIA Integration</a><a href="/docs/inference-workers">Inference Workers</a><a href="/docs/nvidia">NVIDIA Docs</a><a href="/docs">API Documentation</a><a href="/company/team">Team &amp; Company</a><a href="#security">Security</a><a href="#contact">Contact</a><a href="/terms">Terms</a><a href="/privacy">Privacy</a><button class="text-button" data-auth="login">Developer console ↗</button></div><small>© 2026 Megsy for Digital Platforms Development and E-Commerce L.L.C (Operating SpeedInfer). Cairo, Egypt. <span class="location-badge">Cairo, Egypt</span></small></footer>
   </div>
 
   <div id="benchmarks-page" class="benchmarks-page" hidden>
@@ -543,7 +553,7 @@ import os
 from openai import OpenAI
 
 client = OpenAI(
-    base_url="http://localhost:8000/v1",
+    base_url="https://speedinfer.com/v1",
     api_key="sk-speedinfer-your-key-here"
 )
 
