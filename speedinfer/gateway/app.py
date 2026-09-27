@@ -392,17 +392,21 @@ def create_app() -> FastAPI:
                 return FileResponse(docs_file)
             return FileResponse(frontend_dir / "guide.html")
 
-        @fastapi_app.get("/company/team", include_in_schema=False)
-        @fastapi_app.get("/company/team/{full_path:path}", include_in_schema=False)
+        @fastapi_app.api_route("/company/team", methods=["GET", "HEAD"], include_in_schema=False)
+        @fastapi_app.api_route(
+            "/company/team/{full_path:path}", methods=["GET", "HEAD"], include_in_schema=False
+        )
         async def serve_team_page(full_path: str = "") -> FileResponse:
             team_file = frontend_dir / "team.html"
             if team_file.exists():
                 return FileResponse(team_file)
             return FileResponse(frontend_dir / "index.html")
 
-        @fastapi_app.get("/team", include_in_schema=False)
-        @fastapi_app.get("/team/{full_path:path}", include_in_schema=False)
-        @fastapi_app.get("/company", include_in_schema=False)
+        @fastapi_app.api_route("/team", methods=["GET", "HEAD"], include_in_schema=False)
+        @fastapi_app.api_route(
+            "/team/{full_path:path}", methods=["GET", "HEAD"], include_in_schema=False
+        )
+        @fastapi_app.api_route("/company", methods=["GET", "HEAD"], include_in_schema=False)
         async def redirect_to_team(full_path: str = "") -> RedirectResponse:
             return RedirectResponse(
                 url="/company/team", status_code=status.HTTP_301_MOVED_PERMANENTLY
