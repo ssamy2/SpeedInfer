@@ -21,6 +21,15 @@ class BackendHealth(StrEnum):
     UNHEALTHY = "unhealthy"
 
 
+class WorkerRuntime(StrEnum):
+    """Inference protocol/runtime exposed by a registered worker."""
+
+    OPENAI = "openai"
+    CUDA = "cuda"
+    TRITON = "triton"
+    TENSORRT_LLM = "tensorrt-llm"
+
+
 @dataclass
 class BackendWorker:
     """Representation of an active or standby inference worker backend."""
@@ -34,6 +43,13 @@ class BackendWorker:
     consecutive_failures: int = 0
     failure_threshold: int = 3
     weight: int = 1
+    worker_type: str = "generic"
+    runtime: WorkerRuntime = WorkerRuntime.OPENAI
+    runtime_endpoint: str = ""
+    runtime_config: dict[str, Any] = field(default_factory=dict)
+    supported_models: list[str] = field(default_factory=list)
+    gpu_metadata: dict[str, Any] = field(default_factory=dict)
+    runtime_metadata: dict[str, Any] = field(default_factory=dict)
 
     def __init__(
         self,
@@ -46,6 +62,13 @@ class BackendWorker:
         consecutive_failures: int = 0,
         failure_threshold: int = 3,
         weight: int = 1,
+        worker_type: str = "generic",
+        runtime: WorkerRuntime | str = WorkerRuntime.OPENAI,
+        runtime_endpoint: str = "",
+        runtime_config: dict[str, Any] | None = None,
+        supported_models: list[str] | None = None,
+        gpu_metadata: dict[str, Any] | None = None,
+        runtime_metadata: dict[str, Any] | None = None,
     ) -> None:
         """Initialize worker backend with unified URL and identifier handling."""
         resolved_url = url or endpoint_url
@@ -58,6 +81,21 @@ class BackendWorker:
         self.consecutive_failures = consecutive_failures
         self.failure_threshold = failure_threshold
         self.weight = max(1, weight)
+        self.worker_type = worker_type
+        self.runtime = WorkerRuntime(runtime)
+        self.runtime_endpoint = runtime_endpoint or resolved_url
+        self.runtime_config = dict(runtime_config or {})
+        self.supported_models = list(supported_models or [])
+        self.gpu_metadata = dict(gpu_metadata or {})
+        self.runtime_metadata = dict(runtime_metadata or {})
+
+    def supports_model(self, model_name: str, base_model_path: str = "") -> bool:
+        """Return whether this worker declares support for the requested model."""
+        if not self.supported_models:
+            return True
+        return model_name in self.supported_models or (
+            bool(base_model_path) and base_model_path in self.supported_models
+        )
 
     def record_success(self) -> None:
         """Reset consecutive failure counter and restore healthy state."""
@@ -329,7 +367,15 @@ class ModelRegistry:
             if entry is None:
                 return None
 
-            healthy_backends = [b for b in entry.backends if self._is_backend_healthy(b)]
+            healthy_backends = [
+                b
+                for b in entry.backends
+                if self._is_backend_healthy(b)
+                and (
+                    not hasattr(b, "supports_model")
+                    or b.supports_model(model_name, entry.base_model_path)
+                )
+            ]
 
             if not healthy_backends:
                 # Attempt fallback model resolution if configured

@@ -22,6 +22,8 @@ class Settings(BaseSettings):
     vllm_base_url: str = "http://vllm:8000"
     vllm_api_key: SecretStr | None = None
     vllm_timeout_seconds: float = Field(default=120.0, gt=0, le=600)
+    # JSON array of connected NVIDIA worker definitions. Secrets stay server-side.
+    nvidia_workers_json: str = ""
     prompt_price_per_million: float = Field(default=0.20, ge=0)
     completion_price_per_million: float = Field(default=0.60, ge=0)
     max_request_tokens: int = Field(default=32768, gt=0, le=1_000_000)

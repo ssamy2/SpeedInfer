@@ -35,6 +35,7 @@ from speedinfer.engine.models_catalog import (
     update_catalog_from_openrouter,
 )
 from speedinfer.engine.registry import BackendWorker, ModelRegistry
+from speedinfer.engine.worker_config import register_configured_workers
 from speedinfer.gateway.proxy import InferenceProxy
 from speedinfer.gateway.redis import close_redis
 from speedinfer.gateway.routes import (
@@ -195,6 +196,9 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
             completion_price_per_million=settings.completion_price_per_million,
             backends=[default_backend],
         )
+
+    # Optional NVIDIA workers are registered from server-side deployment config.
+    register_configured_workers(_global_registry, settings.nvidia_workers_json)
 
     # 3. Seed catalog models and test keys in database
     with Session(engine) as session:
@@ -381,6 +385,34 @@ def create_app() -> FastAPI:
             if guide_file.exists():
                 return FileResponse(guide_file)
             return FileResponse(frontend_dir / "docs.html")
+
+        @fastapi_app.api_route(
+            "/architecture", methods=["GET", "HEAD"], include_in_schema=False
+        )
+        async def serve_architecture() -> FileResponse:
+            return FileResponse(frontend_dir / "architecture.html")
+
+        worker_doc_files = {
+            "inference-workers": "inference-workers.html",
+            "inference-workers/nvidia": "inference-workers-nvidia.html",
+            "inference-workers/triton": "inference-workers-triton.html",
+            "inference-workers/tensorrt-llm": "inference-workers-tensorrt-llm.html",
+        }
+
+        @fastapi_app.api_route(
+            "/docs/inference-workers", methods=["GET", "HEAD"], include_in_schema=False
+        )
+        @fastapi_app.api_route(
+            "/docs/inference-workers/{runtime}",
+            methods=["GET", "HEAD"],
+            include_in_schema=False,
+        )
+        async def serve_worker_docs(runtime: str = "") -> FileResponse:
+            key = "inference-workers" if not runtime else f"inference-workers/{runtime}"
+            filename = worker_doc_files.get(key)
+            if filename is None:
+                raise HTTPException(status_code=404, detail="Worker documentation page not found.")
+            return FileResponse(frontend_dir / filename)
 
         @fastapi_app.get("/docs", include_in_schema=False)
         @fastapi_app.get("/docs/{full_path:path}", include_in_schema=False)

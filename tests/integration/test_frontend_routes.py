@@ -48,6 +48,17 @@ async def test_frontend_spa_serving():
         for route in routes:
             assert (await client.get(route)).status_code == 200
 
+        for route, marker in (
+            ("/architecture", "Control Plane"),
+            ("/docs/inference-workers", "Connected inference workers"),
+            ("/docs/inference-workers/nvidia", "NVIDIA GPU workers"),
+            ("/docs/inference-workers/triton", "Triton HTTP v2"),
+            ("/docs/inference-workers/tensorrt-llm", "TensorRT-LLM workers"),
+        ):
+            response = await client.get(route)
+            assert response.status_code == 200
+            assert marker in response.text
+
         # 3. Static CSS assets
         res_css = await client.get("/static/css/theme.css")
         assert res_css.status_code == 200

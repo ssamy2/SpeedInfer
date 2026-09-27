@@ -16,6 +16,7 @@ from fastapi import HTTPException
 
 from speedinfer.config import get_settings
 from speedinfer.engine.registry import ModelEntry, ModelRegistry
+from speedinfer.engine.runtime_adapters import TritonRuntimeAdapter, uses_triton_protocol
 from speedinfer.gateway.schemas import (
     ChatCompletionChoice,
     ChatCompletionChunk,
@@ -97,6 +98,10 @@ class InferenceProxy:
         if worker is not None and not worker.url.startswith("http://mock-"):
             worker.active_requests += 1
             try:
+                if uses_triton_protocol(worker):
+                    adapter = TritonRuntimeAdapter(worker, client)
+                    data = await adapter.chat_response(request, request.model)
+                    return ChatCompletionResponse.model_validate(data)
                 base_url = worker.url.rstrip("/")
                 target_url = (
                     f"{base_url}/chat/completions"
@@ -151,9 +156,12 @@ class InferenceProxy:
                 503,
                 detail={
                     "error": {
-                        "message": "Inference backend unavailable. No charge applied.",
+                        "message": (
+                            "No healthy compatible worker is available for this model. "
+                            "No charge applied."
+                        ),
                         "type": "server_error",
-                        "code": "backend_unavailable",
+                        "code": "compatible_worker_unavailable",
                     }
                 },
             )
@@ -217,6 +225,21 @@ class InferenceProxy:
         if worker is not None and not worker.url.startswith("http://mock-"):
             worker.active_requests += 1
             try:
+                if uses_triton_protocol(worker):
+                    raise HTTPException(
+                        503,
+                        detail={
+                            "error": {
+                                "message": (
+                                    "Streaming is unavailable for this Triton HTTP worker. "
+                                    "Use a non-streaming request or an OpenAI-compatible "
+                                    "TensorRT-LLM frontend."
+                                ),
+                                "type": "server_error",
+                                "code": "runtime_streaming_unavailable",
+                            }
+                        },
+                    )
                 base_url = worker.url.rstrip("/")
                 target_url = (
                     f"{base_url}/chat/completions"
@@ -288,9 +311,12 @@ class InferenceProxy:
                 503,
                 detail={
                     "error": {
-                        "message": "Inference backend unavailable. No charge applied.",
+                        "message": (
+                            "No healthy compatible worker is available for this model. "
+                            "No charge applied."
+                        ),
                         "type": "server_error",
-                        "code": "backend_unavailable",
+                        "code": "compatible_worker_unavailable",
                     }
                 },
             )
@@ -412,6 +438,10 @@ class InferenceProxy:
         if worker is not None and not worker.url.startswith("http://mock-"):
             worker.active_requests += 1
             try:
+                if uses_triton_protocol(worker):
+                    adapter = TritonRuntimeAdapter(worker, client)
+                    data = await adapter.completion_response(request, request.model)
+                    return CompletionResponse.model_validate(data)
                 base_url = worker.url.rstrip("/")
                 target_url = (
                     f"{base_url}/completions"
@@ -466,9 +496,12 @@ class InferenceProxy:
                 503,
                 detail={
                     "error": {
-                        "message": "Inference backend unavailable. No charge applied.",
+                        "message": (
+                            "No healthy compatible worker is available for this model. "
+                            "No charge applied."
+                        ),
                         "type": "server_error",
-                        "code": "backend_unavailable",
+                        "code": "compatible_worker_unavailable",
                     }
                 },
             )

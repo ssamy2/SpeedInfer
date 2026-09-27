@@ -101,7 +101,7 @@ response = client.chat.completions.create(
     stream=<span class="kw">True</span>
 )
 
-<span class="comment"># Sub-50ms TTFT streaming response</span>
+<span class="comment"># Low-latency streaming response</span>
 <span class="kw">for</span> chunk <span class="kw">in</span> response:
     <span class="fn">print</span>(chunk.choices[0].delta.content <span class="kw">or</span> <span class="str">""</span>, end=<span class="str">""</span>, flush=<span class="kw">True</span>)</code></pre>
       </div>
@@ -118,7 +118,7 @@ response = client.chat.completions.create(
       <div class="positioning-col contrast">
         <h3><span style="font-size:22px;">⚡</span> Accelerated on NVIDIA Computing</h3>
         <p>
-          Our runtime engine integrates natively with <strong>NVIDIA TensorRT-LLM, NVIDIA Triton, CUDA 12+, and PagedAttention</strong>. By scheduling inference at the iteration level and reusing prompt KV cache blocks across requests, SpeedInfer achieves deterministic sub-50ms TTFT and optimal hardware saturation.
+          Our runtime engine integrates natively with <strong>NVIDIA TensorRT-LLM, NVIDIA Triton, CUDA 12+, and PagedAttention</strong>. By scheduling inference at the iteration level and reusing prompt KV cache blocks across requests, SpeedInfer minimizes Time to First Token (TTFT) and achieves optimal hardware saturation.
         </p>
       </div>
     </section>
@@ -174,7 +174,7 @@ response = client.chat.completions.create(
             <div class="layer-badges">
               <span>Continuous Batching</span>
               <span>KV-Cache / Prefix Reuse</span>
-              <span>Sub-50ms TTFT Engine</span>
+              <span>Low Latency Runtime</span>
               <span>Model Registry</span>
             </div>
           </div>
@@ -274,7 +274,7 @@ response = client.chat.completions.create(
             </div>
             <h3>Inference Orchestration &amp; Runtime</h3>
             <p class="pillar-desc">
-              High-efficiency scheduling and memory optimization delivering deterministic sub-50ms TTFT on NVIDIA architectures.
+              High-efficiency scheduling and memory optimization delivering ultra-low latency streaming on NVIDIA architectures.
             </p>
             <ul class="feature-checklist">
               <li><span class="check">✓</span> <strong>Continuous iteration-level batching</strong> for massive concurrent request density</li>
@@ -287,7 +287,7 @@ response = client.chat.completions.create(
           <div class="pillar-tags">
             <span>Continuous Batching</span>
             <span>KV-Cache Reuse</span>
-            <span>Sub-50ms TTFT</span>
+            <span>Low-Latency TTFT</span>
             <span>FP8 / MoE</span>
           </div>
         </article>
@@ -331,7 +331,7 @@ response = client.chat.completions.create(
               Real-time telemetry, per-request latency profiling, token throughput accounting, and immutable audit ledgers.
             </p>
             <ul class="feature-checklist">
-              <li><span class="check">✓</span> <strong>Sub-50ms TTFT measurement</strong> and per-second token generation velocity</li>
+              <li><span class="check">✓</span> <strong>Real-time TTFT measurement</strong> and per-second token generation velocity</li>
               <li><span class="check">✓</span> <strong>End-to-end request tracing</strong> with <code>x-request-id</code> and timing headers</li>
               <li><span class="check">✓</span> <strong>Error telemetry and bounded backoff</strong> for graceful client recovery</li>
               <li><span class="check">✓</span> <strong>Immutable usage ledger</strong> tracking every single prompt and completion token</li>

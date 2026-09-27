@@ -15,6 +15,7 @@ from sqlmodel import Session, text
 from speedinfer.config import get_settings
 from speedinfer.database.session import get_session
 from speedinfer.engine.registry import ModelRegistry
+from speedinfer.engine.runtime_adapters import probe_worker
 from speedinfer.gateway.redis import get_async_redis
 from speedinfer.gateway.schemas import HealthResponse
 
@@ -42,17 +43,31 @@ async def health_check(
     model_names = [m.name for m in registered_models]
 
     worker_info: list[dict[str, Any]] = []
-    for m in registered_models:
-        for b in m.backends:
-            worker_info.append(
-                {
-                    "model": m.name,
-                    "worker_id": b.worker_id,
-                    "status": str(b.status),
-                    "health": str(b.health),
-                    "active_requests": b.active_requests,
-                }
-            )
+    seen_workers: set[str] = set()
+    async with httpx.AsyncClient(timeout=3.0) as client:
+        for m in registered_models:
+            for b in m.backends:
+                if b.worker_id in seen_workers:
+                    continue
+                seen_workers.add(b.worker_id)
+                live = None
+                if b.worker_type == "nvidia-gpu":
+                    live = await probe_worker(b, client)
+                worker_info.append(
+                    {
+                        "model": m.name,
+                        "worker_id": b.worker_id,
+                        "worker_type": b.worker_type,
+                        "runtime": str(b.runtime),
+                        "status": str(b.status),
+                        "health": str(b.health),
+                        "active_requests": b.active_requests,
+                        "supported_models": b.supported_models,
+                        "gpu_metadata": b.gpu_metadata,
+                        "runtime_metadata": b.runtime_metadata,
+                        "live_probe": live,
+                    }
+                )
 
     return HealthResponse(
         status="healthy",
