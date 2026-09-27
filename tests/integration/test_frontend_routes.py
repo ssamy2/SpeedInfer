@@ -64,6 +64,38 @@ async def test_frontend_spa_serving():
             assert response.status_code == 200
             assert marker in response.text
 
+        # Verify HEAD requests work for all public marketing and doc pages
+        for head_route in (
+            "/",
+            "/product",
+            "/platform",
+            "/company/team",
+            "/architecture",
+            "/nvidia",
+            "/docs",
+            "/guide",
+            "/robots.txt",
+            "/sitemap.xml",
+        ):
+            head_res = await client.head(head_route)
+            assert (
+                head_res.status_code == 200
+            ), f"HEAD {head_route} failed with {head_res.status_code}"
+
+        # Verify robots.txt allows crawling
+        res_robots = await client.get("/robots.txt")
+        assert res_robots.status_code == 200
+        assert "Allow: /" in res_robots.text
+        assert "sitemap.xml" in res_robots.text
+
+        # Verify sitemap.xml contains key public URLs
+        res_sitemap = await client.get("/sitemap.xml")
+        assert res_sitemap.status_code == 200
+        assert "https://speedinfer.com/" in res_sitemap.text
+        assert "https://speedinfer.com/product" in res_sitemap.text
+        assert "https://speedinfer.com/company/team" in res_sitemap.text
+        assert "https://speedinfer.com/nvidia" in res_sitemap.text
+
         # 3. Static CSS assets
         res_css = await client.get("/static/css/theme.css")
         assert res_css.status_code == 200

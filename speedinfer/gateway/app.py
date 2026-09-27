@@ -378,8 +378,10 @@ def create_app() -> FastAPI:
     if frontend_dir.exists():
         fastapi_app.mount("/static", StaticFiles(directory=str(frontend_dir)), name="static")
 
-        @fastapi_app.get("/guide", include_in_schema=False)
-        @fastapi_app.get("/guide/{full_path:path}", include_in_schema=False)
+        @fastapi_app.api_route("/guide", methods=["GET", "HEAD"], include_in_schema=False)
+        @fastapi_app.api_route(
+            "/guide/{full_path:path}", methods=["GET", "HEAD"], include_in_schema=False
+        )
         async def serve_guide(full_path: str = "") -> FileResponse:
             guide_file = frontend_dir / "guide.html"
             if guide_file.exists():
@@ -437,15 +439,35 @@ def create_app() -> FastAPI:
                 raise HTTPException(status_code=404, detail="Worker documentation page not found.")
             return FileResponse(frontend_dir / filename)
 
-        @fastapi_app.get("/docs", include_in_schema=False)
-        @fastapi_app.get("/docs/{full_path:path}", include_in_schema=False)
-        @fastapi_app.get("/documentation", include_in_schema=False)
-        @fastapi_app.get("/documentation/{full_path:path}", include_in_schema=False)
+        @fastapi_app.api_route("/docs", methods=["GET", "HEAD"], include_in_schema=False)
+        @fastapi_app.api_route(
+            "/docs/{full_path:path}", methods=["GET", "HEAD"], include_in_schema=False
+        )
+        @fastapi_app.api_route(
+            "/documentation", methods=["GET", "HEAD"], include_in_schema=False
+        )
+        @fastapi_app.api_route(
+            "/documentation/{full_path:path}", methods=["GET", "HEAD"], include_in_schema=False
+        )
         async def serve_developer_docs(full_path: str = "") -> FileResponse:
             docs_file = frontend_dir / "docs.html"
             if docs_file.exists():
                 return FileResponse(docs_file)
             return FileResponse(frontend_dir / "guide.html")
+
+        @fastapi_app.api_route("/robots.txt", methods=["GET", "HEAD"], include_in_schema=False)
+        async def serve_robots() -> FileResponse:
+            robots_file = frontend_dir / "robots.txt"
+            if robots_file.exists():
+                return FileResponse(robots_file, media_type="text/plain")
+            raise HTTPException(status_code=404, detail="robots.txt not found.")
+
+        @fastapi_app.api_route("/sitemap.xml", methods=["GET", "HEAD"], include_in_schema=False)
+        async def serve_sitemap() -> FileResponse:
+            sitemap_file = frontend_dir / "sitemap.xml"
+            if sitemap_file.exists():
+                return FileResponse(sitemap_file, media_type="application/xml")
+            raise HTTPException(status_code=404, detail="sitemap.xml not found.")
 
         @fastapi_app.api_route("/product", methods=["GET", "HEAD"], include_in_schema=False)
         @fastapi_app.api_route(
@@ -523,18 +545,26 @@ def create_app() -> FastAPI:
             index_file = frontend_dir / "index.html"
             return FileResponse(index_file)
 
-        @fastapi_app.get("/", include_in_schema=False)
-        @fastapi_app.get("/app", include_in_schema=False)
-        @fastapi_app.get("/app/{full_path:path}", include_in_schema=False)
-        @fastapi_app.get("/auth", include_in_schema=False)
-        @fastapi_app.get("/auth/{full_path:path}", include_in_schema=False)
-        @fastapi_app.get("/legal", include_in_schema=False)
-        @fastapi_app.get("/legal/{full_path:path}", include_in_schema=False)
-        @fastapi_app.get("/privacy", include_in_schema=False)
-        @fastapi_app.get("/terms", include_in_schema=False)
-        @fastapi_app.get("/security", include_in_schema=False)
-        @fastapi_app.get("/about", include_in_schema=False)
-        @fastapi_app.get("/contact", include_in_schema=False)
+        @fastapi_app.api_route("/", methods=["GET", "HEAD"], include_in_schema=False)
+        @fastapi_app.api_route("/app", methods=["GET", "HEAD"], include_in_schema=False)
+        @fastapi_app.api_route(
+            "/app/{full_path:path}", methods=["GET", "HEAD"], include_in_schema=False
+        )
+        @fastapi_app.api_route("/auth", methods=["GET", "HEAD"], include_in_schema=False)
+        @fastapi_app.api_route(
+            "/auth/{full_path:path}", methods=["GET", "HEAD"], include_in_schema=False
+        )
+        @fastapi_app.api_route("/legal", methods=["GET", "HEAD"], include_in_schema=False)
+        @fastapi_app.api_route(
+            "/legal/{full_path:path}", methods=["GET", "HEAD"], include_in_schema=False
+        )
+        @fastapi_app.api_route("/privacy", methods=["GET", "HEAD"], include_in_schema=False)
+        @fastapi_app.api_route("/terms", methods=["GET", "HEAD"], include_in_schema=False)
+        @fastapi_app.api_route("/security", methods=["GET", "HEAD"], include_in_schema=False)
+        @fastapi_app.api_route("/about", methods=["GET", "HEAD"], include_in_schema=False)
+        @fastapi_app.api_route("/contact", methods=["GET", "HEAD"], include_in_schema=False)
+        @fastapi_app.api_route("/ready", methods=["GET", "HEAD"], include_in_schema=False)
+        @fastapi_app.api_route("/models", methods=["GET", "HEAD"], include_in_schema=False)
         async def serve_spa(full_path: str = "") -> FileResponse:
             index_file = frontend_dir / "index.html"
             return FileResponse(index_file)
