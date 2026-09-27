@@ -20,7 +20,10 @@ from speedinfer.database.models import User
 from speedinfer.database.session import get_session
 from speedinfer.database.workspace import WorkspaceObject, WorkspaceResource
 from speedinfer.gateway.routes.auth import calculate_user_balance
-from speedinfer.training.data_utils import validate_dataset_jsonl_bytes
+from speedinfer.training.data_utils import (
+    get_model_training_rate_per_million,
+    validate_dataset_jsonl_bytes,
+)
 
 router = APIRouter(prefix="/v1/workspace", tags=["Workspace"])
 MAX_OBJECT_BYTES = 20 * 1024 * 1024
@@ -84,6 +87,7 @@ class EstimateRequest(BaseModel):
     replicas: int | None = PydanticField(default=1, ge=1, le=4)
     kind: Literal["project", "bucket", "training", "deployment", "evaluation"] | None = None
     dataset_id: str | None = None
+    model: str | None = "Qwen/Qwen2.5-7B-Instruct"
     epochs: int | None = PydanticField(default=3, ge=1, le=50)
 
 
@@ -159,15 +163,18 @@ def estimate_resource(payload: EstimateRequest, user: UserDep, session: SessionD
         tokens, is_valid, err_msg = validate_dataset_jsonl_bytes(dataset.content)
         user_bal = calculate_user_balance(session, user.id)
         epochs = payload.epochs or 3
+        rate_per_million, tier_name = get_model_training_rate_per_million(payload.model)
         if not is_valid:
             return {
                 "currency": "USD",
                 "kind": "training",
+                "model": payload.model,
+                "tier": tier_name,
                 "is_valid_format": False,
                 "format_error": err_msg,
                 "tokens": 0,
                 "epochs": epochs,
-                "rate_per_million": 1.5,
+                "rate_per_million": rate_per_million,
                 "total_usd": 0.0,
                 "charge_usd": 0.0,
                 "user_balance": user_bal,
@@ -176,16 +183,18 @@ def estimate_resource(payload: EstimateRequest, user: UserDep, session: SessionD
                 "hours": 1,
                 "replicas": 1,
             }
-        total_usd = round(1.5 * (tokens / 1_000_000) * epochs, 4)
+        total_usd = round(rate_per_million * (tokens / 1_000_000) * epochs, 4)
         return {
             "currency": "USD",
             "kind": "training",
+            "model": payload.model,
+            "tier": tier_name,
             "is_valid_format": True,
             "format_error": None,
             "tokens": tokens,
             "epochs": epochs,
-            "rate_per_million": 1.5,
-            "formula": f"1.50 × ({tokens:,} / 1,000,000) × {epochs}",
+            "rate_per_million": rate_per_million,
+            "formula": f"${rate_per_million:.2f} × ({tokens:,} / 1M) × {epochs} epochs",
             "total_usd": total_usd,
             "charge_usd": 0,
             "actual_cost": total_usd,
@@ -267,7 +276,8 @@ def create_resource(payload: ResourceRequest, user: UserDep, session: SessionDep
         if not is_valid:
             raise HTTPException(422, f"Invalid dataset format: {err_msg}")
         epochs = payload.epochs or 3
-        training_price = round(1.5 * (tokens / 1_000_000) * epochs, 4)
+        rate_per_million, tier_name = get_model_training_rate_per_million(payload.model)
+        training_price = round(rate_per_million * (tokens / 1_000_000) * epochs, 4)
         user_balance = calculate_user_balance(session, user.id)
         if payload.require_balance and user_balance < training_price:
             raise HTTPException(
@@ -280,10 +290,12 @@ def create_resource(payload: ResourceRequest, user: UserDep, session: SessionDep
         training_estimate = {
             "currency": "USD",
             "kind": "training",
+            "model": payload.model,
+            "tier": tier_name,
             "tokens": tokens,
             "epochs": epochs,
-            "rate_per_million": 1.5,
-            "formula": f"1.50 × ({tokens:,} / 1,000,000) × {epochs}",
+            "rate_per_million": rate_per_million,
+            "formula": f"${rate_per_million:.2f} × ({tokens:,} / 1M) × {epochs} epochs",
             "total_usd": training_price,
             "charge_usd": 0,
             "actual_cost": training_price,

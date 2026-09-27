@@ -184,11 +184,13 @@ export class Workspace {
         return;
       }
       try {
+        const modelName = data.get('model') || 'Qwen/Qwen2.5-7B-Instruct';
         const result = await api.request('/v1/workspace/estimate', {
           method: 'POST',
           body: JSON.stringify({
             kind: 'training',
             dataset_id: datasetId,
+            model: modelName,
             epochs: epochs,
             sku: 'demo-small'
           })
@@ -207,14 +209,16 @@ export class Workspace {
           }
 
           const hasSufficient = result.has_sufficient_balance;
+          const rateFormatted = (Number(result.rate_per_million) || 0.75).toFixed(2);
           target.innerHTML = `
             <div style="margin-bottom:8px;">
-              <small>Training cost estimate</small>
+              <small>Training cost estimate · ${esc(result.tier || 'Standard Tier')}</small>
               <div style="font-size:26px; font-weight:800; color:var(--primary); margin:2px 0;">${money(result.total_usd)}</div>
               <div style="font-size:12px; color:var(--text-secondary); line-height:1.4;">
                 <div>Tokens: <strong>${Number(result.tokens).toLocaleString()}</strong> (${Number(result.tokens * result.epochs).toLocaleString()} total trained)</div>
-                <div>Epochs: <strong>${result.epochs}</strong> · Rate: <strong>$1.50 / 1M tokens</strong></div>
-                <div style="color:var(--text-muted); font-size:11px; margin-top:2px;">1.5 × (${Number(result.tokens).toLocaleString()} / 1M) × ${result.epochs}</div>
+                <div>Model: <strong>${esc(result.model || modelName)}</strong></div>
+                <div>Rate: <strong>$${rateFormatted} / 1M tokens</strong> · Epochs: <strong>${result.epochs}</strong></div>
+                <div style="color:var(--text-muted); font-size:11px; margin-top:2px;">${esc(result.formula || `$${rateFormatted} × (${Number(result.tokens).toLocaleString()} / 1M) × ${result.epochs}`)}</div>
               </div>
             </div>
             <div style="padding:8px 10px; border-radius:6px; font-size:12px; margin-top:8px; ${hasSufficient ? 'background:rgba(46,125,50,0.1); border:1px solid rgba(46,125,50,0.3); color:#2e7d32;' : 'background:rgba(211,47,47,0.1); border:1px solid rgba(211,47,47,0.3); color:#d32f2f;'}">

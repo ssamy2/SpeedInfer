@@ -23,7 +23,10 @@ from speedinfer.database.models import ApiKey, FileRecord, FineTuningJobRecord, 
 from speedinfer.database.session import get_session
 from speedinfer.gateway.routes.auth import calculate_user_balance
 from speedinfer.gateway.routes.models import get_caller_auth
-from speedinfer.training.data_utils import validate_dataset_jsonl_bytes
+from speedinfer.training.data_utils import (
+    get_model_training_rate_per_million,
+    validate_dataset_jsonl_bytes,
+)
 
 router = APIRouter(prefix="/v1", tags=["Fine-Tuning"])
 
@@ -195,7 +198,8 @@ async def create_fine_tuning_job(
         hyper["suffix"] = payload.suffix
 
     n_epochs = hyper.get("n_epochs", 3)
-    training_cost = round(1.5 * (tokens / 1_000_000) * n_epochs, 4)
+    rate_per_million, _ = get_model_training_rate_per_million(payload.model)
+    training_cost = round(rate_per_million * (tokens / 1_000_000) * n_epochs, 4)
 
     # Check caller balance and deduct
     if isinstance(caller, ApiKey):

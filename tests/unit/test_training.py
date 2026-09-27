@@ -246,23 +246,39 @@ def test_dataset_validation_and_token_counting():
 
 
 def test_training_pricing_formula():
-    """Verify training price = 1.5 * (tokens / 1,000,000) * epochs."""
-    rate = 1.5  # USD per 1M tokens
+    """Verify training price = rate_per_1M * (tokens / 1,000,000) * epochs."""
+    from speedinfer.training.data_utils import get_model_training_rate_per_million
 
-    # Example 1: 100,000 tokens for 3 epochs
-    tokens_1 = 100_000
-    epochs_1 = 3
-    cost_1 = round(rate * (tokens_1 / 1_000_000) * epochs_1, 4)
-    assert cost_1 == 0.45
+    # Tier 1: Standard (<=16B) -> $0.75 / 1M
+    rate_7b, tier_7b = get_model_training_rate_per_million("Qwen/Qwen2.5-7B-Instruct")
+    assert rate_7b == 0.75
+    assert "Standard" in tier_7b
+    cost_7b = round(rate_7b * (1_000_000 / 1_000_000) * 3, 4)
+    assert cost_7b == 2.25
 
-    # Example 2: 1,000,000 tokens for 1 epoch
-    tokens_2 = 1_000_000
-    epochs_2 = 1
-    cost_2 = round(rate * (tokens_2 / 1_000_000) * epochs_2, 4)
-    assert cost_2 == 1.50
+    # Tier 2: Medium (16B-35B) -> $2.50 / 1M
+    rate_32b, tier_32b = get_model_training_rate_per_million("Qwen/Qwen2.5-32B-Instruct")
+    assert rate_32b == 2.50
+    assert "Medium" in tier_32b
+    cost_32b = round(rate_32b * (500_000 / 1_000_000) * 2, 4)
+    assert cost_32b == 2.50
 
-    # Example 3: 50,000 tokens for 5 epochs
-    tokens_3 = 50_000
-    epochs_3 = 5
-    cost_3 = round(rate * (tokens_3 / 1_000_000) * epochs_3, 4)
-    assert cost_3 == 0.375
+    # Tier 3: Large (36B-100B) -> $5.00 / 1M
+    rate_70b, tier_70b = get_model_training_rate_per_million("meta-llama/Llama-3.3-70B-Instruct")
+    assert rate_70b == 5.00
+    assert "Large" in tier_70b
+    cost_70b = round(rate_70b * (200_000 / 1_000_000) * 1, 4)
+    assert cost_70b == 1.00
+
+    # Tier 4: Ultra (>100B) -> $10.00 / 1M
+    rate_405b, tier_405b = get_model_training_rate_per_million(
+        "meta-llama/Meta-Llama-3.1-405B-Instruct"
+    )
+    assert rate_405b == 10.00
+    assert "Ultra" in tier_405b
+    cost_405b = round(rate_405b * (100_000 / 1_000_000) * 5, 4)
+    assert cost_405b == 5.00
+
+    # Default fallback
+    rate_default, _ = get_model_training_rate_per_million(None)
+    assert rate_default == 0.75

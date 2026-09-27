@@ -229,3 +229,36 @@ def validate_dataset_jsonl_bytes(content: bytes) -> tuple[int, bool, str | None]
         total_tokens += tokens
 
     return max(1, total_tokens), True, None
+
+
+def get_model_training_rate_per_million(model_name: str | None) -> tuple[float, str]:
+    """Determine training rate per 1M tokens and tier based on model parameter size.
+
+    Tiers:
+    - Ultra Tier (>100B params, e.g. Llama 405B, Qwen 235B, Mistral Large): $10.00 / 1M
+    - Large Tier (36B–100B params, e.g. Llama 70B, Qwen 72B, DeepSeek): $5.00 / 1M
+    - Medium Tier (16B–35B params, e.g. Qwen 32B, Mistral 24B, Gemma 27B): $2.50 / 1M
+    - Standard Tier (1B–16B params, e.g. Llama 8B, Qwen 7B, Mistral 7B): $0.75 / 1M
+
+    Returns:
+        tuple[float, str]: (rate_per_million_usd, tier_label)
+    """
+    if not model_name:
+        return 0.75, "Standard Tier (1B–16B)"
+
+    m = model_name.lower().strip()
+
+    # 1. Ultra Tier (>100B parameters)
+    if any(k in m for k in ["405b", "235b", "120b", "mistral-large"]):
+        return 10.00, "Ultra Tier (>100B)"
+
+    # 2. Large Tier (36B–100B parameters)
+    if any(k in m for k in ["70b", "72b", "67b", "nemotron", "deepseek"]):
+        return 5.00, "Large Tier (70B+)"
+
+    # 3. Medium Tier (16B–35B parameters)
+    if any(k in m for k in ["32b", "30b", "27b", "24b", "22b", "codestral"]):
+        return 2.50, "Medium Tier (16B–35B)"
+
+    # 4. Standard Tier (1B–16B parameters)
+    return 0.75, "Standard Tier (1B–16B)"
