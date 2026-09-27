@@ -134,3 +134,61 @@ async def test_streaming_preflight_credit_rejection(async_client, require_gatewa
     response = await async_client.post("/v1/chat/completions", json=payload, headers=headers)
     assert response.status_code == 402
     assert "text/event-stream" not in response.headers.get("content-type", "")
+
+
+@pytest.mark.asyncio
+async def test_streaming_no_double_settle(async_client, require_gateway, monkeypatch):
+    """Verify stream settlement occurs exactly once upon completion."""
+    import speedinfer.gateway.routes.chat as chat_module
+
+    settle_calls = []
+    original_settle = chat_module.settle
+
+    def spy_settle(*args, **kwargs):
+        settle_calls.append((args, kwargs))
+        return original_settle(*args, **kwargs)
+
+    monkeypatch.setattr(chat_module, "settle", spy_settle)
+
+    headers = {"Authorization": "Bearer sk-speedinfer-validkey"}
+    payload = {
+        "model": "Qwen/Qwen2.5-7B-Instruct",
+        "messages": [{"role": "user", "content": "Count to 3"}],
+        "stream": True,
+    }
+    async with async_client.stream(
+        "POST", "/v1/chat/completions", json=payload, headers=headers
+    ) as response:
+        assert response.status_code == 200
+        async for _line in response.aiter_lines():
+            pass
+
+    assert len(settle_calls) == 1
+    assert settle_calls[0][1].get("success") is True
+
+
+@pytest.mark.asyncio
+async def test_streaming_done_sentinel_emitted_exactly_once(async_client, require_gateway):
+    """Verify data: [DONE] is emitted exactly once and is the final message in the stream."""
+    headers = {"Authorization": "Bearer sk-speedinfer-validkey"}
+    payload = {
+        "model": "Qwen/Qwen2.5-7B-Instruct",
+        "messages": [{"role": "user", "content": "Hello world"}],
+        "stream": True,
+    }
+    done_count = 0
+    total_lines = []
+    async with async_client.stream(
+        "POST", "/v1/chat/completions", json=payload, headers=headers
+    ) as response:
+        assert response.status_code == 200
+        async for line in response.aiter_lines():
+            line_str = line.strip()
+            if line_str:
+                total_lines.append(line_str)
+                if line_str == "data: [DONE]":
+                    done_count += 1
+
+    assert done_count == 1, f"Expected exactly 1 [DONE] sentinel, got {done_count}"
+    assert total_lines[-1] == "data: [DONE]", "The very last message must be data: [DONE]"
+

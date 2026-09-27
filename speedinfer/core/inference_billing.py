@@ -25,6 +25,7 @@ def reserve(session: Session, key_id: int, amount: float) -> str:
     """Serialize against other holds; persist before sending anything to a worker."""
     if not math.isfinite(amount) or amount < 0:
         raise ValueError("Invalid reservation amount")
+    amount = round(amount, 6)
     result = session.execute(
         update(ApiKey)
         .where(
@@ -48,11 +49,11 @@ def reserve(session: Session, key_id: int, amount: float) -> str:
         )
     session.expire_all()
     key = session.get(ApiKey, key_id)
-    trial = min(key.trial_balance, amount)
-    paid = amount - trial
-    key.trial_balance = max(0, key.trial_balance - trial)
-    key.paid_balance = max(0, key.paid_balance - paid)
-    key.credit_balance = key.trial_balance + key.paid_balance
+    trial = round(min(key.trial_balance, amount), 6)
+    paid = round(amount - trial, 6)
+    key.trial_balance = round(max(0.0, key.trial_balance - trial), 6)
+    key.paid_balance = round(max(0.0, key.paid_balance - paid), 6)
+    key.credit_balance = round(key.trial_balance + key.paid_balance, 6)
     hold = InferenceReservation(
         id=uuid.uuid4().hex, api_key_id=key_id, amount=amount, trial=trial, paid=paid
     )
@@ -90,20 +91,28 @@ def settle(
         return
     session.expire_all()
     hold = session.get(InferenceReservation, hold_id)
-    if not math.isfinite(cost) or cost < 0 or cost > hold.amount + 1e-12:
+    cost = round(cost, 6)
+    hold_amount = round(hold.amount, 6)
+    max_allowed = max(hold_amount * 1.5 + 0.0001, hold_amount + 1e-6)
+    if not math.isfinite(cost) or cost < 0 or cost > max_allowed:
         session.rollback()
         raise HTTPException(502, detail="Backend usage exceeds the authorized reservation.")
-    cost = min(cost, hold.amount)
-    used_trial = min(hold.trial, cost)
-    refund_trial = hold.trial - used_trial
-    refund_paid = hold.paid - (cost - used_trial)
+    if not success:
+        cost = 0.0
+    cost = round(min(cost, hold_amount), 6)
+    hold_trial = round(hold.trial, 6)
+    hold_paid = round(hold.paid, 6)
+    used_trial = round(min(hold_trial, cost), 6)
+    refund_trial = round(hold_trial - used_trial, 6)
+    refund_paid = round(hold_paid - (cost - used_trial), 6)
+    refund_total = round(refund_trial + refund_paid, 6)
     session.execute(
         update(ApiKey)
         .where(ApiKey.id == hold.api_key_id)
         .values(
             trial_balance=ApiKey.trial_balance + refund_trial,
             paid_balance=ApiKey.paid_balance + refund_paid,
-            credit_balance=ApiKey.credit_balance + refund_trial + refund_paid,
+            credit_balance=ApiKey.credit_balance + refund_total,
         )
     )
     hold.state = "settled" if success else "released"

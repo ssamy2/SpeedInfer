@@ -141,6 +141,8 @@ class InferenceProxy:
             )
 
         completion_tokens = max(1, len(reply_text) // 4)
+        if request.max_tokens:
+            completion_tokens = min(completion_tokens, request.max_tokens)
         cmpl_id = f"chatcmpl-{uuid.uuid4().hex[:24]}"
 
         return ChatCompletionResponse(
@@ -289,6 +291,8 @@ class InferenceProxy:
         # Test-only usage event follows the same upstream usage contract.
         prompt_tokens = self.estimate_prompt_tokens(request.messages)
         completion_tokens = max(1, len("".join(words)) // 4)
+        if request.max_tokens:
+            completion_tokens = min(completion_tokens, request.max_tokens)
         yield (
             "data: "
             + json.dumps(
@@ -366,6 +370,8 @@ class InferenceProxy:
             reply_text = " completed with ultra-low latency."
 
         completion_tokens = max(1, len(reply_text) // 4)
+        if request.max_tokens:
+            completion_tokens = min(completion_tokens, request.max_tokens)
         cmpl_id = f"cmpl-{uuid.uuid4().hex[:24]}"
 
         return CompletionResponse(

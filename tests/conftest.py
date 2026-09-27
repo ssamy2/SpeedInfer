@@ -142,13 +142,13 @@ async def async_mock_redis() -> AsyncGenerator[fakeredis.aioredis.FakeRedis, Non
 @pytest.fixture(scope="function")
 async def async_client(tmp_path, async_mock_redis) -> AsyncGenerator[httpx.AsyncClient, None]:
     """Isolated per-request sessions: never use the import-time development database."""
-    from speedinfer.database.session import get_session
+    from speedinfer.database.session import create_db_engine, get_session
     from speedinfer.engine.registry import BackendWorker
     from speedinfer.gateway.app import _seed_test_keys_if_needed, app, get_registry
     from speedinfer.gateway.redis import get_async_redis
 
     saved = dict(app.dependency_overrides)
-    isolated_engine = create_engine(
+    isolated_engine = create_db_engine(
         f"sqlite:///{tmp_path / 'gateway.db'}",
         connect_args={"check_same_thread": False, "timeout": 20},
     )

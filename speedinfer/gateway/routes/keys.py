@@ -17,7 +17,7 @@ from sqlmodel import Session, select
 from speedinfer.config import get_settings
 from speedinfer.core.auth import generate_api_key
 from speedinfer.core.security import get_current_user
-from speedinfer.database.models import ApiKey, TrialCreditGrant, User
+from speedinfer.database.models import ApiKey, PaymentTransaction, TrialCreditGrant, User
 from speedinfer.database.session import get_session
 from speedinfer.gateway.schemas import (
     ApiKeyCreatedResponse,
@@ -243,12 +243,34 @@ async def revoke_key(
 
     if permanent:
         from speedinfer.core.inference_billing import InferenceReservation
+        from speedinfer.database.models import UsageLedger
+
+        tx = session.exec(
+            select(PaymentTransaction).where(PaymentTransaction.api_key_id == key_id)
+        ).first()
+        if tx is not None:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="This key has financial payment records. Revoke it instead.",
+            )
 
         hold = session.exec(
             select(InferenceReservation).where(InferenceReservation.api_key_id == key_id)
         ).first()
         if hold is not None:
-            raise HTTPException(409, detail="This key has billing records. Revoke it instead.")
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="This key has billing records. Revoke it instead.",
+            )
+
+        ledger = session.exec(
+            select(UsageLedger).where(UsageLedger.api_key_id == key_id)
+        ).first()
+        if ledger is not None:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="This key has billing records. Revoke it instead.",
+            )
         session.delete(api_key)
         session.commit()
         return ApiKeyDeleteResponse(

@@ -43,6 +43,7 @@ class Settings(BaseSettings):
     whop_api_key: SecretStr | None = None
     whop_webhook_secret: SecretStr | None = None
     whop_account_id: str = ""
+    whop_product_id: str = ""
     whop_api_version_date: str = "2026-09-25"
     whop_credit_packages: str = "10,25,50,100"
     trial_credit_balance: float = Field(default=0.0, ge=0.0, le=1000.0)

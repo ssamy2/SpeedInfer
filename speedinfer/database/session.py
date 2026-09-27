@@ -17,7 +17,7 @@ from sqlalchemy import create_engine, event, text
 from sqlalchemy.engine import Engine
 from sqlalchemy.exc import DBAPIError, OperationalError
 from sqlalchemy.orm import sessionmaker
-from sqlalchemy.pool import StaticPool
+from sqlalchemy.pool import NullPool, StaticPool
 from sqlmodel import Session
 
 # Configure resilient logger
@@ -201,6 +201,9 @@ def create_db_engine(
         if is_memory:
             # Force StaticPool for in-memory SQLite so multiple threads access the same DB
             engine_kwargs.setdefault("poolclass", StaticPool)
+        else:
+            # Force NullPool for file-backed SQLite to avoid QueuePool starvation under concurrency
+            engine_kwargs.setdefault("poolclass", NullPool)
 
         created_engine = create_engine(normalized_url, **engine_kwargs)
 

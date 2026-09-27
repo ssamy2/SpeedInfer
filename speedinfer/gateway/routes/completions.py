@@ -107,10 +107,11 @@ async def create_completion(
 
     # 2. Rate limit check
     est_max_tokens = request.max_tokens or 16
+    est_prompt_tokens = proxy.estimate_prompt_tokens(request.prompt)
     rate_result = await async_check_rate_limit(
         redis_client,
         api_key=api_key,
-        requested_tokens=est_max_tokens + proxy.estimate_prompt_tokens(request.prompt),
+        requested_tokens=est_max_tokens + est_prompt_tokens,
     )
     headers = build_rate_limit_headers(rate_result, api_key.rpm_limit, api_key.tpm_limit)
 
@@ -130,9 +131,9 @@ async def create_completion(
 
     # 3. Pre-flight credit check
     estimated_cost = estimate_max_cost(
-        prompt_tokens=model_entry.context_length,
+        prompt_tokens=est_prompt_tokens,
         max_tokens=est_max_tokens,
-        context_window=model_entry.context_length + est_max_tokens,
+        context_window=model_entry.context_length,
         prompt_price_per_m=model_entry.prompt_price_per_million,
         completion_price_per_m=model_entry.completion_price_per_million,
     )
@@ -143,6 +144,7 @@ async def create_completion(
 
     start_time = time.perf_counter()
 
+    settled = False
     try:
         completion_resp = await proxy.execute_completion(request, model_entry)
         usage = completion_resp.usage
@@ -162,6 +164,8 @@ async def create_completion(
             latency_ms=(time.perf_counter() - start_time) * 1000,
             success=True,
         )
+        settled = True
         return JSONResponse(content=completion_resp.model_dump(), headers=headers)
     finally:
-        settle(session, hold_id)
+        if not settled:
+            settle(session, hold_id)

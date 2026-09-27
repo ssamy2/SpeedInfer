@@ -94,3 +94,29 @@ async def test_legacy_completions_insufficient_credit(async_client, require_gate
     }
     response = await async_client.post("/v1/completions", json=payload, headers=headers)
     assert response.status_code == 402
+
+
+@pytest.mark.asyncio
+async def test_legacy_completions_no_double_settle(async_client, require_gateway, monkeypatch):
+    """Verify settle is called exactly once on successful completion."""
+    import speedinfer.gateway.routes.completions as comp_module
+
+    settle_calls = []
+    original_settle = comp_module.settle
+
+    def spy_settle(*args, **kwargs):
+        settle_calls.append((args, kwargs))
+        return original_settle(*args, **kwargs)
+
+    monkeypatch.setattr(comp_module, "settle", spy_settle)
+
+    headers = {"Authorization": "Bearer sk-speedinfer-validkey"}
+    payload = {
+        "model": "Qwen/Qwen2.5-7B-Instruct",
+        "prompt": "Hello",
+        "max_tokens": 16,
+    }
+    response = await async_client.post("/v1/completions", json=payload, headers=headers)
+    assert response.status_code == 200
+    assert len(settle_calls) == 1
+    assert settle_calls[0][1].get("success") is True

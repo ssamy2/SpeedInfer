@@ -21,7 +21,7 @@ from speedinfer.core.metering import (
 )
 from speedinfer.core.rate_limiter import async_check_rate_limit, build_rate_limit_headers
 from speedinfer.database.models import ApiKey, ModelVersion
-from speedinfer.database.session import get_session
+from speedinfer.database.session import get_session, get_session_context
 from speedinfer.engine.registry import ModelEntry, ModelRegistry
 from speedinfer.gateway.proxy import InferenceProxy
 from speedinfer.gateway.redis import get_async_redis
@@ -107,10 +107,11 @@ async def create_chat_completion(
 
     # 2. Rate limiting check (RPM and TPM)
     est_max_tokens = request.max_tokens or 128
+    est_prompt_tokens = proxy.estimate_prompt_tokens(request.messages)
     rate_result = await async_check_rate_limit(
         redis_client,
         api_key=api_key,
-        requested_tokens=est_max_tokens + proxy.estimate_prompt_tokens(request.messages),
+        requested_tokens=est_max_tokens + est_prompt_tokens,
     )
     headers = build_rate_limit_headers(rate_result, api_key.rpm_limit, api_key.tpm_limit)
 
@@ -130,9 +131,9 @@ async def create_chat_completion(
 
     # 3. Pre-flight credit check
     estimated_cost = estimate_max_cost(
-        prompt_tokens=model_entry.context_length,
+        prompt_tokens=est_prompt_tokens,
         max_tokens=est_max_tokens,
-        context_window=model_entry.context_length + est_max_tokens,
+        context_window=model_entry.context_length,
         prompt_price_per_m=model_entry.prompt_price_per_million,
         completion_price_per_m=model_entry.completion_price_per_million,
     )
@@ -153,10 +154,18 @@ async def create_chat_completion(
             await stream.aclose()
             raise
 
+        stream_bind = getattr(session, "bind", None)
+        if stream_bind is None and hasattr(session, "get_bind"):
+            try:
+                stream_bind = session.get_bind()
+            except Exception:
+                stream_bind = None
+
         async def event_generator():
             usage = None
             ttft_ms = None
             done = False
+            settled = False
             try:
                 chunk = first
                 while True:
@@ -169,7 +178,10 @@ async def create_chat_completion(
                         if data == "[DONE]":
                             done = True
                             continue
-                        payload = json.loads(data)
+                        try:
+                            payload = json.loads(data)
+                        except Exception:
+                            continue
                         if payload.get("error"):
                             raise ValueError("Upstream stream error")
                         if payload.get("usage"):
@@ -181,25 +193,32 @@ async def create_chat_completion(
                     if done:
                         break
                     yield chunk
-                    chunk = await anext(stream)
+                    try:
+                        chunk = await anext(stream)
+                    except StopAsyncIteration:
+                        break
+                if not done:
+                    raise ValueError("Upstream stream truncated before completion")
                 if usage is None:
                     raise ValueError("Upstream omitted authoritative token usage")
-                settle(
-                    session,
-                    hold_id,
-                    cost=calculate_token_cost(
-                        usage.prompt_tokens,
-                        usage.completion_tokens,
-                        model_entry.prompt_price_per_million,
-                        model_entry.completion_price_per_million,
-                    ),
-                    model=request.model,
-                    prompt_tokens=usage.prompt_tokens,
-                    completion_tokens=usage.completion_tokens,
-                    latency_ms=(time.perf_counter() - start_time) * 1000,
-                    ttft_ms=ttft_ms,
-                    success=True,
-                )
+                with get_session_context(stream_bind) as stream_session:
+                    settle(
+                        stream_session,
+                        hold_id,
+                        cost=calculate_token_cost(
+                            usage.prompt_tokens,
+                            usage.completion_tokens,
+                            model_entry.prompt_price_per_million,
+                            model_entry.completion_price_per_million,
+                        ),
+                        model=request.model,
+                        prompt_tokens=usage.prompt_tokens,
+                        completion_tokens=usage.completion_tokens,
+                        latency_ms=(time.perf_counter() - start_time) * 1000,
+                        ttft_ms=ttft_ms,
+                        success=True,
+                    )
+                settled = True
                 yield "data: [DONE]\n\n"
             except Exception:
                 logging.getLogger(__name__).warning("Inference stream failed: %s", hold_id)
@@ -220,7 +239,9 @@ async def create_chat_completion(
                 try:
                     await stream.aclose()
                 finally:
-                    settle(session, hold_id)
+                    if not settled:
+                        with get_session_context(stream_bind) as stream_session:
+                            settle(stream_session, hold_id)
 
         return StreamingResponse(
             event_generator(),
@@ -232,6 +253,7 @@ async def create_chat_completion(
             },
         )
 
+    settled = False
     try:
         completion_resp = await proxy.execute_chat(request, model_entry)
         usage = completion_resp.usage
@@ -251,6 +273,8 @@ async def create_chat_completion(
             latency_ms=(time.perf_counter() - start_time) * 1000,
             success=True,
         )
+        settled = True
         return JSONResponse(content=completion_resp.model_dump(), headers=headers)
     finally:
-        settle(session, hold_id)
+        if not settled:
+            settle(session, hold_id)

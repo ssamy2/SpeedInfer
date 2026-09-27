@@ -154,3 +154,45 @@ async def test_chat_completions_insufficient_credit(async_client, require_gatewa
     assert response.status_code == 402
     data = response.json()
     assert "error" in data
+
+
+@pytest.mark.asyncio
+async def test_chat_completions_prompt_token_estimation_with_low_balance(
+    async_client, require_gateway
+):
+    """Verify key with small balance ($0.00005) succeeds because prompt tokens are estimated."""
+    headers = {"Authorization": "Bearer sk-speedinfer-limited-balance-key"}
+    payload = {
+        "model": "Qwen/Qwen2.5-7B-Instruct",
+        "messages": [{"role": "user", "content": "Hi"}],
+        "max_tokens": 16,
+    }
+    response = await async_client.post("/v1/chat/completions", json=payload, headers=headers)
+    assert response.status_code == 200
+
+
+@pytest.mark.asyncio
+async def test_chat_completions_no_double_settle(async_client, require_gateway, monkeypatch):
+    """Verify settle is called exactly once on successful chat completion."""
+    import speedinfer.gateway.routes.chat as chat_module
+
+    settle_calls = []
+    original_settle = chat_module.settle
+
+    def spy_settle(*args, **kwargs):
+        settle_calls.append((args, kwargs))
+        return original_settle(*args, **kwargs)
+
+    monkeypatch.setattr(chat_module, "settle", spy_settle)
+
+    headers = {"Authorization": "Bearer sk-speedinfer-validkey"}
+    payload = {
+        "model": "Qwen/Qwen2.5-7B-Instruct",
+        "messages": [{"role": "user", "content": "Hello"}],
+        "max_tokens": 16,
+    }
+    response = await async_client.post("/v1/chat/completions", json=payload, headers=headers)
+    assert response.status_code == 200
+    # Exactly one call to settle, with success=True (no redundant call in finally)
+    assert len(settle_calls) == 1
+    assert settle_calls[0][1].get("success") is True
