@@ -116,9 +116,28 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
         insp = inspect(conn)
         if "user" in insp.get_table_names():
             cols = [c["name"] for c in insp.get_columns("user")]
-            if "password_hash" not in cols:
-                conn.execute(text('ALTER TABLE "user" ADD COLUMN password_hash VARCHAR(255)'))
-                conn.commit()
+            for col_name, col_sql in [
+                ("password_hash", 'ALTER TABLE "user" ADD COLUMN password_hash VARCHAR(255)'),
+                ("referral_code", 'ALTER TABLE "user" ADD COLUMN referral_code VARCHAR(32)'),
+                ("referred_by_id", 'ALTER TABLE "user" ADD COLUMN referred_by_id INTEGER'),
+                ("signup_ip_hash", 'ALTER TABLE "user" ADD COLUMN signup_ip_hash VARCHAR(64)'),
+                (
+                    "device_fingerprint",
+                    'ALTER TABLE "user" ADD COLUMN device_fingerprint VARCHAR(128)',
+                ),
+                (
+                    "referral_reward_claimed",
+                    'ALTER TABLE "user" ADD COLUMN referral_reward_claimed BOOLEAN DEFAULT 0',
+                ),
+                ("is_verified", 'ALTER TABLE "user" ADD COLUMN is_verified BOOLEAN DEFAULT 0'),
+                ("email_verified_at", 'ALTER TABLE "user" ADD COLUMN email_verified_at TIMESTAMP'),
+                ("avatar_url", 'ALTER TABLE "user" ADD COLUMN avatar_url TEXT'),
+                ("location", 'ALTER TABLE "user" ADD COLUMN location VARCHAR(255)'),
+                ("organization", 'ALTER TABLE "user" ADD COLUMN organization VARCHAR(255)'),
+            ]:
+                if col_name not in cols:
+                    conn.execute(text(col_sql))
+                    conn.commit()
         if "apikey" in insp.get_table_names():
             api_cols = [c["name"] for c in insp.get_columns("apikey")]
             if "trial_balance" not in api_cols:
