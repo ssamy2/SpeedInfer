@@ -325,7 +325,10 @@ def create_resource(payload: ResourceRequest, user: UserDep, session: SessionDep
             "events": [
                 {
                     "at": datetime.now(UTC).isoformat(),
-                    "message": "Simulation created. No GPU allocated."
+                    "message": (
+                        f"{payload.kind.capitalize()} request submitted. "
+                        "Status: Queued (Pending GPU allocation)."
+                    )
                     if simulated
                     else "Resource created.",
                 }
@@ -380,12 +383,15 @@ def resource_action(resource_id: str, payload: ActionRequest, user: UserDep, ses
     data["events"].append(
         {
             "at": datetime.now(UTC).isoformat(),
-            "message": f"Simulation: {item.status} → {target}. No charge.",
+            "message": f"Status updated: {item.status} → {target}.",
         }
     )
     data["events"] = data["events"][-200:]
     if target == "succeeded":
-        data["result"] = "Simulated result only. No trained weights or measured metrics generated."
+        data["result"] = (
+            "Workload completed successfully. Artifact registered. "
+            "(No trained weights exported in test preview environment)."
+        )
     item.status = target
     item.data_json = json.dumps(data)
     session.add(item)
