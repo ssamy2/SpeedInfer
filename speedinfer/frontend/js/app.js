@@ -168,8 +168,16 @@ class AppController {
   }
 
   async init() {
-    sessionStorage.removeItem('speedinfer_last_raw_key');
-    if (location.pathname === '/legal' || location.pathname.startsWith('/legal/')) { showPublicPolicies(); return; }
+    if (
+      location.pathname === '/legal' ||
+      location.pathname.startsWith('/legal/') ||
+      location.pathname === '/privacy' ||
+      location.pathname === '/terms' ||
+      location.pathname === '/security'
+    ) {
+      showPublicPolicies();
+      return;
+    }
     this.workspace.init();
     initContact();
     this.bindGlobalEvents();

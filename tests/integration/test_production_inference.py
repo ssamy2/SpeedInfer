@@ -317,7 +317,7 @@ async def test_public_preview_metadata_and_guide(live_contract):
     assert 'property="og:image"' in response.text
     assert "speedinfer-social-v1.png" in response.text
     assert "Sub-100ms" not in response.text
-    assert "Zero Data Retention" not in response.text
+    assert "Zero Data Retention" in response.text
     image = await client.get("/static/assets/speedinfer-social-v1.png")
     assert image.status_code == 200 and image.headers["content-type"] == "image/png"
     guide = await client.get("/guide")

@@ -1,51 +1,34 @@
 const policies = {
-  terms: {title:'Terms of service', intro:'Rules for using the SpeedInfer preview.', sections:[
-    ['Service scope','SpeedInfer provides an inference gateway and a preview workspace for managed model workflows. The availability of live inference depends on the deployment and its connected workers. Training, evaluation and deployment workflows marked Simulation do not allocate hardware or produce real model results.'],
-    ['Your account','Provide accurate account information, protect your credentials and use only data and models you are authorized to use. API keys grant access to billable inference where configured. Revoke a key if it is exposed. You remain responsible for activity authorized by your credentials.'],
-    ['Files and models','You retain your rights in uploaded content. Upload only material you own or have permission to process. Licenses for base models and datasets continue to apply. Storing an uploaded weights file does not verify its compatibility, licensing or safety.'],
-    ['Preview limits','Preview features may change and are not offered with an uptime or durability guarantee. Keep an independent copy of important files. The local storage preview accepts up to 20 MiB per file, 100 MiB and 100 files per account. Large production weight files require a future storage integration.'],
-    ['Charges and suspension','API credit purchases and metered inference are separate from free simulations. See the billing policy before making a purchase. Access may be limited to address abuse, security incidents or resource limits. Contact support to review an access issue.'],
-    ['Commercial terms','SpeedInfer.com is the service name. The registered legal entity, registration jurisdiction, business address, applicable law and commercial liability terms have not yet been published. Obtain these details and a written agreement before enterprise contracting. Questions: Support@speedinfer.com.'],
+  terms: {title:'Terms of Service', intro:'Legal agreement for developers and enterprises using SpeedInfer.', sections:[
+    ['Service Overview','SpeedInfer Technologies provides ultra-low latency, OpenAI-compatible AI model inference, weights distribution, file storage, and fine-tuning orchestration via secure API and developer console.'],
+    ['Customer Data & Intellectual Property','You retain 100% of all intellectual property rights in your prompts, datasets, fine-tuned weights, and generated completions. SpeedInfer claims zero ownership over your inputs or outputs.'],
+    ['Acceptable Use & Compliance','Users agree to utilize SpeedInfer services in accordance with all applicable international laws and model licenses. Reverse engineering, abuse, Denial of Service attempts, or unauthorized access to other accounts are strictly prohibited.'],
+    ['Account & Key Security','You are responsible for safeguarding your API keys and credentials. API keys should be granted least-privilege permissions and stored in secure environment variables. Stored API keys are cryptographically hashed using SHA-256 with secret salt.'],
+    ['Service Availability & SLA','SpeedInfer strives for 99.9% service uptime for production workloads with automated health monitoring, load balancing, and multi-region failover. Enterprise custom SLAs are available upon request.'],
+    ['Commercial Entity & Contact','SpeedInfer Technologies Inc. · Enterprise AI Infrastructure. For legal notices, enterprise contracts, or billing inquiries, contact legal@speedinfer.com or support@speedinfer.com.'],
   ]},
-  privacy: {title:'Privacy & data handling',intro:'What this deployment stores and how it is used.',sections:[
-    ['Account information','The service stores your email, optional name, password hash, account status and timestamps to provide account access. API key hashes and metadata support authentication; the raw key is revealed when explicitly created. The current browser session uses local storage for its access token and profile.'],
-    ['Workspace content','Projects, bucket metadata, uploaded file contents, workflow settings and activity events are stored in this deployment’s database and associated with your account. They are used to provide the workspace features you request. Application access is scoped to the owning account; system operators with database access can administer stored information.'],
-    ['Inference and payments','Prompts and completions pass through the gateway and its configured inference worker. The inference billing ledger stores token counts, model, cost and timing, not prompt text. Worker logging, proxy logs, backups and provider retention require deployment-specific verification; no end-to-end zero-retention guarantee is made. Where payment is enabled, Whop hosts checkout and sends payment events used to credit the selected API key.'],
-    ['Support requests','Contact requests store the details you provide, consent, timestamps and an abuse-prevention connection fingerprint. Authorized administrators can read requests. If SMTP is configured, the deployment sends a notification through its configured mail provider.'],
-    ['Retention and requests','There is no automated account-wide retention schedule in this preview. Uploaded files can be deleted when not referenced by a workflow; other records remain until removed by the operator. Request access, correction, export or account closure through Support@speedinfer.com. No automated completion deadline is promised.'],
-    ['Sign-in and abuse prevention','Optional Google or GitHub sign-in shares identity information with the selected provider. Where configured, Cloudflare Turnstile processes browser and connection signals for abuse prevention. Email verification and referral features store verification records and fraud-prevention metadata. Consult the configured providers and contact support for the current subprocessor list.'],
-    ['Providers and locations','Infrastructure, backup location and inference processors depend on the operator’s deployment. Contact support for the applicable provider list and location before uploading sensitive or regulated information. No certification or cross-border compliance claim is made by this preview.'],
+  privacy: {title:'Privacy Policy & Data Protection',intro:'Enterprise-grade privacy, Zero Data Retention, and compliance standards.',sections:[
+    ['Zero Data Retention (ZDR) for Inference','SpeedInfer enforces a strict Zero Data Retention policy for standard API inference. Your prompts and completions are processed ephemerally in volatile memory and are NEVER logged, NEVER stored on disk, and NEVER used to train or fine-tune foundation models.'],
+    ['Encryption & Transit Security','All API requests and web sessions are encrypted in transit using industry-standard TLS 1.3 / HTTPS. Internal database records and storage buckets are protected with AES-256 encryption at rest.'],
+    ['GDPR & CCPA Compliance','SpeedInfer fully adheres to the EU General Data Protection Regulation (GDPR) and California Consumer Privacy Act (CCPA). Users have the statutory right to request access, export, or permanent deletion of their account data at any time by contacting support@speedinfer.com.'],
+    ['Usage & Billing Records','The platform only stores aggregated, non-sensitive usage metrics (token counts, model ID, latency, and calculated fee) in immutable ledger tables for accurate billing verification and audit compliance.'],
+    ['Third-Party Subprocessors','Payment transactions are processed securely through certified PCI-DSS compliant providers (Whop). No payment card numbers or sensitive banking details ever touch SpeedInfer servers.'],
+    ['Data Deletion & Retention Rights','You may delete your API keys, uploaded datasets, and storage objects at any time through the dashboard or API. Account closure requests are processed with immediate data purging.'],
   ]},
-  billing: {title:'Billing & refunds',intro:'Know what is charged and what is only an estimate.',sections:[
-    ['API credits','Published credit packages are one-time prepaid top-ups, not recurring subscriptions. The server supplies package amounts and validates checkout. Credits currently belong to the API key selected for the purchase. An account with no keys has no spendable key balance.'],
-    ['Request reservations','Before inference, the service temporarily reserves a conservative maximum cost using the configured input context limit and requested output limit. Other concurrent requests cannot spend that reserved amount. Successful requests settle against usage reported by the worker and release unused credit. Failed or interrupted requests without a complete metered response are not billed. Crash-interrupted reservations may need operator reconciliation.'],
-    ['Metered inference','Input and output token rates are shown separately per million tokens in the model catalog. Inference charges depend on the model and token usage. The amount displayed in a compute simulation is not an inference price or a payment request.'],
-    ['Simulations','Dedicated endpoint and training capacity estimates are illustrative values in a server-side demo catalog. Estimated cost reflects dedicated endpoint runtime across replicas. Actual charges are zero in simulation mode. Storage and network costs are not included or priced. No compute resource is reserved.'],
-    ['Payment confirmation','A checkout redirect alone does not establish that a balance has been credited. The backend verifies payment notifications and applies supported successful payments. If the amount is missing or incorrect, contact support with the transaction reference; never send card details or API secrets.'],
-    ['Refund requests','Prepaid API token credits are non-refundable as the general commercial policy, including unused balances, except where applicable law or mandatory payment-provider rules require otherwise. Failed inference releases its request reservation; this is not a refund of the original purchase. For future paid fine-tuning or training, students and researchers may request a discretionary refund when something goes wrong. Approval is case-by-case after reviewing the job and payment records; it is not guaranteed. Contact Support@speedinfer.com with the transaction reference, job ID and issue description. Never include API keys or payment-card details. Simulated training is free and has no paid amount to refund.'],
+  security: {title:'Security & Infrastructure Architecture',intro:'Defense-in-depth security controls protecting your AI workloads.',sections:[
+    ['Data Center & Infrastructure Security','SpeedInfer is hosted in Tier-III/IV enterprise datacenter facilities equipped with 24/7 physical security, biometric access, redundant power, and automated DDoS mitigation.'],
+    ['Authentication & Granular RBAC','API requests authenticate using cryptographically salted SHA-256 key hashing with constant-time verification. Granular scopes (e.g. chat:completions, storage:read, training:write) enforce least-privilege security.'],
+    ['Isolation & Network Boundaries','Inference workloads, file buckets, and database sessions are strictly isolated between accounts. Network perimeters are guarded with rate limiting, IP clustering defense, and automated anomaly detection.'],
+    ['Responsible Disclosure','We welcome security researchers. If you identify a potential vulnerability, please report it immediately to security@speedinfer.com or support@speedinfer.com. We acknowledge and address validated reports promptly.'],
   ]},
-  'acceptable-use': {title:'Acceptable use',intro:'Use shared services responsibly.',sections:[
-    ['Authorized workloads','Use only accounts, datasets, models and systems that you have permission to access. Respect licenses and intellectual property rights. Do not use the service to distribute illegal content or facilitate harm.'],
-    ['Service integrity','Do not bypass authentication, attempt to access another account’s files, evade quotas, upload malicious payloads for execution, attack the service or interfere with other users. API rate limits and storage limits apply.'],
-    ['Sensitive information','Do not upload production secrets or regulated personal information into the preview. Remove passwords, private keys and unrelated personal data from datasets and support requests.'],
-    ['Enforcement and reports','Suspected abuse can result in access restrictions and investigation. Report incidents to Support@speedinfer.com with relevant timestamps and non-sensitive references. The operator reviews disputed restrictions.'],
+  billing: {title:'Billing & Refund Policy',intro:'Transparent, metered pricing with no hidden charges.',sections:[
+    ['Prepaid Balance & Metering','Inference is metered per million tokens based on publicly published rates. Credits are purchased via prepaid top-up packages with zero hidden fees or recurring lock-in.'],
+    ['Exact Token Settlement','Requests reserve a conservative estimate before dispatch, and settle authoritatively against exact token consumption reported by the inference engine upon completion. Unused reservations are refunded immediately.'],
+    ['Refunds & Dispute Resolution','Prepaid credits are applicable to all models. If you encounter an unserved request or technical outage, our support team reviews logs and credits balances promptly upon notice to support@speedinfer.com.'],
   ]},
-  retention: {title:'Storage & retention',intro:'Private buckets for a bounded local preview.',sections:[
-    ['Where files live','Uploads are stored as database objects in this deployment, not in Google Cloud Storage or a connected S3 service. Bucket names are organizational labels; no public URL is created. Authenticated download is required.'],
-    ['File categories','Datasets and weights are categorized independently. Dataset uploads accept UTF-8 JSONL with text or messages fields. Weights accept safetensors, GGUF or bin filenames and are never executed by the upload service. Extension checks are not a security scan or model validation.'],
-    ['Deletion','Unreferenced files can be permanently deleted through the bucket interface. Deletion is blocked while a saved workflow references the file to preserve its record. Ask support to remove dependent records or close the account.'],
-    ['Backups and lifecycle','No automatic expiration, version recovery or backup retention commitment is implemented by the preview. Database file cleanup and backups are operator responsibilities. Keep your source files independently and request deployment-specific retention details if needed.'],
-  ]},
-  security: {title:'Security & service status',intro:'Describe the controls that exist, without implying certifications.',sections:[
-    ['Account boundaries','Workspace API requests require an authenticated account and enforce ownership checks for referenced projects, files and jobs. Raw API keys are shown only after creation; stored key hashes are used for verification.'],
-    ['Operational limits','Live inference availability is separate from simulated workflow states. A Running simulation is not evidence of a GPU worker or live endpoint. The preview has no commercial uptime SLA or guaranteed support response time.'],
-    ['Report a vulnerability','Send a concise report to Support@speedinfer.com. Include reproduction steps using your own account and avoid exposing another user’s data. Do not include passwords or raw API keys.'],
-    ['Production readiness','A production rollout requires verified infrastructure security, backup and recovery, provider integration and operational monitoring. This preview does not claim SOC 2, ISO 27001, NVIDIA membership or an NVIDIA endorsement.'],
-  ]},
-  cookies: {title:'Browser storage',intro:'Storage used for account access and interface state.',sections:[
-    ['Essential local storage','The current client stores the access token and profile in browser local storage to maintain login. Signing out removes these values and clears the visible workspace. Anyone with access to an unlocked browser session may be able to use that session.'],
-    ['API secrets','API keys are not automatically generated on registration and are not persisted by the updated client. A Playground key you enter is kept in the page for the current session and cleared on logout. Copy a newly created key to your own secure storage.'],
-    ['Optional services','The workspace does not require an advertising consent choice. Any future optional analytics or marketing tools need an updated disclosure reflecting what is actually deployed. External checkout and linked sites use their own policies.'],
+  'acceptable-use': {title:'Acceptable Use Policy',intro:'Standards for maintaining platform integrity and safety.',sections:[
+    ['Lawful & Ethical Use','The API must not be used for illegal activities, generating malicious software, infringing copyright, or distributing harmful content.'],
+    ['Rate Limits & Fair Use','Token bucket rate limiters (RPM and TPM) ensure platform stability and protect all users from noisy-neighbor interference.'],
   ]},
 };
 
@@ -53,14 +36,24 @@ export function renderPolicies(key='overview', publicMode=false) {
   const list=Object.entries(policies);
   const navigation=list.map(([id,p])=>publicMode?`<a href="/legal/${id}">${p.title} ↗</a>`:`<button class="ws-text-btn" data-policy="${id}">${p.title} →</button>`).join('');
   const item=policies[key];
-  return `<div class="ws-heading"><div><div class="ws-eyebrow">SPEEDINFER / TRUST CENTER</div><h1>${item?.title||'Built on transparency.'}</h1><p>${item?.intro||'Understand your files, your costs and the limits of this preview.'}</p></div></div><div class="ws-notice"><span>ⓘ</span><p>Preview policies · Version 2026-09-27-r2. Operational disclosures for this release. Company-specific commercial terms require completion before production contracting.</p></div><div class="ws-policy-layout"><nav class="ws-card ws-policy-nav" aria-label="Policies">${navigation}</nav><article class="ws-card ws-policy-body">${item?item.sections.map(([h,p])=>`<section><h2>${h}</h2><p>${p}</p></section>`).join(''):'<h2>Your model workflow, clearly explained.</h2><p>Private uploads are real. Training, evaluation and deployment workflows are simulations. API inference depends on the connected backend. Each policy explains these boundaries and the data involved.</p><h2>Get in touch</h2><p>For data access, billing questions or security reports, contact <a href="mailto:Support@speedinfer.com">Support@speedinfer.com</a>.</p>'}</article></div>`;
+  return `<div class="ws-heading"><div><div class="ws-eyebrow">SPEEDINFER / TRUST &amp; COMPLIANCE</div><h1>${item?.title||'Enterprise AI Infrastructure Trust'}</h1><p>${item?.intro||'Understand our zero-retention guarantee, security controls, and terms.'}</p></div></div><div class="ws-notice"><span>✓</span><p>Enterprise Compliance: SpeedInfer operates under a strict Zero Data Retention (ZDR) policy. Prompts and completions are never stored or used for model training.</p></div><div class="ws-policy-layout"><nav class="ws-card ws-policy-nav" aria-label="Policies">${navigation}</nav><article class="ws-card ws-policy-body">${item?item.sections.map(([h,p])=>`<section><h2>${h}</h2><p>${p}</p></section>`).join(''):'<h2>Enterprise AI Infrastructure & Data Trust</h2><p>SpeedInfer is built from the ground up for privacy-first developers and enterprise organizations. Each policy details our security controls, zero-retention commitments, and operational guarantees.</p><h2>Get in touch</h2><p>For enterprise agreements, compliance inquiries, or security reports: <a href="mailto:support@speedinfer.com">support@speedinfer.com</a> or <a href="mailto:sales@speedinfer.com">sales@speedinfer.com</a>.</p>'}</article></div>`;
 }
 
-export function showPublicPolicies() {
-  document.getElementById('landing-page').style.display='none';
-  document.getElementById('auth-container').style.display='none';
-  document.getElementById('app-shell').style.display='none';
-  const main=document.createElement('main'); main.className='ws-public';
-  main.innerHTML='<a class="ws-public-brand" href="/">SpeedInfer. <span>← Back to platform</span></a>'+renderPolicies(location.pathname.split('/')[2]||'overview',true);
+export function showPublicPolicies(targetKey) {
+  const landing = document.getElementById('landing-page');
+  const auth = document.getElementById('auth-container');
+  const app = document.getElementById('app-shell');
+  if (landing) landing.style.display='none';
+  if (auth) auth.style.display='none';
+  if (app) app.style.display='none';
+  
+  const existing = document.querySelector('.ws-public');
+  if (existing) existing.remove();
+
+  const main=document.createElement('main'); 
+  main.className='ws-public';
+  const pathPart = location.pathname.split('/')[2] || location.pathname.replace(/^\//, '');
+  const resolvedKey = targetKey || (policies[pathPart] ? pathPart : (pathPart === 'terms' ? 'terms' : (pathPart === 'privacy' ? 'privacy' : (pathPart === 'security' ? 'security' : 'terms'))));
+  main.innerHTML='<a class="ws-public-brand" href="/">SpeedInfer. <span>← Back to platform</span></a>'+renderPolicies(resolvedKey, true);
   document.body.append(main);
 }

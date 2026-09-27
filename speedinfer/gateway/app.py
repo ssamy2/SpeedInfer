@@ -439,6 +439,11 @@ def create_app() -> FastAPI:
         @fastapi_app.get("/auth/{full_path:path}", include_in_schema=False)
         @fastapi_app.get("/legal", include_in_schema=False)
         @fastapi_app.get("/legal/{full_path:path}", include_in_schema=False)
+        @fastapi_app.get("/privacy", include_in_schema=False)
+        @fastapi_app.get("/terms", include_in_schema=False)
+        @fastapi_app.get("/security", include_in_schema=False)
+        @fastapi_app.get("/about", include_in_schema=False)
+        @fastapi_app.get("/contact", include_in_schema=False)
         async def serve_spa(full_path: str = "") -> FileResponse:
             index_file = frontend_dir / "index.html"
             return FileResponse(index_file)

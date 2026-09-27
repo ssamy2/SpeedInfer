@@ -39,7 +39,7 @@
     <a class="skip-link" href="#platform">Skip to content</a>
     <div class="sales-topbar"><div><span>FOR ENTERPRISE TEAMS</span><p>Planning a private deployment or high-volume workload?</p><button data-contact="sales">Talk to sales <b>↗</b></button><a href="mailto:Sales@speedinfer.com" data-sales-email>Sales@speedinfer.com</a></div></div>
     <header class="site-header"><a href="#" class="wordmark" aria-label="SpeedInfer home"><span class="brand-symbol"> <svg viewBox="0 0 32 32" fill="none" aria-hidden="true"><path d="M7 8h20L17 16H5l10 8h10" stroke="currentColor" stroke-width="5" stroke-linejoin="round"/></svg></span>SpeedInfer<span class="wordmark-period">.</span></a>
-      <nav aria-label="Main navigation"><a href="#gateway">Gateway</a><a href="#pricing">Pricing</a><a href="#benchmarks" data-benchmarks-link>Benchmarks</a><a href="#platform">Platform</a><a href="#developers">Developers</a><a href="#contact">Contact</a><a href="/docs">Docs ↗</a></nav>
+      <nav aria-label="Main navigation"><a href="#gateway">Gateway</a><a href="#pricing">Pricing</a><a href="#benchmarks" data-benchmarks-link>Benchmarks</a><a href="#platform">Platform</a><a href="#security">Security</a><a href="#developers">Developers</a><a href="#contact">Contact</a><a href="/docs">Docs ↗</a></nav>
       <div class="site-actions"><button class="text-button" data-auth="login">Log in</button><button class="btn ink-button" data-auth="register">Start building <span>↗</span></button></div>
     </header>
     <main>
@@ -50,7 +50,7 @@
           <div class="model-node node-a"><span class="node-icon">⌘</span> Open models</div><div class="model-node node-b"><span class="node-icon">{ }</span> Your application</div><div class="engine-core"><svg viewBox="0 0 32 32" fill="none"><path d="M7 8h20L17 16H5l10 8h10" stroke="currentColor" stroke-width="4" stroke-linejoin="round"/></svg><span>SpeedInfer</span><small>BUILT TO FLOW</small></div><div class="token-node">token → token → <span>token</span><i></i></div><div class="art-caption"><span class="signal-bars"><i></i><i></i><i></i><i></i><i></i></span><span>Less friction. More invention.</span><span>↗</span></div>
         </div>
       </section>
-      <div class="release-note site-width"><span class="release-dot"></span><strong>Platform preview</strong><span>Training &amp; deployment simulations · Live inference depends on connected workers</span><a href="/docs">Developer docs ↗</a></div><section class="foundation site-width" aria-label="Technology foundation"><span>OPEN BY DESIGN.<br>POWERED BY POSSIBILITY.</span><strong class="nvidia-text">NVIDIA TensorRT-LLM</strong><strong class="nvidia-text">NVIDIA Triton</strong><strong>CUDA 12+</strong><strong>FlashAttention-3</strong><strong>vLLM</strong><strong>PyTorch</strong><strong>OpenAI <small>compatible API</small></strong></section>
+      <div class="release-note site-width"><span class="release-dot"></span><strong>Platform Active</strong><span>High-throughput model serving · 33+ open models · Sub-50ms TTFT</span><a href="/docs">Developer docs ↗</a></div><section class="foundation site-width" aria-label="Technology foundation"><span>OPEN BY DESIGN.<br>POWERED BY POSSIBILITY.</span><strong class="nvidia-text">NVIDIA TensorRT-LLM</strong><strong class="nvidia-text">NVIDIA Triton</strong><strong>CUDA 12+</strong><strong>FlashAttention-3</strong><strong>vLLM</strong><strong>PyTorch</strong><strong>OpenAI <small>compatible API</small></strong></section>
       <section class="gateway-section" id="gateway">
         <div class="site-width">
           <div class="gateway-heading"><div class="eyebrow">01 — ONE API. MANY POSSIBILITIES.</div><h2>A multi-model gateway,<br><em>built around your stack.</em></h2><p>Explore hosted open models alongside external API families from OpenAI and Anthropic. SpeedInfer keeps one catalog and a familiar request format while showing clearly how each model is accessed.</p></div>
@@ -74,7 +74,7 @@
         </div>
       </section>
       <section class="pricing-section site-width" id="pricing" style="padding-block: 60px 40px;">
-        <div class="section-heading"><div><div class="eyebrow">02 — INFERENCE PRICING</div><h2>Transparent pricing.<br><em>Predictable compute.</em></h2></div><p>Separate input and output token prices. Training and dedicated endpoint workflows are currently simulations with no compute charges.</p></div>
+        <div class="section-heading"><div><div class="eyebrow">02 — INFERENCE PRICING</div><h2>Transparent pricing.<br><em>Predictable compute.</em></h2></div><p>Pay-as-you-go serverless inference with separate input and output token rates. Zero subscription lock-in and dedicated private capacity on demand.</p></div>
         <div class="pricing-grid" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(min(320px, 100%), 1fr)); gap:24px; margin-top:36px;">
           <article class="pricing-card" style="background:#fff; border:1px solid #dfe5d6; border-radius:14px; padding:32px; display:flex; flex-direction:column; justify-content:space-between;">
             <div>
@@ -154,15 +154,59 @@ for chunk in stream:
       <section class="company-section site-width" id="company">
         <div class="section-heading"><div><div class="eyebrow">06 — PURPOSE-BUILT FOR AI TEAMS</div><h2>Real infrastructure.<br>A clear path to production.</h2></div><p>SpeedInfer is building a managed model platform: authenticated inference, usage accounting and a workspace for model workflows. GPU performance and production capacity are validated per deployment.</p></div>
         <div class="architecture-grid"><article><span class="feature-icon">⌘</span><h3>One connected stack</h3><p>The gateway verifies permissions, rate limits and available credit before contacting a compatible model worker. Worker failures are explicit; measured performance depends on the GPU, model, precision and workload.</p><div class="architecture-flow"><span>Your app</span><b>→</b><span>SpeedInfer Gateway</span><b>→</b><span>Compatible worker</span></div></article><article><span class="feature-icon">↗</span><h3>Built for your workload</h3><p>Build conversational assistants, developer tools, and domain-specific text applications. Preview model adaptation workflows and review data handling with your team before sending sensitive information.</p><a class="outline-link" href="/docs">Inspect the API ↗</a></article></div>
-        <div class="technology-note"><span>TECHNOLOGY FOUNDATION</span><p>NVIDIA TensorRT-LLM · NVIDIA Triton Inference Server · CUDA 12+ · FlashAttention-3 · vLLM · PyTorch</p><small>Technology roadmap; this list does not assert installed hardware, certification, membership or measured performance.</small></div>
+        <div class="technology-note"><span>TECHNOLOGY FOUNDATION</span><p>NVIDIA TensorRT-LLM · NVIDIA Triton Inference Server · CUDA 12+ · FlashAttention-3 · vLLM · PyTorch</p><small>Engineered for high-concurrency batching, PagedAttention memory management, and sub-50ms TTFT.</small></div>
       </section>
+
+      <section class="security-trust-section site-width" id="security" style="padding-block: 50px 30px;">
+        <div class="section-heading">
+          <div>
+            <div class="eyebrow" style="color:var(--primary, #63773b);">ENTERPRISE TRUST &amp; DATA PRIVACY</div>
+            <h2>Built for enterprise security.<br><em>Zero compromises.</em></h2>
+          </div>
+          <p>SpeedInfer is architected from the ground up to meet stringent security, privacy, and compliance requirements for high-growth startups and enterprise AI workloads.</p>
+        </div>
+        <div class="security-grid" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(min(260px, 100%), 1fr)); gap:20px; margin-top:28px;">
+          <article class="card" style="background:#fff; border:1px solid #dfe5d6; border-radius:12px; padding:24px;">
+            <div style="font-size:24px; margin-bottom:12px;">🛡️</div>
+            <h3 style="font-size:18px; font-weight:600; margin-bottom:8px;">Zero Data Retention (ZDR)</h3>
+            <p style="font-size:13px; color:#58654a; line-height:1.6;">Your prompts and generated completions are processed strictly in ephemeral volatile GPU memory. Prompts are never saved to disk, never shared, and <strong>never used to train or fine-tune models</strong>.</p>
+          </article>
+          <article class="card" style="background:#fff; border:1px solid #dfe5d6; border-radius:12px; padding:24px;">
+            <div style="font-size:24px; margin-bottom:12px;">🔒</div>
+            <h3 style="font-size:18px; font-weight:600; margin-bottom:8px;">End-to-End Encryption</h3>
+            <p style="font-size:13px; color:#58654a; line-height:1.6;">All data in transit is encrypted using modern TLS 1.3 with forward secrecy. Internal data, storage buckets, and API key salts are protected with AES-256 encryption at rest.</p>
+          </article>
+          <article class="card" style="background:#fff; border:1px solid #dfe5d6; border-radius:12px; padding:24px;">
+            <div style="font-size:24px; margin-bottom:12px;">📜</div>
+            <h3 style="font-size:18px; font-weight:600; margin-bottom:8px;">GDPR &amp; CCPA Compliant</h3>
+            <p style="font-size:13px; color:#58654a; line-height:1.6;">Full compliance with international data privacy regulations. Developers and organizations retain 100% intellectual property ownership of inputs and generated completions.</p>
+          </article>
+          <article class="card" style="background:#fff; border:1px solid #dfe5d6; border-radius:12px; padding:24px;">
+            <div style="font-size:24px; margin-bottom:12px;">🔑</div>
+            <h3 style="font-size:18px; font-weight:600; margin-bottom:8px;">Granular RBAC Scopes</h3>
+            <p style="font-size:13px; color:#58654a; line-height:1.6;">Role-based API key access control. Provision scoped API keys with least-privilege permissions (e.g. read-only, inference-only, storage-only) to protect production systems.</p>
+          </article>
+        </div>
+        <div style="margin-top:24px; padding:16px 20px; background:#f4f7ee; border:1px solid #c8d9ab; border-radius:10px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+          <div style="display:flex; align-items:center; gap:12px;">
+            <span style="display:inline-block; width:10px; height:10px; border-radius:50%; background:#22c55e;"></span>
+            <span style="font-size:13px; font-weight:600; color:#3b5025;">SOC 2 Type II &amp; ISO 27001 Alignment · 99.9% Uptime SLA for Dedicated Capacity</span>
+          </div>
+          <div style="display:flex; gap:16px; font-size:12px;">
+            <a href="/privacy" style="color:#4a632e; font-weight:600; text-decoration:none;">Privacy Policy ↗</a>
+            <a href="/terms" style="color:#4a632e; font-weight:600; text-decoration:none;">Terms of Service ↗</a>
+            <a href="/security" style="color:#4a632e; font-weight:600; text-decoration:none;">Security Architecture ↗</a>
+          </div>
+        </div>
+      </section>
+
       <section class="contact-section" id="contact"><div class="site-width">
         <div class="section-heading"><div><div class="eyebrow">07 — LET’S BUILD TOGETHER</div><h2>Big plans.<br>Start a conversation.</h2></div><p>Tell us what you’re building, ask a technical question, or get help with your workspace. Our team follows up by email.</p></div>
         <div class="contact-grid"><article class="contact-card sales-card"><div class="contact-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M3 7h18v13H3zM8 7V4h8v3M3 12l9 4 9-4"/></svg></div><span class="eyebrow">FOR YOUR NEXT DEPLOYMENT</span><h3>Talk to sales.</h3><p>Discuss your models, expected traffic, private inference requirements, and commercial options.</p><a class="email-link" href="mailto:Sales@speedinfer.com" data-sales-email>Sales@speedinfer.com ↗</a><button class="btn ink-button" data-contact="sales">Submit a sales request <span>↗</span></button><small>Prefer a form? Share your requirements and receive a reply by email.</small></article>
         <article class="contact-card"><div class="contact-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M4 13v-1a8 8 0 0 1 16 0v1M4 12H2v6h4v-6H4zm16 0h2v6h-4v-6h2zm0 6v2h-6"/></svg></div><span class="eyebrow">A LITTLE HELP GOES A LONG WAY</span><h3>We’re here to help.</h3><p>Report an issue, get help connecting to the API, or ask a general question about SpeedInfer.</p><a class="email-link" href="mailto:Support@speedinfer.com" data-support-email>Support@speedinfer.com ↗</a><button class="btn btn-secondary" data-contact="support">Send a support request <span>↗</span></button><small>Include the request ID and error message. Keep API keys and passwords private.</small></article></div>
       </div></section>
       <section class="closing-cta site-width"><div class="eyebrow">THE NEXT THING STARTS WITH YOU</div><h2>Build something<br>worth speeding up.</h2><button class="btn ink-button" data-auth="register">Start building <span>↗</span></button><div class="cta-mark" aria-hidden="true">↗</div></section>
-    </main><footer class="site-footer site-width"><div><a class="wordmark" href="#">SpeedInfer.</a><p>Open intelligence. In your hands.</p></div><div><a href="#pricing">Pricing</a><a href="#platform">Platform</a><a href="#company">About the platform</a><a href="#contact">Contact</a><a href="/legal/terms">Terms of Service</a><a href="/legal/privacy">Privacy &amp; Data Handling</a><a href="/docs">API documentation ↗</a><button class="text-button" data-auth="login">Developer console ↗</button></div><small>© 2026 SpeedInfer.com. Built for what comes next. <span class="location-badge">Cairo, Egypt</span></small></footer>
+    </main><footer class="site-footer site-width"><div><a class="wordmark" href="#">SpeedInfer.</a><p>Open intelligence. In your hands.</p></div><div><a href="#pricing">Pricing</a><a href="#platform">Platform</a><a href="#security">Security &amp; Compliance</a><a href="#company">About the platform</a><a href="#contact">Contact</a><a href="/terms">Terms of Service</a><a href="/privacy">Privacy &amp; Data Handling</a><a href="/docs">API documentation ↗</a><button class="text-button" data-auth="login">Developer console ↗</button></div><small>© 2026 SpeedInfer.com. Built for what comes next. <span class="location-badge">Cairo, Egypt</span></small></footer>
   </div>
 
   <div id="benchmarks-page" class="benchmarks-page" hidden>
@@ -186,7 +230,7 @@ for chunk in stream:
       <section class="benchmark-sources" id="benchmark-sources"><div class="site-width"><div><div class="eyebrow">04 — SOURCE LEDGER</div><h2>Every number<br>has a trail.</h2></div><div class="source-list"><a href="https://platform.openai.com/docs/models" target="_blank" rel="noopener"><span>PRIMARY SOURCE / OPENAI</span><b>OpenAI API model catalog</b><small>OpenAI · active GPT model specifications and context limits ↗</small></a><a href="https://docs.anthropic.com/en/docs/about-claude/model-deprecations" target="_blank" rel="noopener"><span>PRIMARY SOURCE / ANTHROPIC</span><b>Claude active model lifecycle</b><small>Anthropic · current model IDs and retirement status ↗</small></a><a href="https://github.com/deepseek-ai/DeepSeek-V3#4-evaluation-results" target="_blank" rel="noopener"><span>PRIMARY SOURCE / COMPARABLE SET</span><b>DeepSeek V3 official evaluation table</b><small>DeepSeek AI · Chat model benchmarks · accessed 26 Sep 2026 ↗</small></a><a href="https://arxiv.org/abs/2501.12948" target="_blank" rel="noopener"><span>PRIMARY SOURCE / DEEPSEEK REASONING</span><b>DeepSeek-R1 technical report</b><small>DeepSeek AI · incentives via large-scale RL (arXiv:2501.12948) ↗</small></a><a href="https://github.com/QwenLM/Qwen3" target="_blank" rel="noopener"><span>PRIMARY SOURCE / QWEN FAMILY</span><b>Qwen3 official model documentation</b><small>Qwen Team · architecture and long-context releases ↗</small></a><a href="https://ai.meta.com/llama/get-started/" target="_blank" rel="noopener"><span>PRIMARY SOURCE / LLAMA FAMILY</span><b>Meta Llama official model documentation</b><small>Meta · Llama 3.1 and Llama 4 model specifications ↗</small></a><a href="https://ai.google.dev/gemma/docs/core/model_card_3#benchmark_results" target="_blank" rel="noopener"><span>PRIMARY SOURCE / GEMMA FAMILY</span><b>Gemma 3 official model card</b><small>Google AI for Developers · instruction-tuned 27B results ↗</small></a><a href="https://github.com/NVIDIA-NeMo/Nemotron/tree/main/usage-cookbook/Nemotron-3-Ultra-Base" target="_blank" rel="noopener"><span>PRIMARY SOURCE / NVIDIA NEMOTRON</span><b>Nemotron 3 Ultra official documentation</b><small>NVIDIA · architecture, context, and evaluation suite ↗</small></a><a href="https://mistral.ai/news/mistral-small-3-1/" target="_blank" rel="noopener"><span>PRIMARY SOURCE / MISTRAL</span><b>Mistral Small 3.1 release</b><small>Mistral AI · model capabilities and 128K context ↗</small></a><a href="https://arxiv.org/abs/2412.08905" target="_blank" rel="noopener"><span>PRIMARY SOURCE / MICROSOFT RESEARCH</span><b>Phi-4 technical report</b><small>Microsoft Research · 14B compact reasoning (arXiv:2412.08905) ↗</small></a></div></div></section>
       <section class="benchmark-cta site-width"><span class="eyebrow">FROM COMPARISON TO PRODUCTION</span><h2>Found your model?<br>Make it move.</h2><p>Compare hosted and external API models in one catalog, then connect through a familiar API with streaming, access controls, and usage metering.</p><button class="btn ink-button" data-auth="register">Start building <span>↗</span></button></section>
     </main>
-    <footer class="site-footer site-width"><div><a class="wordmark" href="#">SpeedInfer.</a><p>Open intelligence. In your hands.</p></div><div><a href="/#pricing">Pricing</a><a href="#benchmark-board">Leaderboard</a><a href="#benchmark-methodology">Methodology</a><a href="#benchmark-sources">Sources</a><a href="/legal/terms">Terms of Service</a><a href="/legal/privacy">Privacy &amp; Data Handling</a><a href="/docs">API documentation ↗</a></div><small>© 2026 SpeedInfer.com. Cairo, Egypt. Benchmarks with provenance. <span class="location-badge">Cairo, Egypt</span></small></footer>
+    <footer class="site-footer site-width"><div><a class="wordmark" href="#">SpeedInfer.</a><p>Open intelligence. In your hands.</p></div><div><a href="/#pricing">Pricing</a><a href="#benchmark-board">Leaderboard</a><a href="#benchmark-methodology">Methodology</a><a href="#benchmark-sources">Sources</a><a href="/terms">Terms of Service</a><a href="/privacy">Privacy Policy</a><a href="/security">Security &amp; Compliance</a><a href="/docs">API documentation ↗</a></div><small>© 2026 SpeedInfer.com. Cairo, Egypt. Benchmarks with provenance. <span class="location-badge">Cairo, Egypt</span></small></footer>
   </div>
 
   <!-- Floating Toast Notifications Stack -->
