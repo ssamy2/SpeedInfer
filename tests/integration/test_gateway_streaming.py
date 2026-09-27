@@ -217,3 +217,31 @@ async def test_streaming_catalog_open_source_model(async_client, require_gateway
 
     assert len(chunks) > 0
     assert chunks[0]["model"] == "meta-llama/llama-3.2-1b-instruct"
+
+
+@pytest.mark.asyncio
+async def test_streaming_benchmark_aliases_resolution(async_client, require_gateway):
+    """Verify streaming works for benchmark aliases such as deepseek, qwen, and llama."""
+    headers = {"Authorization": "Bearer sk-speedinfer-validkey"}
+    for alias in ["deepseek", "qwen", "llama"]:
+        payload = {
+            "model": alias,
+            "messages": [{"role": "user", "content": "hi"}],
+            "max_tokens": 10,
+            "stream": True,
+        }
+        chunks = []
+        async with async_client.stream(
+            "POST", "/v1/chat/completions", json=payload, headers=headers
+        ) as response:
+            assert response.status_code == 200, f"Streaming alias {alias} failed"
+            async for line in response.aiter_lines():
+                line_str = line.strip()
+                if line_str.startswith("data: "):
+                    data_part = line_str[6:]
+                    if data_part != "[DONE]":
+                        chunks.append(json.loads(data_part))
+
+        assert len(chunks) > 0
+        assert chunks[0]["model"] == alias
+

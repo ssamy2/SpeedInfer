@@ -213,3 +213,21 @@ async def test_chat_completions_catalog_open_source_model(async_client, require_
     assert data["model"] == "meta-llama/llama-3.2-1b-instruct"
     assert len(data["choices"]) > 0
     assert data["usage"]["total_tokens"] > 0
+
+
+@pytest.mark.asyncio
+async def test_chat_completions_benchmark_aliases_resolution(async_client, require_gateway):
+    """Verify chat completions resolve landing page benchmark aliases (deepseek, qwen, llama)."""
+    headers = {"Authorization": "Bearer sk-speedinfer-validkey"}
+    for alias in ["deepseek", "qwen", "llama"]:
+        payload = {
+            "model": alias,
+            "messages": [{"role": "user", "content": "hi"}],
+            "max_tokens": 10,
+        }
+        response = await async_client.post("/v1/chat/completions", json=payload, headers=headers)
+        assert response.status_code == 200, f"Alias {alias} failed with {response.status_code}"
+        data = response.json()
+        assert data["model"] == alias
+        assert len(data["choices"]) > 0
+

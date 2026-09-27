@@ -166,6 +166,7 @@ async def create_chat_completion(
             ttft_ms = None
             done = False
             settled = False
+            generated_tokens = 0
             try:
                 chunk = first
                 while True:
@@ -185,7 +186,24 @@ async def create_chat_completion(
                         if payload.get("error"):
                             raise ValueError("Upstream stream error")
                         if payload.get("usage"):
-                            usage = UsageInfo.model_validate(payload["usage"])
+                            try:
+                                u_raw = payload["usage"]
+                                prompt_tok = int(u_raw.get("prompt_tokens", 0))
+                                compl_tok = int(u_raw.get("completion_tokens", 0))
+                                total_tok = int(u_raw.get("total_tokens", prompt_tok + compl_tok))
+                                if total_tok != prompt_tok + compl_tok:
+                                    total_tok = prompt_tok + compl_tok
+                                usage = UsageInfo(
+                                    prompt_tokens=prompt_tok,
+                                    completion_tokens=compl_tok,
+                                    total_tokens=total_tok,
+                                )
+                            except Exception:
+                                pass
+                        for c in payload.get("choices", []):
+                            content = c.get("delta", {}).get("content", "")
+                            if content:
+                                generated_tokens += max(1, len(content) // 4)
                         if ttft_ms is None and any(
                             c.get("delta", {}).get("content") for c in payload.get("choices", [])
                         ):

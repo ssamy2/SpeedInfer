@@ -48,7 +48,7 @@ OPEN_SOURCE_MODELS: list[dict[str, Any]] = [
         "openrouter_completion_per_m": 0.0300,
         "prompt_price_per_million": 0.01995,
         "completion_price_per_million": 0.0315,
-        "aliases": ["mistral-nemo"],
+        "aliases": ["mistral", "mistral-nemo"],
     },
     {
         "id": "google/gemma-3-4b-it",
@@ -91,7 +91,7 @@ OPEN_SOURCE_MODELS: list[dict[str, Any]] = [
         "openrouter_completion_per_m": 1.0287,
         "prompt_price_per_million": 0.27027,
         "completion_price_per_million": 1.080135,
-        "aliases": ["deepseek-ai/DeepSeek-V3", "deepseek-v3", "deepseek-chat"],
+        "aliases": ["deepseek", "deepseek-ai/DeepSeek-V3", "deepseek-v3", "deepseek-chat"],
     },
     {
         "id": "deepseek/deepseek-r1",
@@ -150,6 +150,7 @@ OPEN_SOURCE_MODELS: list[dict[str, Any]] = [
         "prompt_price_per_million": 0.3780,
         "completion_price_per_million": 0.4200,
         "aliases": [
+            "qwen",
             "Qwen/Qwen2.5-72B-Instruct",
             "Qwen/Qwen2.5-72B",
             "qwen-2.5-72b-instruct",
@@ -204,7 +205,7 @@ OPEN_SOURCE_MODELS: list[dict[str, Any]] = [
         "openrouter_completion_per_m": 0.5000,
         "prompt_price_per_million": 0.1260,
         "completion_price_per_million": 0.5250,
-        "aliases": ["qwen3-30b", "qwen3-30b-a3b"],
+        "aliases": ["qwen3-30", "qwen3-30b", "qwen3-30b-a3b"],
     },
     {
         "id": "qwen/qwen3-235b-a22b",
@@ -214,7 +215,7 @@ OPEN_SOURCE_MODELS: list[dict[str, Any]] = [
         "openrouter_completion_per_m": 1.8200,
         "prompt_price_per_million": 0.47775,
         "completion_price_per_million": 1.9110,
-        "aliases": ["qwen3-235b", "qwen3-235b-a22b"],
+        "aliases": ["qwen3-235", "qwen3-235b", "qwen3-235b-a22b"],
     },
     {
         "id": "qwen/qwen3-coder-30b-a3b-instruct",
@@ -257,7 +258,7 @@ OPEN_SOURCE_MODELS: list[dict[str, Any]] = [
         "openrouter_completion_per_m": 0.3000,
         "prompt_price_per_million": 0.1050,
         "completion_price_per_million": 0.3150,
-        "aliases": ["llama-4-scout"],
+        "aliases": ["llama4-scout", "llama-4-scout"],
     },
     {
         "id": "meta-llama/llama-4-maverick",
@@ -267,7 +268,7 @@ OPEN_SOURCE_MODELS: list[dict[str, Any]] = [
         "openrouter_completion_per_m": 0.6525,
         "prompt_price_per_million": 0.196875,
         "completion_price_per_million": 0.685125,
-        "aliases": ["llama-4-maverick"],
+        "aliases": ["llama4-maverick", "llama-4-maverick"],
     },
     # -------------------------------------------------------------------------
     # 5. Mistral AI Family
@@ -290,7 +291,7 @@ OPEN_SOURCE_MODELS: list[dict[str, Any]] = [
         "openrouter_completion_per_m": 0.5550,
         "prompt_price_per_million": 0.36855,
         "completion_price_per_million": 0.58275,
-        "aliases": ["mistral-small-3.1"],
+        "aliases": ["mistral-small", "mistral-small-3.1"],
     },
     {
         "id": "mistralai/mistral-large",
@@ -333,7 +334,7 @@ OPEN_SOURCE_MODELS: list[dict[str, Any]] = [
         "openrouter_completion_per_m": 0.4500,
         "prompt_price_per_million": 0.0840,
         "completion_price_per_million": 0.4725,
-        "aliases": ["gemma-3-27b"],
+        "aliases": ["gemma", "gemma-3-27b"],
     },
     {
         "id": "microsoft/phi-4",
@@ -356,7 +357,7 @@ OPEN_SOURCE_MODELS: list[dict[str, Any]] = [
         "openrouter_completion_per_m": 0.4500,
         "prompt_price_per_million": 0.0840,
         "completion_price_per_million": 0.4725,
-        "aliases": ["nemotron-3-super", "llama-nemotron"],
+        "aliases": ["nemotron", "nemotron-3-super", "llama-nemotron"],
     },
     {
         "id": "nvidia/nemotron-3-ultra-550b-a55b",
@@ -367,6 +368,25 @@ OPEN_SOURCE_MODELS: list[dict[str, Any]] = [
         "prompt_price_per_million": 0.6300,
         "completion_price_per_million": 2.5200,
         "aliases": ["nemotron-3-ultra", "nemotron-ultra"],
+    },
+    # -------------------------------------------------------------------------
+    # 8. Frontier 400B+ Open Weight Models (Featured in Benchmarks Cohort)
+    # -------------------------------------------------------------------------
+    {
+        "id": "nousresearch/hermes-3-llama-3.1-405b",
+        "name": "Nous: Hermes 3 405B Instruct (Llama 3.1 405B)",
+        "context_length": 131072,
+        "openrouter_prompt_per_m": 1.0000,
+        "openrouter_completion_per_m": 1.0000,
+        "prompt_price_per_million": 1.0500,
+        "completion_price_per_million": 1.0500,
+        "aliases": [
+            "llama",
+            "llama-3.1-405b",
+            "meta-llama/llama-3.1-405b-instruct",
+            "meta-llama/llama-3.1-405b",
+            "llama-405b",
+        ],
     },
 ]
 
@@ -513,5 +533,22 @@ def update_catalog_from_openrouter(
             db_m.prompt_price_per_million = marked_prompt
             db_m.completion_price_per_million = marked_compl
             session.add(db_m)
+
+        # Update all registered aliases with latest pricing
+        for alias in item.get("aliases", []):
+            alias_entry: ModelEntry | None = registry.get_model(alias)
+            if alias_entry:
+                alias_entry.context_length = ctx
+                alias_entry.prompt_price_per_million = marked_prompt
+                alias_entry.completion_price_per_million = marked_compl
+                if alias_entry.pricing:
+                    alias_entry.pricing.prompt_price_per_million = marked_prompt
+                    alias_entry.pricing.completion_price_per_million = marked_compl
+            db_alias = session.exec(select(ModelVersion).where(ModelVersion.name == alias)).first()
+            if db_alias:
+                db_alias.context_length = ctx
+                db_alias.prompt_price_per_million = marked_prompt
+                db_alias.completion_price_per_million = marked_compl
+                session.add(db_alias)
 
     session.commit()

@@ -113,7 +113,34 @@ class InferenceProxy:
                     result = ChatCompletionResponse.model_validate(data)
                     worker.record_success()
                     return result
-                worker.record_failure()
+                if resp.status_code >= 500:
+                    worker.record_failure()
+                else:
+                    try:
+                        err_payload = resp.json()
+                        err_detail = (
+                            err_payload
+                            if "error" in err_payload
+                            else {
+                                "error": {
+                                    "message": resp.text,
+                                    "type": "invalid_request_error",
+                                    "code": resp.status_code,
+                                }
+                            }
+                        )
+                    except Exception:
+                        err_msg = resp.text or f"Upstream rejected request: {resp.status_code}"
+                        err_detail = {
+                            "error": {
+                                "message": err_msg,
+                                "type": "invalid_request_error",
+                                "code": resp.status_code,
+                            }
+                        }
+                    raise HTTPException(status_code=resp.status_code, detail=err_detail)
+            except HTTPException:
+                raise
             except Exception:
                 worker.record_failure()
             finally:
@@ -205,11 +232,52 @@ class InferenceProxy:
                 async with client.stream("POST", target_url, json=payload) as response:
                     if response.status_code == 200:
                         async for line in response.aiter_lines():
-                            if line:
-                                yield f"{line}\n\n"
+                            if not line:
+                                continue
+                            if line.startswith("data: ") and not line.startswith("data: [DONE]"):
+                                try:
+                                    chunk_dict = json.loads(line[6:])
+                                    if "model" in chunk_dict:
+                                        chunk_dict["model"] = request.model
+                                        yield f"data: {json.dumps(chunk_dict)}\n\n"
+                                        continue
+                                except Exception:
+                                    pass
+                            yield f"{line}\n\n"
                         worker.record_success()
                         return
-                worker.record_failure()
+                    if response.status_code >= 500:
+                        worker.record_failure()
+                    else:
+                        err_bytes = await response.aread()
+                        err_text = err_bytes.decode(errors="replace")
+                        try:
+                            err_payload = json.loads(err_text)
+                            err_detail = (
+                                err_payload
+                                if "error" in err_payload
+                                else {
+                                    "error": {
+                                        "message": err_text,
+                                        "type": "invalid_request_error",
+                                        "code": response.status_code,
+                                    }
+                                }
+                            )
+                        except Exception:
+                            err_msg = (
+                                err_text or f"Upstream rejected request: {response.status_code}"
+                            )
+                            err_detail = {
+                                "error": {
+                                    "message": err_msg,
+                                    "type": "invalid_request_error",
+                                    "code": response.status_code,
+                                }
+                            }
+                        raise HTTPException(status_code=response.status_code, detail=err_detail)
+            except HTTPException:
+                raise
             except Exception:
                 worker.record_failure()
             finally:
@@ -360,7 +428,34 @@ class InferenceProxy:
                     result = CompletionResponse.model_validate(data)
                     worker.record_success()
                     return result
-                worker.record_failure()
+                if resp.status_code >= 500:
+                    worker.record_failure()
+                else:
+                    try:
+                        err_payload = resp.json()
+                        err_detail = (
+                            err_payload
+                            if "error" in err_payload
+                            else {
+                                "error": {
+                                    "message": resp.text,
+                                    "type": "invalid_request_error",
+                                    "code": resp.status_code,
+                                }
+                            }
+                        )
+                    except Exception:
+                        err_msg = resp.text or f"Upstream rejected request: {resp.status_code}"
+                        err_detail = {
+                            "error": {
+                                "message": err_msg,
+                                "type": "invalid_request_error",
+                                "code": resp.status_code,
+                            }
+                        }
+                    raise HTTPException(status_code=resp.status_code, detail=err_detail)
+            except HTTPException:
+                raise
             except Exception:
                 worker.record_failure()
             finally:

@@ -117,3 +117,46 @@ def test_update_catalog_from_openrouter(db_session: Session):
     ).first()
     assert db_m is not None
     assert db_m.prompt_price_per_million == round(0.030 * 1.05, 6)
+
+    # Verify alias also updated in registry and DB
+    alias_entry = registry.get_model("llama-3.2-1b")
+    assert alias_entry is not None
+    assert alias_entry.prompt_price_per_million == round(0.030 * 1.05, 6)
+
+    db_alias = db_session.exec(
+        select(ModelVersion).where(ModelVersion.name == "llama-3.2-1b")
+    ).first()
+    assert db_alias is not None
+    assert db_alias.prompt_price_per_million == round(0.030 * 1.05, 6)
+
+
+def test_benchmark_models_registered_and_resolve():
+    """Verify all models featured in website comparison tables resolve properly."""
+    registry = ModelRegistry()
+    register_catalog_models(registry, "https://openrouter.ai/api/v1")
+
+    benchmark_ids = [
+        "deepseek",
+        "deepseek-r1",
+        "qwen3-235",
+        "qwen3-30",
+        "qwen",
+        "llama4-maverick",
+        "llama4-scout",
+        "llama",
+        "gemma",
+        "mistral-small",
+        "nemotron-ultra",
+        "llama-nemotron",
+        "phi4",
+        "mistral",
+        "nemotron",
+    ]
+
+    for bid in benchmark_ids:
+        model = registry.get_model(bid)
+        assert model is not None, f"Benchmark model {bid} failed to resolve in registry"
+        assert model.base_model_path != "", f"Benchmark model {bid} missing base_model_path"
+        assert model.prompt_price_per_million > 0
+        assert model.completion_price_per_million > 0
+
