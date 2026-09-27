@@ -183,7 +183,8 @@ def _credit_payment(
     api_key = session.get(ApiKey, api_key_id)
     if api_key is None or api_key.user_id != user_id:
         raise HTTPException(status_code=400, detail="Payment target key is invalid.")
-    api_key.credit_balance = round(float(api_key.credit_balance) + credits, 6)
+    api_key.paid_balance = round(float(getattr(api_key, "paid_balance", 0.0)) + credits, 6)
+    api_key.credit_balance = round(getattr(api_key, "trial_balance", 0.0) + api_key.paid_balance, 6)
     session.add(api_key)
     session.add(
         PaymentTransaction(
@@ -214,15 +215,20 @@ def _credit_payment(
             settings=settings,
         )
 
-    # Option A: Qualify referrer if this is the referee's first payment
-    if check_and_award_referrer_bonus(session, user_id, settings=settings):
-        session.commit()
+    # Qualify referrer if referee tops up more than $20
+    min_topup = getattr(settings, "referral_min_topup", 20.0)
+    if paid > min_topup:
+        if check_and_award_referrer_bonus(session, user_id, settings=settings):
+            session.commit()
 
     try:
         redis_client = get_sync_redis()
         redis_key = f"speedinfer:balance:{api_key_id}"
-        if redis_client.get(redis_key) is not None:
-            redis_client.incrbyfloat(redis_key, credits)
+        if redis_client.exists(redis_key):
+            redis_client.hincrbyfloat(redis_key, "paid", credits)
+            trial_val = float(redis_client.hget(redis_key, "trial") or 0.0)
+            paid_val = float(redis_client.hget(redis_key, "paid") or 0.0)
+            redis_client.hset(redis_key, "total", str(round(trial_val + paid_val, 6)))
     except Exception:
         pass
 

@@ -44,7 +44,7 @@ class Settings(BaseSettings):
     whop_account_id: str = ""
     whop_api_version_date: str = "2026-09-25"
     whop_credit_packages: str = "10,25,50,100"
-    trial_credit_balance: float = Field(default=10.0, ge=0.0, le=1000.0)
+    trial_credit_balance: float = Field(default=0.0, ge=0.0, le=1000.0)
     # OAuth Providers
     github_client_id: str = ""
     github_client_secret: SecretStr | None = None
@@ -58,8 +58,9 @@ class Settings(BaseSettings):
     turnstile_enabled: bool = False
     turnstile_hostnames: str = "speedinfer.com,localhost,127.0.0.1"
     # Referral Program
-    referral_reward_amount: float = Field(default=5.0, ge=0.0)
-    referee_bonus_amount: float = Field(default=5.0, ge=0.0)
+    referral_reward_amount: float = Field(default=2.0, ge=0.0)
+    referee_bonus_amount: float = Field(default=0.0, ge=0.0)
+    referral_min_topup: float = Field(default=20.0, ge=0.0)
 
     @field_validator("sales_email", "support_email", "smtp_from_email")
     @classmethod

@@ -139,6 +139,8 @@ def _provision_oauth_user(
         key_hash=key_hash,
         prefix=prefix,
         permissions="chat:completions,completions,models:read,usage:read",
+        trial_balance=trial_balance,
+        paid_balance=0.0,
         credit_balance=trial_balance,
         rpm_limit=60,
         tpm_limit=60_000,

@@ -18,7 +18,7 @@ import pytest
 from sqlmodel import Session, select
 
 from speedinfer.config import get_settings
-from speedinfer.database.models import ModelVersion
+from speedinfer.database.models import ApiKey, ModelVersion
 from speedinfer.database.session import get_session
 from speedinfer.engine.registry import BackendWorker
 from speedinfer.gateway.app import app, get_registry
@@ -268,6 +268,7 @@ async def test_keys_lifecycle_and_multi_tenant_isolation(
 @pytest.mark.asyncio
 async def test_created_api_key_works_against_chat_completions(
     async_client: httpx.AsyncClient,
+    db_session: Session,
 ) -> None:
     """Verify newly generated API key executes chat completions and fails once revoked."""
     # 1. Register new user
@@ -296,6 +297,14 @@ async def test_created_api_key_works_against_chat_completions(
     key_data = key_resp.json()
     raw_api_key = key_data["key"]
     key_id = key_data["id"]
+
+    # Fund the key directly; users cannot self-mint credit via API
+    target_key = db_session.get(ApiKey, key_id)
+    assert target_key is not None
+    target_key.paid_balance = 20.0
+    target_key.credit_balance = 20.0
+    db_session.add(target_key)
+    db_session.commit()
 
     # 3. Call POST /v1/chat/completions using the newly generated API key
     inference_headers = {"Authorization": f"Bearer {raw_api_key}"}
@@ -482,9 +491,15 @@ async def test_balance_aggregation_excludes_expired_and_revoked(
     )
     assert key2_res.status_code == 201
     # Seed an operator-funded balance directly; users cannot mint credit via API.
-    from speedinfer.database.models import ApiKey
+    key1 = db_session.get(ApiKey, key1_id)
+    assert key1 is not None
+    key1.paid_balance = 10.0
+    key1.credit_balance = 10.0
+    db_session.add(key1)
 
     key2 = db_session.get(ApiKey, key2_res.json()["id"])
+    assert key2 is not None
+    key2.paid_balance = 25.0
     key2.credit_balance = 25.0
     db_session.add(key2)
     db_session.commit()

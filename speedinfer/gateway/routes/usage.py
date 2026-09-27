@@ -28,6 +28,8 @@ async def get_usage(
     return UsageResponse(
         credit_balance=round(float(api_key.credit_balance), 6),
         balance=round(float(api_key.credit_balance), 6),
+        paid_balance=round(float(getattr(api_key, "paid_balance", 0.0)), 6),
+        trial_balance=round(float(getattr(api_key, "trial_balance", 0.0)), 6),
         currency="USD",
         rpm_limit=api_key.rpm_limit,
         tpm_limit=api_key.tpm_limit,

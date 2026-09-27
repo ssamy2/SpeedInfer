@@ -205,6 +205,8 @@ class ApiKey(SQLModel, table=True):
     __tablename__ = "apikey"
     __table_args__ = (
         CheckConstraint("credit_balance >= 0.0", name="check_apikey_credit_balance_non_negative"),
+        CheckConstraint("trial_balance >= 0.0", name="check_apikey_trial_balance_non_negative"),
+        CheckConstraint("paid_balance >= 0.0", name="check_apikey_paid_balance_non_negative"),
         CheckConstraint("rpm_limit > 0", name="check_apikey_rpm_limit_positive"),
         CheckConstraint("tpm_limit > 0", name="check_apikey_tpm_limit_positive"),
     )
@@ -246,10 +248,25 @@ class ApiKey(SQLModel, table=True):
         nullable=False,
         description="Comma-separated or JSON list of permission scopes granted to this key.",
     )
+    trial_balance: float = Field(
+        default=0.0,
+        nullable=False,
+        sa_column_kwargs={"server_default": "0.0"},
+        description=(
+            "Current promotional, referral, or trial balance in USD available for inference calls."
+        ),
+    )
+    paid_balance: float = Field(
+        default=0.0,
+        nullable=False,
+        sa_column_kwargs={"server_default": "0.0"},
+        description="Current real paid/topped-up balance in USD available for inference calls.",
+    )
     credit_balance: float = Field(
         default=0.0,
         nullable=False,
-        description="Current prepaid balance in USD available for inference calls.",
+        sa_column_kwargs={"server_default": "0.0"},
+        description="Total available balance in USD (trial_balance + paid_balance).",
     )
     rpm_limit: int = Field(
         default=60,
@@ -290,9 +307,18 @@ class ApiKey(SQLModel, table=True):
     )
 
     def __init__(self, **data: Any) -> None:
-        """Initialize ApiKey instance with support for key_prefix alias."""
+        """Initialize ApiKey instance with support for key_prefix alias and dual balance."""
         if "key_prefix" in data and "prefix" not in data:
             data["prefix"] = data.pop("key_prefix")
+        trial = float(data.get("trial_balance", 0.0))
+        paid = float(data.get("paid_balance", 0.0))
+        if "credit_balance" in data and "trial_balance" not in data and "paid_balance" not in data:
+            cb = float(data["credit_balance"])
+            data["trial_balance"] = 0.0
+            data["paid_balance"] = cb
+            data["credit_balance"] = cb
+        elif "credit_balance" not in data:
+            data["credit_balance"] = round(trial + paid, 6)
         super().__init__(**data)
 
     @property
@@ -333,7 +359,7 @@ class ApiKey(SQLModel, table=True):
             return ",".join(str(p).strip() for p in value.split(",") if str(p).strip())
         raise ValueError("permissions must be a comma-separated string or a list of strings")
 
-    @field_validator("credit_balance")
+    @field_validator("trial_balance", "paid_balance", "credit_balance")
     @classmethod
     def validate_credit_balance(cls, value: float) -> float:
         """Ensure credit balance is non-negative and rounded to 6 decimal places."""

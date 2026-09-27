@@ -23,8 +23,8 @@ from speedinfer.database.models import (
     ApiKey,
     EmailVerificationCode,
     OAuthAccount,
+    PaymentTransaction,
     Referral,
-    UsageLedger,
     User,
     utc_now,
 )
@@ -292,8 +292,9 @@ def test_option_a_referee_bonus_and_delayed_referrer_reward(db_session: Session)
     """
     settings = Settings(
         api_key_pepper=SecretStr("test-pepper-32-chars-minimum-len"),
-        referral_reward_amount=5.00,
-        referee_bonus_amount=5.00,
+        referral_reward_amount=2.00,
+        referee_bonus_amount=0.00,
+        referral_min_topup=20.00,
     )
 
     # 1. Create Referrer with an API key
@@ -349,30 +350,28 @@ def test_option_a_referee_bonus_and_delayed_referrer_reward(db_session: Session)
     assert ref_record.status == "pending"
     assert ref_record.referrer_reward_awarded is False
 
-    # 3. Referee verifies email -> Referee bonus granted (+$5.00)
+    # 3. Referee verifies email -> Referee bonus check (0 configured default bonus)
     awarded = award_referee_bonus(db_session, referee, settings=settings)
     db_session.commit()
     assert awarded is True
     db_session.refresh(referee_key)
-    assert referee_key.credit_balance == 5.00
+    assert referee_key.credit_balance == 0.00
 
     # Referrer should NOT yet be rewarded
     db_session.refresh(ref_key)
     assert ref_key.credit_balance == 10.00
 
-    # 4. Referee uses 500 tokens -> below 1,000 threshold, no referrer reward
-    ledger1 = UsageLedger(
+    # 4. Referee tops up $15.00 -> below $20.00 threshold, no referrer reward
+    tx1 = PaymentTransaction(
+        provider="whop",
+        provider_payment_id="whop_tx_below_threshold",
+        webhook_id="webhook_tx_1",
+        user_id=referee.id,
         api_key_id=referee_key.id,
-        request_id="req-test-referral-1",
-        model="Qwen/Qwen2.5-7B-Instruct",
-        prompt_tokens=250,
-        completion_tokens=250,
-        total_tokens=500,
-        total_cost=0.0001,
-        latency_ms=50.0,
-        status_code=200,
+        amount_usd=15.0,
+        credits_added=15.0,
     )
-    db_session.add(ledger1)
+    db_session.add(tx1)
     db_session.commit()
 
     awarded_ref = check_and_award_referrer_bonus(db_session, referee.id, settings=settings)
@@ -381,37 +380,37 @@ def test_option_a_referee_bonus_and_delayed_referrer_reward(db_session: Session)
     db_session.refresh(ref_key)
     assert ref_key.credit_balance == 10.00
 
-    # 5. Referee reaches 1,200 total tokens (500 + 700) -> qualifies for Option A referrer reward!
-    ledger2 = UsageLedger(
+    # 5. Referee tops up $25.00 (> $20.00) -> qualifies for $2.00 referrer reward!
+    tx2 = PaymentTransaction(
+        provider="whop",
+        provider_payment_id="whop_tx_qualifying",
+        webhook_id="webhook_tx_2",
+        user_id=referee.id,
         api_key_id=referee_key.id,
-        request_id="req-test-referral-2",
-        model="Qwen/Qwen2.5-7B-Instruct",
-        prompt_tokens=350,
-        completion_tokens=350,
-        total_tokens=700,
-        total_cost=0.0001,
-        latency_ms=50.0,
-        status_code=200,
+        amount_usd=25.0,
+        credits_added=25.0,
     )
-    db_session.add(ledger2)
+    db_session.add(tx2)
     db_session.commit()
 
     awarded_ref = check_and_award_referrer_bonus(db_session, referee.id, settings=settings)
     db_session.commit()
     assert awarded_ref is True
 
-    # Referrer receives +$5.00!
+    # Referrer receives +$2.00 in trial_balance!
     db_session.refresh(ref_key)
-    assert ref_key.credit_balance == 15.00
+    assert ref_key.trial_balance == 2.00
+    assert ref_key.paid_balance == 10.00
+    assert ref_key.credit_balance == 12.00
     db_session.refresh(ref_record)
     assert ref_record.status == "rewarded"
     assert ref_record.referrer_reward_awarded is True
 
-    # 6. Idempotency: subsequent usage does not double reward
+    # 6. Idempotency: subsequent check does not double reward
     awarded_again = check_and_award_referrer_bonus(db_session, referee.id, settings=settings)
     assert awarded_again is False
     db_session.refresh(ref_key)
-    assert ref_key.credit_balance == 15.00
+    assert ref_key.credit_balance == 12.00
 
 
 # ---------------------------------------------------------------------------
@@ -579,10 +578,12 @@ def test_oauth_provisioning_and_linking(db_session: Session) -> None:
     assert user_google.is_verified is True
     assert user_google.referred_by_id == referrer.id
 
-    # Verify referee received +$5.00 extra bonus on default API key
+    # Verify referee starts with 0.00 default balance on default API key
     google_key = db_session.exec(select(ApiKey).where(ApiKey.user_id == user_google.id)).first()
     assert google_key is not None
-    assert google_key.credit_balance == 15.00
+    assert google_key.credit_balance == 0.00
+    assert google_key.trial_balance == 0.00
+    assert google_key.paid_balance == 0.00
     ref_row = db_session.exec(
         select(Referral).where(Referral.referred_id == user_google.id)
     ).first()

@@ -58,20 +58,38 @@ from speedinfer.gateway.schemas import (
 router = APIRouter(prefix="/v1/auth", tags=["Authentication"])
 
 
-def _calculate_user_balance(session: Session, user_id: int) -> float:
-    """Calculate user balance across active non-expired keys via SQL aggregation."""
+def _calculate_user_balances(session: Session, user_id: int) -> tuple[float, float, float]:
+    """Calculate user total, paid, and trial balance across active non-expired keys."""
     now = datetime.now(UTC)
-    statement = select(func.coalesce(func.sum(ApiKey.credit_balance), 0.0)).where(
+    statement = select(
+        func.coalesce(func.sum(ApiKey.credit_balance), 0.0),
+        func.coalesce(func.sum(ApiKey.paid_balance), 0.0),
+        func.coalesce(func.sum(ApiKey.trial_balance), 0.0),
+    ).where(
         ApiKey.user_id == user_id,
         ApiKey.is_active == True,  # noqa: E712
         (ApiKey.expires_at == None) | (ApiKey.expires_at > now),  # noqa: E711
     )
-    total = session.exec(statement).one()
-    return round(float(total), 6)
+    row = session.exec(statement).one()
+    total = round(float(row[0]), 6)
+    paid = round(float(row[1]), 6)
+    trial = round(float(row[2]), 6)
+    return total, paid, trial
 
 
-def _build_user_response(user: User, balance: float) -> UserResponse:
-    """Construct canonical UserResponse from User model instance and balance."""
+def _calculate_user_balance(session: Session, user_id: int) -> float:
+    """Calculate user balance across active non-expired keys via SQL aggregation."""
+    total, _, _ = _calculate_user_balances(session, user_id)
+    return total
+
+
+def _build_user_response(
+    user: User,
+    balance: float,
+    paid_balance: float = 0.0,
+    trial_balance: float = 0.0,
+) -> UserResponse:
+    """Construct canonical UserResponse from User model instance and balances."""
     return UserResponse(
         id=int(user.id) if user.id is not None else 0,
         email=user.email,
@@ -88,6 +106,8 @@ def _build_user_response(user: User, balance: float) -> UserResponse:
         created_at=user.created_at,
         balance=balance,
         credit_balance=balance,
+        paid_balance=paid_balance,
+        trial_balance=trial_balance,
     )
 
 
@@ -204,6 +224,8 @@ async def register(
                 key_hash=key_hash,
                 prefix=prefix,
                 permissions="chat:completions,completions,models:read,usage:read",
+                trial_balance=api_key_balance,
+                paid_balance=0.0,
                 credit_balance=api_key_balance,
                 rpm_limit=60,
                 tpm_limit=60_000,
@@ -222,6 +244,8 @@ async def register(
                 status="active",
                 is_active=api_key.is_active,
                 credit_balance=api_key.credit_balance,
+                paid_balance=api_key.paid_balance,
+                trial_balance=api_key.trial_balance,
                 rpm_limit=api_key.rpm_limit,
                 tpm_limit=api_key.tpm_limit,
                 permissions=api_key.permissions,
@@ -258,12 +282,12 @@ async def register(
 
     # 8. Generate JWT access token
     access_token = create_access_token(data={"sub": str(user.id), "email": user.email})
-    current_balance = _calculate_user_balance(session, user.id)
+    tot_bal, paid_bal, trial_bal = _calculate_user_balances(session, user.id)
 
     return AuthResponse(
         access_token=access_token,
         token_type="bearer",
-        user=_build_user_response(user, current_balance),
+        user=_build_user_response(user, tot_bal, paid_bal, trial_bal),
         api_key=api_key_resp,
     )
 
@@ -340,12 +364,12 @@ async def login(
         )
 
     access_token = create_access_token(data={"sub": str(user.id), "email": user.email})
-    total_balance = _calculate_user_balance(session, user.id)
+    tot_bal, paid_bal, trial_bal = _calculate_user_balances(session, user.id)
 
     return AuthResponse(
         access_token=access_token,
         token_type="bearer",
-        user=_build_user_response(user, total_balance),
+        user=_build_user_response(user, tot_bal, paid_bal, trial_bal),
         api_key=None,
     )
 
@@ -623,8 +647,10 @@ async def get_me(
     session: Annotated[Session, Depends(get_session)],
 ) -> UserResponse:
     """Retrieve authenticated user details and active credit balance."""
-    total_balance = _calculate_user_balance(session, current_user.id)
-    return _build_user_response(current_user, total_balance)
+    total_balance, paid_balance, trial_balance = _calculate_user_balances(
+        session, current_user.id
+    )
+    return _build_user_response(current_user, total_balance, paid_balance, trial_balance)
 
 
 @router.get(
@@ -640,8 +666,10 @@ async def get_profile(
     session: Annotated[Session, Depends(get_session)],
 ) -> UserResponse:
     """Retrieve authenticated user profile and account details."""
-    total_balance = _calculate_user_balance(session, current_user.id)
-    return _build_user_response(current_user, total_balance)
+    total_balance, paid_balance, trial_balance = _calculate_user_balances(
+        session, current_user.id
+    )
+    return _build_user_response(current_user, total_balance, paid_balance, trial_balance)
 
 
 @router.patch(
@@ -673,5 +701,7 @@ async def update_profile(
     session.commit()
     session.refresh(current_user)
 
-    total_balance = _calculate_user_balance(session, current_user.id)
-    return _build_user_response(current_user, total_balance)
+    total_balance, paid_balance, trial_balance = _calculate_user_balances(
+        session, current_user.id
+    )
+    return _build_user_response(current_user, total_balance, paid_balance, trial_balance)

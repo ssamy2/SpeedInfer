@@ -24,18 +24,60 @@ BALANCE_DEDUCT_LUA_PATH = LUA_DIR / "balance_deduct.lua"
 DEFAULT_LUA_BALANCE_DEDUCT = """
 -- KEYS[1]: speedinfer:balance:<api_key_id>
 -- ARGV[1]: cost_to_deduct (number)
-local current = redis.call('GET', KEYS[1])
-if not current then
-    return {0, -1}
+-- ARGV[2]: initial_trial (optional number for cache-miss seeding)
+-- ARGV[3]: initial_paid (optional number for cache-miss seeding)
+
+local key_type = redis.call('TYPE', KEYS[1]).ok
+if key_type == 'string' then
+    local old_val = tonumber(redis.call('GET', KEYS[1]) or 0)
+    redis.call('DEL', KEYS[1])
+    redis.call('HSET', KEYS[1], 'trial', '0', 'paid', tostring(old_val), 'total', tostring(old_val))
 end
-local balance = tonumber(current)
+
+local exists = redis.call('EXISTS', KEYS[1])
+if exists == 0 then
+    if not ARGV[2] or not ARGV[3] then
+        return {0, -1, -1, -1}
+    end
+    local st = tonumber(ARGV[2]) or 0
+    local sp = tonumber(ARGV[3]) or 0
+    redis.call(
+        'HSET', KEYS[1],
+        'trial', tostring(st),
+        'paid', tostring(sp),
+        'total', tostring(st + sp)
+    )
+end
+
+local trial = tonumber(redis.call('HGET', KEYS[1], 'trial') or 0)
+local paid = tonumber(redis.call('HGET', KEYS[1], 'paid') or 0)
 local cost = tonumber(ARGV[1])
-if balance < cost then
-    return {0, tostring(balance)}
+local total = trial + paid
+
+if total < cost then
+    return {0, tostring(total), tostring(trial), tostring(paid)}
 end
-local new_balance = balance - cost
-redis.call('SET', KEYS[1], tostring(new_balance))
-return {1, tostring(new_balance)}
+
+local new_trial = trial
+local new_paid = paid
+
+if trial >= cost then
+    new_trial = trial - cost
+else
+    local rem = cost - trial
+    new_trial = 0
+    new_paid = paid - rem
+end
+
+local new_total = new_trial + new_paid
+redis.call(
+    'HSET', KEYS[1],
+    'trial', tostring(new_trial),
+    'paid', tostring(new_paid),
+    'total', tostring(new_total)
+)
+
+return {1, tostring(new_total), tostring(new_trial), tostring(new_paid)}
 """
 
 
@@ -238,31 +280,46 @@ def deduct_balance_atomic(
     api_key_id: int,
     cost: float,
     initial_balance: float | None = None,
+    initial_trial: float | None = None,
+    initial_paid: float | None = None,
 ) -> float:
     """Execute atomic credit deduction via Redis Lua script (balance_deduct.lua).
 
+    Deducts from trial_balance first; if depleted, deducts remainder from paid_balance.
     Guarantees no race conditions or double-spending under concurrent requests.
-    Returns balance as floating point number.
+    Returns total remaining balance as floating point number.
 
     Args:
         redis_client: Synchronous Redis client instance.
         api_key_id: Database identifier for the ApiKey.
         cost: USD amount to deduct. Must be >= 0.0.
         initial_balance: Optional fallback balance to seed if Redis cache misses.
+        initial_trial: Optional fallback trial balance to seed.
+        initial_paid: Optional fallback paid balance to seed.
 
     Returns:
-        float: Updated remaining credit balance.
+        float: Updated remaining total credit balance.
 
     Raises:
         ValueError: If cost is negative.
-        KeyError: If Redis key is missing and no initial_balance is provided.
+        KeyError: If Redis key is missing and no initial balance is provided.
         InsufficientBalanceError: If balance is less than deduction cost.
     """
     if cost < 0.0:
         raise ValueError("Deduction cost cannot be negative")
 
+    if (initial_trial is None and initial_paid is None) or (
+        (initial_trial or 0.0) + (initial_paid or 0.0) <= 0.0 and (initial_balance or 0.0) > 0.0
+    ):
+        initial_trial = 0.0
+        initial_paid = float(initial_balance or 0.0)
+
     redis_key = f"speedinfer:balance:{api_key_id}"
-    res = redis_client.eval(LUA_BALANCE_DEDUCT, 1, redis_key, cost)
+    args: list[Any] = [cost]
+    if initial_trial is not None and initial_paid is not None:
+        args.extend([initial_trial, initial_paid])
+
+    res = redis_client.eval(LUA_BALANCE_DEDUCT, 1, redis_key, *args)
 
     status_code = int(res[0])
     if status_code == 1:
@@ -271,9 +328,18 @@ def deduct_balance_atomic(
     code_or_balance = float(res[1])
     if code_or_balance == -1.0:
         # Cache miss
-        if initial_balance is not None:
-            redis_client.set(redis_key, str(initial_balance))
-            retry_res = redis_client.eval(LUA_BALANCE_DEDUCT, 1, redis_key, cost)
+        if initial_trial is not None and initial_paid is not None:
+            redis_client.hset(
+                redis_key,
+                mapping={
+                    "trial": str(initial_trial),
+                    "paid": str(initial_paid),
+                    "total": str(round(initial_trial + initial_paid, 6)),
+                },
+            )
+            retry_res = redis_client.eval(
+                LUA_BALANCE_DEDUCT, 1, redis_key, cost, initial_trial, initial_paid
+            )
             if int(retry_res[0]) == 1:
                 return float(retry_res[1])
             raise InsufficientBalanceError(
@@ -295,6 +361,8 @@ async def async_deduct_balance_atomic(
     api_key_id: int,
     cost: float,
     initial_balance: float | None = None,
+    initial_trial: float | None = None,
+    initial_paid: float | None = None,
 ) -> float:
     """Execute atomic credit deduction asynchronously via Redis Lua script.
 
@@ -303,20 +371,32 @@ async def async_deduct_balance_atomic(
         api_key_id: Database identifier for the ApiKey.
         cost: USD amount to deduct.
         initial_balance: Optional fallback balance to seed if Redis cache misses.
+        initial_trial: Optional fallback trial balance to seed.
+        initial_paid: Optional fallback paid balance to seed.
 
     Returns:
-        float: Updated remaining credit balance.
+        float: Updated remaining total credit balance.
 
     Raises:
         ValueError: If cost is negative.
-        KeyError: If Redis key is missing and no initial_balance is provided.
+        KeyError: If Redis key is missing and no initial balance is provided.
         InsufficientBalanceError: If balance is less than deduction cost.
     """
     if cost < 0.0:
         raise ValueError("Deduction cost cannot be negative")
 
+    if (initial_trial is None and initial_paid is None) or (
+        (initial_trial or 0.0) + (initial_paid or 0.0) <= 0.0 and (initial_balance or 0.0) > 0.0
+    ):
+        initial_trial = 0.0
+        initial_paid = float(initial_balance or 0.0)
+
     redis_key = f"speedinfer:balance:{api_key_id}"
-    res = await redis_client.eval(LUA_BALANCE_DEDUCT, 1, redis_key, cost)
+    args: list[Any] = [cost]
+    if initial_trial is not None and initial_paid is not None:
+        args.extend([initial_trial, initial_paid])
+
+    res = await redis_client.eval(LUA_BALANCE_DEDUCT, 1, redis_key, *args)
 
     status_code = int(res[0])
     if status_code == 1:
@@ -324,9 +404,18 @@ async def async_deduct_balance_atomic(
 
     code_or_balance = float(res[1])
     if code_or_balance == -1.0:
-        if initial_balance is not None:
-            await redis_client.set(redis_key, str(initial_balance))
-            retry_res = await redis_client.eval(LUA_BALANCE_DEDUCT, 1, redis_key, cost)
+        if initial_trial is not None and initial_paid is not None:
+            await redis_client.hset(
+                redis_key,
+                mapping={
+                    "trial": str(initial_trial),
+                    "paid": str(initial_paid),
+                    "total": str(round(initial_trial + initial_paid, 6)),
+                },
+            )
+            retry_res = await redis_client.eval(
+                LUA_BALANCE_DEDUCT, 1, redis_key, cost, initial_trial, initial_paid
+            )
             if int(retry_res[0]) == 1:
                 return float(retry_res[1])
             raise InsufficientBalanceError(
@@ -356,6 +445,9 @@ def sync_usage_to_db(
     status_code: int = 200,
 ) -> UsageLedger:
     """Persist an inference transaction to UsageLedger and flush updated balance to ApiKey.
+
+    Deducts cost from trial_balance first; if trial is insufficient, deducts remainder
+    from paid_balance, maintaining credit_balance = trial_balance + paid_balance.
 
     Args:
         session: Active SQLModel database session.
@@ -389,8 +481,15 @@ def sync_usage_to_db(
 
     api_key = session.get(ApiKey, api_key_id)
     if api_key is not None:
-        new_balance = max(0.0, api_key.credit_balance - cost)
-        api_key.credit_balance = round(new_balance, 6)
+        trial = getattr(api_key, "trial_balance", 0.0)
+        paid = getattr(api_key, "paid_balance", 0.0)
+        if trial >= cost:
+            api_key.trial_balance = round(trial - cost, 6)
+        else:
+            rem = cost - trial
+            api_key.trial_balance = 0.0
+            api_key.paid_balance = round(max(0.0, paid - rem), 6)
+        api_key.credit_balance = round(api_key.trial_balance + api_key.paid_balance, 6)
         api_key.last_used_at = utc_now()
         session.add(api_key)
 

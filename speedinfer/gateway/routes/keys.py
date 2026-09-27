@@ -100,17 +100,22 @@ async def create_key(
     if payload.expires_in_days is not None:
         expires_at = datetime.now(UTC) + timedelta(days=payload.expires_in_days)
 
+    init_paid = (
+        payload.credit_balance
+        if current_user.is_admin and payload.credit_balance is not None
+        else 0.0
+    )
+    init_trial = trial_amount
+
     api_key = ApiKey(
         user_id=current_user.id,
         name=payload.name,
         key_hash=key_hash,
         prefix=prefix,
         permissions=",".join(sorted(requested_scopes)),
-        credit_balance=(
-            payload.credit_balance
-            if current_user.is_admin and payload.credit_balance is not None
-            else trial_amount
-        ),
+        trial_balance=init_trial,
+        paid_balance=init_paid,
+        credit_balance=round(init_trial + init_paid, 6),
         rpm_limit=payload.rpm_limit or 60,
         tpm_limit=payload.tpm_limit or 60_000,
         is_active=True,
@@ -128,6 +133,8 @@ async def create_key(
         status="active",
         is_active=api_key.is_active,
         credit_balance=api_key.credit_balance,
+        paid_balance=api_key.paid_balance,
+        trial_balance=api_key.trial_balance,
         rpm_limit=api_key.rpm_limit,
         tpm_limit=api_key.tpm_limit,
         permissions=api_key.permissions,
@@ -182,6 +189,8 @@ async def list_keys(
             status=_resolve_key_status(k),
             is_active=k.is_active,
             credit_balance=k.credit_balance,
+            paid_balance=getattr(k, "paid_balance", 0.0),
+            trial_balance=getattr(k, "trial_balance", 0.0),
             rpm_limit=k.rpm_limit,
             tpm_limit=k.tpm_limit,
             permissions=k.permissions,

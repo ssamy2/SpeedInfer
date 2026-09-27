@@ -7,6 +7,8 @@ class SpeedInferStore {
     this.state = {
       user: null,
       balance: 0.0,
+      paidBalance: 0.0,
+      trialBalance: 0.0,
       keys: [],
       selectedKey: null,
       models: [],
@@ -36,7 +38,9 @@ class SpeedInferStore {
 
   setUser(user) {
     const balance = user?.credit_balance ?? user?.balance ?? 0.0;
-    this.setState({ user, balance });
+    const paidBalance = user?.paid_balance ?? 0.0;
+    const trialBalance = user?.trial_balance ?? 0.0;
+    this.setState({ user, balance, paidBalance, trialBalance });
   }
 
   setKeys(keys) {

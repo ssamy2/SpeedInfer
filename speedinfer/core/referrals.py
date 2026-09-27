@@ -18,7 +18,6 @@ from speedinfer.database.models import (
     ApiKey,
     PaymentTransaction,
     Referral,
-    UsageLedger,
     User,
     utc_now,
 )
@@ -242,7 +241,7 @@ def award_referee_bonus(
     user: User,
     settings: Settings | None = None,
 ) -> bool:
-    """Award +$5.00 extra trial credit to referee upon verified email confirmation.
+    """Award extra trial credit to referee upon verified email confirmation if configured.
 
     Args:
         session: Active database session.
@@ -261,44 +260,45 @@ def award_referee_bonus(
         return False
 
     bonus = cfg.referee_bonus_amount
-    # Find active key or primary key
-    key = session.exec(
-        select(ApiKey)
-        .where(ApiKey.user_id == user.id, ApiKey.is_active == True)  # noqa: E712
-        .order_by(ApiKey.created_at.asc())
-    ).first()
+    if bonus > 0.0:
+        key = session.exec(
+            select(ApiKey)
+            .where(ApiKey.user_id == user.id, ApiKey.is_active == True)  # noqa: E712
+            .order_by(ApiKey.created_at.asc())
+        ).first()
 
-    if key is not None:
-        key.credit_balance = round(key.credit_balance + bonus, 6)
-        session.add(key)
-        _sync_redis_balance(key.id, bonus)
-    else:
-        # User has no active key yet (e.g. signed up without default key).
-        # Provision an initial active key with trial balance + referee bonus
-        pepper = (
-            cfg.api_key_pepper.get_secret_value()
-            if hasattr(cfg.api_key_pepper, "get_secret_value")
-            else str(cfg.api_key_pepper)
-        )
-        from speedinfer.core.auth import generate_api_key
-        from speedinfer.database.models import TrialCreditGrant
+        if key is not None:
+            key.trial_balance = round(key.trial_balance + bonus, 6)
+            key.credit_balance = round(key.trial_balance + key.paid_balance, 6)
+            session.add(key)
+            _sync_redis_balance(key.id, bonus, is_trial=True)
+        else:
+            pepper = (
+                cfg.api_key_pepper.get_secret_value()
+                if hasattr(cfg.api_key_pepper, "get_secret_value")
+                else str(cfg.api_key_pepper)
+            )
+            from speedinfer.core.auth import generate_api_key
+            from speedinfer.database.models import TrialCreditGrant
 
-        raw_key, prefix, key_hash = generate_api_key(pepper=pepper)
-        initial_balance = round(cfg.trial_credit_balance + bonus, 6)
-        new_key = ApiKey(
-            user_id=user.id,
-            name="default",
-            key_hash=key_hash,
-            prefix=prefix,
-            permissions="chat:completions,completions,models:read,usage:read",
-            credit_balance=initial_balance,
-            rpm_limit=60,
-            tpm_limit=60_000,
-            is_active=True,
-        )
-        session.add(new_key)
-        if session.get(TrialCreditGrant, user.id) is None:
-            session.add(TrialCreditGrant(user_id=user.id, amount=initial_balance))
+            raw_key, prefix, key_hash = generate_api_key(pepper=pepper)
+            initial_trial = round(cfg.trial_credit_balance + bonus, 6)
+            new_key = ApiKey(
+                user_id=user.id,
+                name="default",
+                key_hash=key_hash,
+                prefix=prefix,
+                permissions="chat:completions,completions,models:read,usage:read",
+                trial_balance=initial_trial,
+                paid_balance=0.0,
+                credit_balance=initial_trial,
+                rpm_limit=60,
+                tpm_limit=60_000,
+                is_active=True,
+            )
+            session.add(new_key)
+            if session.get(TrialCreditGrant, user.id) is None:
+                session.add(TrialCreditGrant(user_id=user.id, amount=initial_trial))
 
     referral.referee_bonus_awarded = True
     session.add(referral)
@@ -310,7 +310,7 @@ def check_and_award_referrer_bonus(
     referee_user_id: int,
     settings: Settings | None = None,
 ) -> bool:
-    """Enforce Option A: Award referrer bonus once referee pays or consumes 1,000+ tokens.
+    """Award referrer bonus once referee tops up more than $20 (referral_min_topup).
 
     Args:
         session: Active database session.
@@ -328,22 +328,20 @@ def check_and_award_referrer_bonus(
     if referral is None or referral.fraud_flag or referral.referrer_reward_awarded:
         return False
 
-    # Check Qualification Criterion 1: Has referee made a payment?
-    payment_count = session.exec(
-        select(func.count(PaymentTransaction.id)).where(PaymentTransaction.user_id == referee.id)
-    ).one()
+    cfg = settings or get_settings()
+    min_topup = getattr(cfg, "referral_min_topup", 20.0)
 
-    # Check Qualification Criterion 2: Has referee consumed >= 1,000 tokens?
-    total_tokens = session.exec(
-        select(func.coalesce(func.sum(UsageLedger.total_tokens), 0))
-        .join(ApiKey, UsageLedger.api_key_id == ApiKey.id)
-        .where(ApiKey.user_id == referee.id)
-    ).one()
+    # Check Qualification Criterion: Has referee made a payment > referral_min_topup ($20)?
+    qualifying_payment = session.exec(
+        select(PaymentTransaction).where(
+            PaymentTransaction.user_id == referee.id,
+            PaymentTransaction.amount_usd > min_topup,
+        )
+    ).first()
 
-    if payment_count == 0 and total_tokens < 1000:
+    if qualifying_payment is None:
         return False
 
-    cfg = settings or get_settings()
     # Disburse reward to referrer's primary active key
     referrer_key = session.exec(
         select(ApiKey)
@@ -351,13 +349,15 @@ def check_and_award_referrer_bonus(
         .order_by(ApiKey.created_at.asc())
     ).first()
 
-    reward = referral.reward_amount
+    reward = referral.reward_amount or cfg.referral_reward_amount
     if referrer_key is not None:
-        referrer_key.credit_balance = round(referrer_key.credit_balance + reward, 6)
+        referrer_key.trial_balance = round(referrer_key.trial_balance + reward, 6)
+        referrer_key.credit_balance = round(
+            referrer_key.trial_balance + referrer_key.paid_balance, 6
+        )
         session.add(referrer_key)
-        _sync_redis_balance(referrer_key.id, reward)
+        _sync_redis_balance(referrer_key.id, reward, is_trial=True)
     else:
-        # Referrer has no active key; create default key funded with reward
         pepper = (
             cfg.api_key_pepper.get_secret_value()
             if hasattr(cfg.api_key_pepper, "get_secret_value")
@@ -372,6 +372,8 @@ def check_and_award_referrer_bonus(
             key_hash=key_hash,
             prefix=prefix,
             permissions="chat:completions,completions,models:read,usage:read",
+            trial_balance=reward,
+            paid_balance=0.0,
             credit_balance=reward,
             rpm_limit=60,
             tpm_limit=60_000,
@@ -388,25 +390,28 @@ def check_and_award_referrer_bonus(
     session.add(referee)
     session.flush()
     logger.info(
-        "Option A referral bonus awarded: Referrer %s received $%s from Referee %s "
-        "(tokens=%s, payments=%s)",
+        "Referral bonus awarded: Referrer %s received $%s from Referee %s (payment=$%s > $%s)",
         referral.referrer_id,
         reward,
         referee.id,
-        total_tokens,
-        payment_count,
+        qualifying_payment.amount_usd,
+        min_topup,
     )
     return True
 
 
-def _sync_redis_balance(api_key_id: int, added_credits: float) -> None:
+def _sync_redis_balance(api_key_id: int, added_credits: float, is_trial: bool = True) -> None:
     """Increment cached balance in Redis if key is currently cached."""
     try:
         from speedinfer.gateway.redis import get_sync_redis
 
         redis_client = get_sync_redis()
         redis_key = f"speedinfer:balance:{api_key_id}"
-        if redis_client.get(redis_key) is not None:
-            redis_client.incrbyfloat(redis_key, added_credits)
+        field = "trial" if is_trial else "paid"
+        if redis_client.exists(redis_key):
+            redis_client.hincrbyfloat(redis_key, field, added_credits)
+            trial = float(redis_client.hget(redis_key, "trial") or 0.0)
+            paid = float(redis_client.hget(redis_key, "paid") or 0.0)
+            redis_client.hset(redis_key, "total", str(round(trial + paid, 6)))
     except Exception as exc:
         logger.debug("Redis balance sync skipped for key %s: %s", api_key_id, exc)

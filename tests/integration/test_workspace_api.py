@@ -157,7 +157,7 @@ async def test_explicit_key_creation_gets_trial_once_and_cannot_mint_credit(clie
         "/v1/keys", headers=owner, json={"name": "first", "credit_balance": 99999}
     )
     assert first.status_code == 201
-    assert first.json()["credit_balance"] == 10
+    assert first.json()["credit_balance"] == 0
     second = await client.post(
         "/v1/keys", headers=owner, json={"name": "second", "credit_balance": 99999}
     )

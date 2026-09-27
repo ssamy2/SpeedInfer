@@ -119,6 +119,18 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
             if "password_hash" not in cols:
                 conn.execute(text('ALTER TABLE "user" ADD COLUMN password_hash VARCHAR(255)'))
                 conn.commit()
+        if "apikey" in insp.get_table_names():
+            api_cols = [c["name"] for c in insp.get_columns("apikey")]
+            if "trial_balance" not in api_cols:
+                conn.execute(
+                    text('ALTER TABLE "apikey" ADD COLUMN trial_balance FLOAT DEFAULT 0.0')
+                )
+                conn.commit()
+            if "paid_balance" not in api_cols:
+                conn.execute(
+                    text('ALTER TABLE "apikey" ADD COLUMN paid_balance FLOAT DEFAULT 0.0')
+                )
+                conn.commit()
 
     # 2. Register default model in registry
     model_name = settings.default_model

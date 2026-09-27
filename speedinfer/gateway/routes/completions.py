@@ -166,6 +166,8 @@ async def create_completion(
             api_key.id,
             actual_cost,
             initial_balance=api_key.credit_balance,
+            initial_trial=getattr(api_key, "trial_balance", 0.0),
+            initial_paid=getattr(api_key, "paid_balance", 0.0),
         )
     except Exception:
         raise HTTPException(

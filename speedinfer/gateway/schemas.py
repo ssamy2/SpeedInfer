@@ -222,6 +222,8 @@ class UsageResponse(BaseModel):
 
     credit_balance: float = Field(description="Current available credit in USD.")
     balance: float = Field(description="Alias for credit_balance.")
+    paid_balance: float = Field(default=0.0, description="Real paid balance in USD.")
+    trial_balance: float = Field(default=0.0, description="Promotional/trial balance in USD.")
     currency: str = Field(default="USD", description="Currency denomination.")
     rpm_limit: int = Field(description="Requests per minute rate limit.")
     tpm_limit: int = Field(description="Tokens per minute rate limit.")
@@ -334,6 +336,10 @@ class UserResponse(BaseModel):
     created_at: datetime = Field(description="Account creation timestamp in UTC.")
     balance: float = Field(default=0.0, description="Available credit balance across keys in USD.")
     credit_balance: float = Field(default=0.0, description="Alias for balance in USD.")
+    paid_balance: float = Field(default=0.0, description="Real paid balance across keys in USD.")
+    trial_balance: float = Field(
+        default=0.0, description="Promotional/trial balance across keys in USD."
+    )
 
 
 class VerifyEmailRequest(BaseModel):
@@ -463,6 +469,8 @@ class ApiKeyCreatedResponse(BaseModel):
     )
     is_active: bool = Field(default=True, description="Whether key is active.")
     credit_balance: float = Field(description="Available balance allocated to this key in USD.")
+    paid_balance: float = Field(default=0.0, description="Real paid balance in USD.")
+    trial_balance: float = Field(default=0.0, description="Promotional/trial balance in USD.")
     rpm_limit: int = Field(description="Requests per minute rate limit.")
     tpm_limit: int = Field(description="Tokens per minute rate limit.")
     permissions: str = Field(description="Comma-separated permission scopes.")
@@ -527,6 +535,8 @@ class ApiKeyItemResponse(BaseModel):
     status: str = Field(description="Key status: 'active', 'expired', or 'revoked'.")
     is_active: bool = Field(description="Whether key is active.")
     credit_balance: float = Field(description="Current available balance in USD.")
+    paid_balance: float = Field(default=0.0, description="Real paid balance in USD.")
+    trial_balance: float = Field(default=0.0, description="Promotional/trial balance in USD.")
     rpm_limit: int = Field(description="Requests per minute rate limit.")
     tpm_limit: int = Field(description="Tokens per minute rate limit.")
     permissions: str = Field(description="Comma-separated permission scopes.")

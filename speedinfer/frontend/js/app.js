@@ -481,7 +481,10 @@ for chunk in stream:
 
     const balanceElem = document.getElementById('header-balance-val');
     if (balanceElem) {
+      const pBal = parseFloat(store.state.paidBalance || user?.paid_balance || 0).toFixed(2);
+      const tBal = parseFloat(store.state.trialBalance || user?.trial_balance || 0).toFixed(2);
       balanceElem.textContent = `$${parseFloat(balance || 0).toFixed(4)} USD`;
+      balanceElem.title = `Paid: $${pBal} | Promo: $${tBal}`;
     }
 
     const emailElem = document.getElementById('header-user-email');
@@ -563,6 +566,12 @@ for chunk in stream:
     // Metrics cards
     const dashBalance = document.getElementById('dash-balance-val');
     if (dashBalance) dashBalance.textContent = `$${parseFloat(balance || 0).toFixed(4)}`;
+
+    const dashPaid = document.getElementById('dash-paid-val');
+    if (dashPaid) dashPaid.textContent = `$${parseFloat(store.state.paidBalance || user?.paid_balance || 0).toFixed(4)}`;
+
+    const dashTrial = document.getElementById('dash-trial-val');
+    if (dashTrial) dashTrial.textContent = `$${parseFloat(store.state.trialBalance || user?.trial_balance || 0).toFixed(4)}`;
 
     const dashKeys = document.getElementById('dash-keys-val');
     const activeKeysCount = keys.filter(k => k.status === 'active' || k.is_active).length;
@@ -753,6 +762,14 @@ for chunk in stream:
     const usageBalance = document.getElementById('usage-total-balance');
     if (usageBalance) {
       usageBalance.textContent = `$${parseFloat(balance || 0).toFixed(4)} USD`;
+    }
+    const usagePaid = document.getElementById('usage-paid-val');
+    if (usagePaid) {
+      usagePaid.textContent = `$${parseFloat(store.state.paidBalance || store.state.user?.paid_balance || 0).toFixed(4)}`;
+    }
+    const usageTrial = document.getElementById('usage-trial-val');
+    if (usageTrial) {
+      usageTrial.textContent = `$${parseFloat(store.state.trialBalance || store.state.user?.trial_balance || 0).toFixed(4)}`;
     }
 
     this.renderBillingPackages();
@@ -1208,11 +1225,7 @@ for chunk in stream:
         submitBtn.textContent = 'Verifying...';
         const res = await api.verifyEmail({ email: user.email, code });
 
-        if (res.referee_bonus_granted) {
-          showToast('Email verified! +$5.00 extra trial credit added to your balance!', 'success');
-        } else {
-          showToast('Email verified successfully!', 'success');
-        }
+        showToast('Email verified successfully!', 'success');
 
         closeModal('modal-verify-email');
         const updatedUser = await api.getMe();
@@ -1222,7 +1235,7 @@ for chunk in stream:
         showToast(err.message, 'error');
       } finally {
         submitBtn.disabled = false;
-        submitBtn.textContent = 'Verify & Claim $5 Bonus';
+        submitBtn.textContent = 'Verify Email';
       }
     });
 
