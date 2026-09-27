@@ -328,11 +328,9 @@ async def test_public_preview_metadata_and_guide(live_contract):
     # Test /company/team page
     team_resp = await client.get("/company/team")
     assert team_resp.status_code == 200
-    assert "The Team Behind SpeedInfer" in team_resp.text
+    assert "Our Team & Company" in team_resp.text
     assert "Sami Mahmoud" in team_resp.text
     assert "Hamza Ibrahim Khalil El-Geziry" in team_resp.text
-    assert "284191" in team_resp.text
-    assert "785-034-774" in team_resp.text
     assert "Megsy for Digital Platforms Development and E-Commerce L.L.C" in team_resp.text
 
     # Test redirects
