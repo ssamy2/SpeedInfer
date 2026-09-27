@@ -6,8 +6,15 @@ import scripts.test_inference as cli
 from speedinfer.gateway.app import app
 
 
-def test_inference_script_end_to_end():
+def test_inference_script_end_to_end(db_engine, db_session, monkeypatch):
     """Verify test_inference.py functions against active application lifespan."""
+    import importlib
+
+    from speedinfer.database.session import get_session
+
+    app_module = importlib.import_module("speedinfer.gateway.app")
+    monkeypatch.setattr(app_module, "engine", db_engine)
+    monkeypatch.setitem(app.dependency_overrides, get_session, lambda: db_session)
     with TestClient(app, base_url="http://testserver") as client:
         headers = cli.get_headers("sk-speedinfer-test-key")
 

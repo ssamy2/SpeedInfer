@@ -8,7 +8,7 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends
 
-from speedinfer.core.auth import get_authenticated_api_key
+from speedinfer.core.auth import require_scope
 from speedinfer.database.models import ApiKey
 from speedinfer.gateway.schemas import UsageResponse
 
@@ -22,7 +22,7 @@ router = APIRouter(prefix="/v1", tags=["Usage"])
     description="Returns remaining credit balance, rate limits, and currency denomination.",
 )
 async def get_usage(
-    api_key: Annotated[ApiKey, Depends(get_authenticated_api_key)],
+    api_key: Annotated[ApiKey, Depends(require_scope("usage:read"))],
 ) -> UsageResponse:
     """Retrieve authenticated API key balance and configured rate limits."""
     return UsageResponse(

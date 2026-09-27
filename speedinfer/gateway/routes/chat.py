@@ -4,6 +4,8 @@ Provides:
 - POST /v1/chat/completions (streaming and non-streaming)
 """
 
+import json
+import logging
 import time
 from typing import Annotated, Any
 
@@ -11,12 +13,11 @@ from fastapi import APIRouter, Depends, HTTPException, Request, status
 from fastapi.responses import JSONResponse, StreamingResponse
 from sqlmodel import Session, select
 
-from speedinfer.core.auth import get_authenticated_api_key
+from speedinfer.core.auth import require_scope
+from speedinfer.core.inference_billing import reserve, settle
 from speedinfer.core.metering import (
     calculate_token_cost,
-    deduct_balance_atomic_async,
     estimate_max_cost,
-    sync_usage_to_db,
 )
 from speedinfer.core.rate_limiter import async_check_rate_limit, build_rate_limit_headers
 from speedinfer.database.models import ApiKey, ModelVersion
@@ -24,7 +25,7 @@ from speedinfer.database.session import get_session
 from speedinfer.engine.registry import ModelEntry, ModelRegistry
 from speedinfer.gateway.proxy import InferenceProxy
 from speedinfer.gateway.redis import get_async_redis
-from speedinfer.gateway.schemas import ChatCompletionRequest, ChatCompletionResponse
+from speedinfer.gateway.schemas import ChatCompletionRequest, ChatCompletionResponse, UsageInfo
 
 router = APIRouter(prefix="/v1", tags=["Chat"])
 
@@ -92,13 +93,15 @@ def _resolve_model_entry(
 async def create_chat_completion(
     request: ChatCompletionRequest,
     raw_request: Request,
-    api_key: Annotated[ApiKey, Depends(get_authenticated_api_key)],
+    api_key: Annotated[ApiKey, Depends(require_scope("chat:completions"))],
     registry: Annotated[ModelRegistry, Depends(get_model_registry)],
     proxy: Annotated[InferenceProxy, Depends(get_inference_proxy)],
     redis_client: Annotated[Any, Depends(get_async_redis)],
     session: Annotated[Session, Depends(get_session)],
 ) -> Any:
     """Process OpenAI-compatible chat completion request."""
+    request.max_tokens = request.max_tokens or 128
+    request.n = request.n or 1
     # 1. Resolve and validate model availability
     model_entry = _resolve_model_entry(request.model, registry, session)
 
@@ -107,7 +110,7 @@ async def create_chat_completion(
     rate_result = await async_check_rate_limit(
         redis_client,
         api_key=api_key,
-        requested_tokens=est_max_tokens,
+        requested_tokens=est_max_tokens + proxy.estimate_prompt_tokens(request.messages),
     )
     headers = build_rate_limit_headers(rate_result, api_key.rpm_limit, api_key.tpm_limit)
 
@@ -126,141 +129,128 @@ async def create_chat_completion(
         )
 
     # 3. Pre-flight credit check
-    prompt_tokens = proxy.estimate_prompt_tokens(request.messages)
     estimated_cost = estimate_max_cost(
-        prompt_tokens=prompt_tokens,
+        prompt_tokens=model_entry.context_length,
         max_tokens=est_max_tokens,
-        context_window=model_entry.context_length,
+        context_window=model_entry.context_length + est_max_tokens,
         prompt_price_per_m=model_entry.prompt_price_per_million,
         completion_price_per_m=model_entry.completion_price_per_million,
     )
 
-    if api_key.credit_balance < estimated_cost:
-        raise HTTPException(
-            status_code=status.HTTP_402_PAYMENT_REQUIRED,
-            detail={
-                "error": {
-                    "message": (
-                        f"Insufficient credit balance. Required: ${estimated_cost:.6f}, "
-                        f"Available: ${api_key.credit_balance:.6f}"
-                    ),
-                    "type": "insufficient_quota",
-                    "param": None,
-                    "code": "insufficient_balance",
-                }
-            },
-            headers=headers,
-        )
+    if est_max_tokens > model_entry.context_length:
+        raise HTTPException(400, detail="max_tokens exceeds the model context limit.")
+    hold_id = reserve(session, api_key.id, estimated_cost)
 
     start_time = time.perf_counter()
 
-    # 4. Handle Server-Sent Events (SSE) Streaming
     if request.stream:
+        stream = proxy.stream_chat(request, model_entry)
+        # Open the upstream before committing HTTP 200 headers.
+        try:
+            first = await anext(stream)
+        except BaseException:
+            settle(session, hold_id)
+            await stream.aclose()
+            raise
 
         async def event_generator():
+            usage = None
+            ttft_ms = None
+            done = False
             try:
-                # Track tokens for deduction on stream termination
-                async for chunk_str in proxy.stream_chat(request, model_entry):
+                chunk = first
+                while True:
                     if await raw_request.is_disconnected():
+                        return
+                    for line in chunk.splitlines():
+                        if not line.startswith("data:"):
+                            continue
+                        data = line[5:].strip()
+                        if data == "[DONE]":
+                            done = True
+                            continue
+                        payload = json.loads(data)
+                        if payload.get("error"):
+                            raise ValueError("Upstream stream error")
+                        if payload.get("usage"):
+                            usage = UsageInfo.model_validate(payload["usage"])
+                        if ttft_ms is None and any(
+                            c.get("delta", {}).get("content") for c in payload.get("choices", [])
+                        ):
+                            ttft_ms = (time.perf_counter() - start_time) * 1000
+                    if done:
                         break
-                    yield chunk_str
-
-                # Streaming token deduction
-                est_completion_tokens = max(1, est_max_tokens // 4)
-                actual_cost = calculate_token_cost(
-                    prompt_tokens=prompt_tokens,
-                    completion_tokens=est_completion_tokens,
-                    prompt_price_per_m=model_entry.prompt_price_per_million,
-                    completion_price_per_m=model_entry.completion_price_per_million,
+                    yield chunk
+                    chunk = await anext(stream)
+                if usage is None:
+                    raise ValueError("Upstream omitted authoritative token usage")
+                settle(
+                    session,
+                    hold_id,
+                    cost=calculate_token_cost(
+                        usage.prompt_tokens,
+                        usage.completion_tokens,
+                        model_entry.prompt_price_per_million,
+                        model_entry.completion_price_per_million,
+                    ),
+                    model=request.model,
+                    prompt_tokens=usage.prompt_tokens,
+                    completion_tokens=usage.completion_tokens,
+                    latency_ms=(time.perf_counter() - start_time) * 1000,
+                    ttft_ms=ttft_ms,
+                    success=True,
                 )
-                try:
-                    await deduct_balance_atomic_async(
-                        redis_client,
-                        api_key.id,
-                        actual_cost,
-                        initial_balance=api_key.credit_balance,
-                        initial_trial=getattr(api_key, "trial_balance", 0.0),
-                        initial_paid=getattr(api_key, "paid_balance", 0.0),
-                    )
-                    latency_ms = (time.perf_counter() - start_time) * 1000.0
-                    sync_usage_to_db(
-                        session=session,
-                        api_key_id=api_key.id,
-                        request_id=f"stream-{int(time.time() * 1000)}",
-                        model=request.model,
-                        prompt_tokens=prompt_tokens,
-                        completion_tokens=est_completion_tokens,
-                        cost=actual_cost,
-                        latency_ms=latency_ms,
-                        ttft_ms=50.0,
-                    )
-                except Exception:
-                    pass
+                yield "data: [DONE]\n\n"
             except Exception:
-                pass
+                logging.getLogger(__name__).warning("Inference stream failed: %s", hold_id)
+                yield (
+                    "data: "
+                    + json.dumps(
+                        {
+                            "error": {
+                                "message": "Inference stream failed; no charge applied.",
+                                "type": "server_error",
+                                "code": "stream_failed",
+                            }
+                        }
+                    )
+                    + "\n\n"
+                )
+            finally:
+                try:
+                    await stream.aclose()
+                finally:
+                    settle(session, hold_id)
 
-        stream_headers = dict(headers)
-        stream_headers.update(
-            {
-                "Content-Type": "text/event-stream; charset=utf-8",
-                "Cache-Control": "no-cache",
-                "Connection": "keep-alive",
-                "X-Accel-Buffering": "no",
-            }
-        )
         return StreamingResponse(
             event_generator(),
             media_type="text/event-stream",
-            headers=stream_headers,
-        )
-
-    # 5. Handle Non-Streaming Completion
-    completion_resp = await proxy.execute_chat(request, model_entry)
-    latency_ms = (time.perf_counter() - start_time) * 1000.0
-
-    actual_cost = calculate_token_cost(
-        prompt_tokens=completion_resp.usage.prompt_tokens,
-        completion_tokens=completion_resp.usage.completion_tokens,
-        prompt_price_per_m=model_entry.prompt_price_per_million,
-        completion_price_per_m=model_entry.completion_price_per_million,
-    )
-
-    # Atomic credit deduction
-    try:
-        await deduct_balance_atomic_async(
-            redis_client,
-            api_key.id,
-            actual_cost,
-            initial_balance=api_key.credit_balance,
-            initial_trial=getattr(api_key, "trial_balance", 0.0),
-            initial_paid=getattr(api_key, "paid_balance", 0.0),
-        )
-    except Exception:
-        # If balance was exhausted concurrently
-        raise HTTPException(
-            status_code=status.HTTP_402_PAYMENT_REQUIRED,
-            detail={
-                "error": {
-                    "message": "Insufficient credit balance during transaction deduction.",
-                    "type": "insufficient_quota",
-                    "param": None,
-                    "code": "insufficient_balance",
-                }
+            headers={
+                **headers,
+                "Cache-Control": "no-cache",
+                "X-Accel-Buffering": "no",
             },
-            headers=headers,
-        ) from None
+        )
 
-    # Persist usage to database ledger
-    sync_usage_to_db(
-        session=session,
-        api_key_id=api_key.id,
-        request_id=completion_resp.id,
-        model=request.model,
-        prompt_tokens=completion_resp.usage.prompt_tokens,
-        completion_tokens=completion_resp.usage.completion_tokens,
-        cost=actual_cost,
-        latency_ms=latency_ms,
-        ttft_ms=None,
-    )
-
-    return JSONResponse(content=completion_resp.model_dump(), headers=headers)
+    try:
+        completion_resp = await proxy.execute_chat(request, model_entry)
+        usage = completion_resp.usage
+        actual_cost = calculate_token_cost(
+            usage.prompt_tokens,
+            usage.completion_tokens,
+            model_entry.prompt_price_per_million,
+            model_entry.completion_price_per_million,
+        )
+        settle(
+            session,
+            hold_id,
+            cost=actual_cost,
+            model=request.model,
+            prompt_tokens=usage.prompt_tokens,
+            completion_tokens=usage.completion_tokens,
+            latency_ms=(time.perf_counter() - start_time) * 1000,
+            success=True,
+        )
+        return JSONResponse(content=completion_resp.model_dump(), headers=headers)
+    finally:
+        settle(session, hold_id)

@@ -315,6 +315,9 @@ class SpeedInferApiClient {
     let fullText = '';
     let promptTokens = 0;
     let completionTokens = 0;
+    let receivedDone = false;
+    let receivedUsage = false;
+    let reader;
 
     try {
       const response = await fetch(url, {
@@ -332,7 +335,7 @@ class SpeedInferApiClient {
         throw new Error(message);
       }
 
-      const reader = response.body.getReader();
+      reader = response.body.getReader();
       const decoder = new TextDecoder('utf-8');
       let buffer = '';
 
@@ -351,34 +354,36 @@ class SpeedInferApiClient {
           if (trimmed.startsWith('data: ')) {
             const dataStr = trimmed.substring(6).trim();
             if (dataStr === '[DONE]') {
+              receivedDone = true;
               continue;
             }
 
-            try {
-              const parsed = JSON.parse(dataStr);
-              const deltaContent = parsed.choices?.[0]?.delta?.content || '';
-              if (deltaContent) {
-                if (ttft === null) {
-                  ttft = Math.round(performance.now() - startTime);
-                }
-                fullText += deltaContent;
-                onChunk({ delta: deltaContent, fullText, ttft });
-              }
-            } catch {
-              // Ignore non-json or malformed SSE line
+            const parsed = JSON.parse(dataStr);
+            if (parsed.error) throw new Error(parsed.error.message || 'Inference stream failed.');
+            if (parsed.usage) {
+              promptTokens = parsed.usage.prompt_tokens;
+              completionTokens = parsed.usage.completion_tokens;
+              receivedUsage = Number.isInteger(promptTokens) && promptTokens >= 0
+                && Number.isInteger(completionTokens) && completionTokens >= 0;
+            }
+            const deltaContent = parsed.choices?.[0]?.delta?.content || '';
+            if (deltaContent) {
+              if (ttft === null) ttft = Math.round(performance.now() - startTime);
+              fullText += deltaContent;
+              onChunk({ delta: deltaContent, fullText, ttft });
             }
           }
         }
       }
 
       const totalTimeMs = Math.round(performance.now() - startTime);
-      // Rough estimation if backend doesn't send final usage chunk in streaming
-      promptTokens = Math.max(1, Math.round(messages.reduce((acc, m) => acc + (m.content?.length || 0), 0) / 4));
-      completionTokens = Math.max(1, Math.round(fullText.length / 4));
+      if (!receivedDone || !receivedUsage) {
+        throw new Error('Inference stream ended without complete usage confirmation.');
+      }
 
       onDone({
         fullText,
-        ttft: ttft || totalTimeMs,
+        ttft,
         totalTimeMs,
         promptTokens,
         completionTokens,
@@ -386,6 +391,8 @@ class SpeedInferApiClient {
       });
     } catch (err) {
       onError(err);
+    } finally {
+      if (reader) await reader.cancel().catch(() => {});
     }
   }
 }

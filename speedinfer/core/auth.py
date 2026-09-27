@@ -283,6 +283,13 @@ def authenticate_api_key(
             },
         )
 
+    if get_settings().environment != "test" and raw_key in {
+        "sk-speedinfer-validkey", "sk-speedinfer-validkey1234567890abcdef",
+        "sk-speedinfer-testkey", "sk-speedinfer-test-key", "sk-speedinfer-loadtest-key",
+        "sk-speedinfer-zero-credit-key", "sk-speedinfer-limited-balance-key",
+    }:
+        raise HTTPException(401, detail="Test harness keys are disabled outside tests.")
+
     active_pepper = _resolve_pepper(pepper)
     computed_hash = hash_api_key(raw_key, active_pepper)
 

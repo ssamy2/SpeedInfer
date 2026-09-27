@@ -183,40 +183,38 @@ class AppController {
       window.scrollTo(0, 0);
     }));
     document.querySelectorAll('[data-home]').forEach(button => button.addEventListener('click', () => this.showLandingView()));
-    const pythonSnippet = `from openai import OpenAI
+    const pythonSnippet = `import os
+from openai import OpenAI
 
-# Connect to SpeedInfer's NVIDIA TensorRT-LLM accelerated endpoint
+# Select a model returned by client.models.list()
 client = OpenAI(
-    base_url="https://api.speedinfer.com/v1",
-    api_key="sk-speedinfer-live-key",
+    base_url="https://speedinfer.com/v1",
+    api_key=os.environ["SPEEDINFER_API_KEY"],
 )
 
 stream = client.chat.completions.create(
-    model="deepseek-ai/DeepSeek-R1",
+    model=client.models.list().data[0].id,
     messages=[
         {"role": "user", "content": "Explain quantum teleportation in two sentences."}
     ],
-    extra_body={
-        "kv_cache_dtype": "fp8",
-        "tensorrt_llm_runtime": True
-    },
+    max_tokens=128,
     stream=True,
 )
 
 for chunk in stream:
-    print(chunk.choices[0].delta.content or "", end="", flush=True)`;
+    if chunk.choices:
+        print(chunk.choices[0].delta.content or "", end="", flush=True)`;
 
-    const curlSnippet = `curl -X POST "https://api.speedinfer.com/v1/chat/completions" \\
-  -H "Authorization: Bearer sk-speedinfer-live-key" \\
+    const curlSnippet = `curl -X POST "https://speedinfer.com/v1/chat/completions" \\
+  -H "Authorization: Bearer $SPEEDINFER_API_KEY" \\
   -H "Content-Type: application/json" \\
   -d '{
-    "model": "deepseek-ai/DeepSeek-R1",
+    "model": "REPLACE_WITH_MODEL_FROM_CATALOG",
     "messages": [
       {"role": "user", "content": "Explain quantum teleportation in two sentences."}
     ],
     "stream": true,
-    "kv_cache_dtype": "fp8",
-    "tensorrt_llm_runtime": true
+    "max_tokens": 128
   }'`;
 
     const tabPy = document.getElementById('tab-python');
@@ -233,7 +231,7 @@ for chunk in stream:
           tabCurl.classList.remove('active');
           tabCurl.setAttribute('aria-selected', 'false');
           if (fileLabel) fileLabel.textContent = 'inference.py';
-          if (langLabel) langLabel.textContent = 'Python / OpenAI SDK (FP8 Accelerated)';
+          if (langLabel) langLabel.textContent = 'Python / OpenAI SDK (text chat)';
           landingCode.textContent = pythonSnippet;
           tabPy.focus();
         } else {
@@ -242,7 +240,7 @@ for chunk in stream:
           tabPy.classList.remove('active');
           tabPy.setAttribute('aria-selected', 'false');
           if (fileLabel) fileLabel.textContent = 'request.sh';
-          if (langLabel) langLabel.textContent = 'cURL / Bash (FP8 Accelerated)';
+          if (langLabel) langLabel.textContent = 'cURL / Bash (text chat)';
           landingCode.textContent = curlSnippet;
           tabCurl.focus();
         }
@@ -548,7 +546,8 @@ for chunk in stream:
 
     document.getElementById('dashboard-greeting').textContent = user?.name ? `Welcome back, ${user.name.split(' ')[0]}.` : 'Welcome to your workspace.';
     const modelId = models[0]?.id || models[0]?.name || 'YOUR_DEPLOYED_MODEL';
-    document.getElementById('console-code').textContent = `from openai import OpenAI
+    document.getElementById('console-code').textContent = `import os
+from openai import OpenAI
 
 client = OpenAI(
     base_url="${window.location.origin}/v1",
@@ -562,7 +561,8 @@ stream = client.chat.completions.create(
 )
 
 for chunk in stream:
-    print(chunk.choices[0].delta.content or "", end="")`;
+    if chunk.choices:
+        print(chunk.choices[0].delta.content or "", end="")`;
     // Metrics cards
     const dashBalance = document.getElementById('dash-balance-val');
     if (dashBalance) dashBalance.textContent = `$${parseFloat(balance || 0).toFixed(4)}`;
@@ -814,7 +814,7 @@ for chunk in stream:
     container.innerHTML = this.creditPackages.map((amount, index) => `
       <button class="billing-package ${index === 1 ? 'featured' : ''}" type="button" data-checkout-amount="${Number(amount)}">
         <span>ONE-TIME TOP-UP</span><strong>$${Number(amount).toFixed(0)}</strong><small>${Number(amount).toFixed(2)} API credit</small><b>Continue ↗</b>
-      </button>`).join('');
+      </button>`).join('') + '<p class="billing-policy-note">Prepaid API credits are generally non-refundable, subject to mandatory rights. <a href="/legal/billing">Read billing &amp; refund terms before purchase ↗</a></p>';
     container.querySelectorAll('[data-checkout-amount]').forEach(button => button.addEventListener('click', async () => {
       const amount = Number(button.dataset.checkoutAmount);
       const activeKey = store.state.selectedKey || store.state.keys.find(key => key.is_active);
@@ -1115,7 +1115,7 @@ for chunk in stream:
           password,
           initial_balance: 0.0,
           create_api_key: false,
-          accepted_policy_version: '2026-09-27',
+          accepted_policy_version: '2026-09-27-r2',
           referral_code: referralCode,
           device_fingerprint: deviceFp,
           turnstile_token: turnstileToken,

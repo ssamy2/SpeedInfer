@@ -52,7 +52,7 @@ if [[ "${DEPLOY_MODE}" == "docker" ]]; then
     sleep 3
 
     log "Applying database schema migrations (Alembic)..."
-    docker compose -f deploy/docker-compose.yml run --rm gateway alembic upgrade head || true
+    docker compose -f deploy/docker-compose.yml run --rm gateway alembic upgrade head
 
     log "Starting all services (Gateway, vLLM, Observability)..."
     docker compose -f deploy/docker-compose.yml up -d

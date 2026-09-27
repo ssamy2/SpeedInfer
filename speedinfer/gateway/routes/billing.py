@@ -12,6 +12,7 @@ from typing import Annotated, Any
 import httpx
 from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
 from pydantic import BaseModel, Field
+from sqlalchemy import update
 from sqlalchemy.exc import IntegrityError
 from sqlmodel import Session, select
 
@@ -183,9 +184,14 @@ def _credit_payment(
     api_key = session.get(ApiKey, api_key_id)
     if api_key is None or api_key.user_id != user_id:
         raise HTTPException(status_code=400, detail="Payment target key is invalid.")
-    api_key.paid_balance = round(float(getattr(api_key, "paid_balance", 0.0)) + credits, 6)
-    api_key.credit_balance = round(getattr(api_key, "trial_balance", 0.0) + api_key.paid_balance, 6)
-    session.add(api_key)
+    session.execute(
+        update(ApiKey)
+        .where(ApiKey.id == api_key_id)
+        .values(
+            paid_balance=ApiKey.paid_balance + credits,
+            credit_balance=ApiKey.credit_balance + credits,
+        )
+    )
     session.add(
         PaymentTransaction(
             provider_payment_id=payment_id,

@@ -242,6 +242,13 @@ async def revoke_key(
         )
 
     if permanent:
+        from speedinfer.core.inference_billing import InferenceReservation
+
+        hold = session.exec(
+            select(InferenceReservation).where(InferenceReservation.api_key_id == key_id)
+        ).first()
+        if hold is not None:
+            raise HTTPException(409, detail="This key has billing records. Revoke it instead.")
         session.delete(api_key)
         session.commit()
         return ApiKeyDeleteResponse(

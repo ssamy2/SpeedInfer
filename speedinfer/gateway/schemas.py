@@ -14,38 +14,50 @@ import time
 from datetime import datetime
 from typing import Any, Literal
 
-from pydantic import AliasChoices, BaseModel, ConfigDict, Field, field_validator
+from pydantic import AliasChoices, BaseModel, ConfigDict, Field, field_validator, model_validator
 
 
 class ChatMessage(BaseModel):
     """Individual chat completion message."""
 
-    model_config = ConfigDict(extra="ignore")
+    model_config = ConfigDict(extra="forbid", allow_inf_nan=False)
 
-    role: str = Field(description="Role of the message author (system, user, assistant).")
-    content: str = Field(description="Textual content of the message.")
+    role: Literal["system", "user", "assistant"] = Field(
+        description="Role of the message author (system, user, assistant)."
+    )
+    content: str = Field(max_length=1_000_000, description="Textual content of the message.")
     name: str | None = Field(default=None, description="Optional name of the participant.")
+
+
+class StreamOptions(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    include_usage: bool = True
 
 
 class ChatCompletionRequest(BaseModel):
     """Payload for POST /v1/chat/completions."""
 
-    model_config = ConfigDict(extra="ignore")
+    model_config = ConfigDict(extra="forbid", allow_inf_nan=False)
 
     model: str = Field(description="Target model identifier.")
+    stream_options: StreamOptions | None = None
     messages: list[ChatMessage] = Field(description="Sequential list of conversation messages.")
     temperature: float | None = Field(
         default=1.0, description="Sampling temperature between 0.0 and 2.0."
     )
-    top_p: float | None = Field(default=1.0, description="Nucleus sampling probability.")
-    n: int | None = Field(default=1, description="Number of completions to generate.")
+    top_p: float | None = Field(
+        default=1.0, gt=0, le=1, description="Nucleus sampling probability."
+    )
+    n: int | None = Field(default=1, ge=1, le=1, description="Number of completions to generate.")
     stream: bool | None = Field(
         default=False, description="Whether to stream back partial progress via SSE."
     )
     stop: str | list[str] | None = Field(
         default=None, description="Stop sequence(s) to abort generation."
     )
-    max_tokens: int | None = Field(default=128, description="Maximum number of tokens to generate.")
+    max_tokens: int | None = Field(
+        default=128, gt=0, le=32768, description="Maximum number of tokens to generate."
+    )
     presence_penalty: float | None = Field(
         default=0.0, description="Presence penalty between -2.0 and 2.0."
     )
@@ -74,16 +86,20 @@ class ChatCompletionRequest(BaseModel):
 class CompletionRequest(BaseModel):
     """Payload for POST /v1/completions legacy endpoint."""
 
-    model_config = ConfigDict(extra="ignore")
+    model_config = ConfigDict(extra="forbid", allow_inf_nan=False)
 
     model: str = Field(description="Target model identifier.")
     prompt: str | list[str] = Field(description="The prompt(s) to generate completions for.")
-    max_tokens: int | None = Field(default=16, description="Maximum number of tokens to generate.")
+    max_tokens: int | None = Field(
+        default=16, gt=0, le=32768, description="Maximum number of tokens to generate."
+    )
     temperature: float | None = Field(
         default=1.0, description="Sampling temperature between 0.0 and 2.0."
     )
-    top_p: float | None = Field(default=1.0, description="Nucleus sampling probability.")
-    n: int | None = Field(default=1, description="Number of completions to generate.")
+    top_p: float | None = Field(
+        default=1.0, gt=0, le=1, description="Nucleus sampling probability."
+    )
+    n: int | None = Field(default=1, ge=1, le=1, description="Number of completions to generate.")
     stream: bool | None = Field(
         default=False, description="Whether to stream back partial progress via SSE."
     )
@@ -115,9 +131,15 @@ class CompletionRequest(BaseModel):
 class UsageInfo(BaseModel):
     """Token consumption accounting metrics."""
 
-    prompt_tokens: int = Field(description="Tokens evaluated in prompt context.")
-    completion_tokens: int = Field(description="Tokens produced in generation.")
-    total_tokens: int = Field(description="Sum of prompt and completion tokens.")
+    prompt_tokens: int = Field(ge=0, description="Tokens evaluated in prompt context.")
+    completion_tokens: int = Field(ge=0, description="Tokens produced in generation.")
+    total_tokens: int = Field(ge=0, description="Sum of prompt and completion tokens.")
+
+    @model_validator(mode="after")
+    def consistent_total(self):
+        if self.total_tokens != self.prompt_tokens + self.completion_tokens:
+            raise ValueError("Worker usage total is inconsistent")
+        return self
 
 
 class ChatResponseMessage(BaseModel):
@@ -245,7 +267,7 @@ class UserRegisterRequest(BaseModel):
     """Payload for POST /v1/auth/register."""
 
     model_config = ConfigDict(extra="ignore")
-    accepted_policy_version: Literal["2026-09-27"] | None = None
+    accepted_policy_version: Literal["2026-09-27", "2026-09-27-r2"] | None = None
 
     email: str = Field(description="User primary email address.")
     password: str = Field(
@@ -345,7 +367,7 @@ class UserResponse(BaseModel):
 class VerifyEmailRequest(BaseModel):
     """Payload for POST /v1/auth/verify-email."""
 
-    model_config = ConfigDict(extra="forbid")
+    model_config = ConfigDict(extra="forbid", allow_inf_nan=False)
 
     email: str = Field(description="User email address.")
     code: str = Field(min_length=6, max_length=6, description="6-digit verification OTP code.")
@@ -367,7 +389,7 @@ class VerifyEmailRequest(BaseModel):
 class ResendCodeRequest(BaseModel):
     """Payload for POST /v1/auth/resend-code."""
 
-    model_config = ConfigDict(extra="forbid")
+    model_config = ConfigDict(extra="forbid", allow_inf_nan=False)
 
     email: str = Field(description="User email address.")
     purpose: Literal["registration", "password_reset"] = Field(
@@ -383,7 +405,7 @@ class ResendCodeRequest(BaseModel):
 class ForgotPasswordRequest(BaseModel):
     """Payload for POST /v1/auth/forgot-password."""
 
-    model_config = ConfigDict(extra="forbid")
+    model_config = ConfigDict(extra="forbid", allow_inf_nan=False)
 
     email: str = Field(description="Registered account email address.")
     turnstile_token: str | None = Field(default=None, description="Turnstile verification token.")
@@ -397,7 +419,7 @@ class ForgotPasswordRequest(BaseModel):
 class ResetPasswordRequest(BaseModel):
     """Payload for POST /v1/auth/reset-password."""
 
-    model_config = ConfigDict(extra="forbid")
+    model_config = ConfigDict(extra="forbid", allow_inf_nan=False)
 
     email: str = Field(description="Target account email address.")
     code: str = Field(min_length=6, max_length=6, description="6-digit password reset OTP.")
@@ -499,9 +521,7 @@ class ApiKeyCreateRequest(BaseModel):
         default=None, ge=0.0, description="Deprecated. New keys begin with no balance."
     )
     rpm_limit: int | None = Field(default=60, gt=0, description="Requests per minute rate limit.")
-    tpm_limit: int | None = Field(
-        default=60_000, gt=0, description="Tokens per minute rate limit."
-    )
+    tpm_limit: int | None = Field(default=60_000, gt=0, description="Tokens per minute rate limit.")
     permissions: str = Field(
         default="chat:completions,completions,models:read,usage:read",
         description="Comma-separated permission scopes.",

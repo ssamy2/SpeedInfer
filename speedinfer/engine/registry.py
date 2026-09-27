@@ -5,6 +5,7 @@ and fallback routing across multiple vLLM worker backends without restarting the
 """
 
 import threading
+import time
 from dataclasses import dataclass, field
 from enum import StrEnum
 from typing import Any
@@ -66,6 +67,7 @@ class BackendWorker:
 
     def record_failure(self) -> None:
         """Increment failure counter and trip circuit breaker if threshold is reached."""
+        self.last_failure_at = time.monotonic()
         self.consecutive_failures += 1
         if self.consecutive_failures >= self.failure_threshold:
             self.status = WorkerStatus.DEGRADED
@@ -73,6 +75,10 @@ class BackendWorker:
 
     def is_healthy(self) -> bool:
         """Return True if worker is healthy and ready to serve inference requests."""
+        if self.consecutive_failures >= self.failure_threshold and (
+            time.monotonic() - getattr(self, "last_failure_at", time.monotonic()) >= 30
+        ):
+            self.record_success()  # allow a bounded recovery probe
         if self.health in {
             BackendHealth.DEGRADED,
             BackendHealth.UNHEALTHY,
@@ -310,9 +316,15 @@ class ModelRegistry:
         self,
         model_name: str,
         strategy: str = "least_connections",
+        allow_fallback: bool = True,
+        _visited: set[str] | None = None,
     ) -> BackendWorker | None:
         """Select a healthy worker backend using specified routing strategy or fallback."""
         with self._lock:
+            visited = set() if _visited is None else _visited
+            if model_name in visited:
+                return None
+            visited.add(model_name)
             entry = self._models.get(model_name)
             if entry is None:
                 return None
@@ -321,8 +333,10 @@ class ModelRegistry:
 
             if not healthy_backends:
                 # Attempt fallback model resolution if configured
-                if entry.fallback_model and entry.fallback_model != model_name:
-                    return self.get_healthy_backend(entry.fallback_model, strategy=strategy)
+                if allow_fallback and entry.fallback_model and entry.fallback_model != model_name:
+                    return self.get_healthy_backend(
+                        entry.fallback_model, strategy=strategy, _visited=visited
+                    )
                 return None
 
             if strategy == "least_connections":

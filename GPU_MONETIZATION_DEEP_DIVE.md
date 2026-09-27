@@ -1,3 +1,5 @@
+> Historical plan/report. This file does not certify current production readiness. The current scope, measured verification and launch blockers are in [the readiness audit](docs/PRODUCTION_READINESS_AR.md).
+
 # دليل الاستثمار والتسييل الشامل لسيرفرات GPU (OVHcloud €10,000)
 ## أسرع وأعلى الطرق عائداً لتحويل الرصيد إلى كاش حلال 100% بدون منح روت لأحد
 

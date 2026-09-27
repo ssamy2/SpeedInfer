@@ -1,0 +1,12 @@
+/* Focus, motion and small visual refinements that preserve the existing identity. */
+:focus-visible { outline: 3px solid #658c32; outline-offset: 4px; }
+.release-note { display:flex; align-items:center; flex-wrap:wrap; gap:12px; padding:18px 24px; border:1px solid #d8e2cd; border-radius:16px; background:linear-gradient(120deg,#f7faef,#edf4e5); color:#46523d; font-size:13px; margin-block:16px 30px; }
+.release-note a { margin-left:auto; color:#304824; font-weight:650; text-underline-offset:4px; }
+.release-dot { width:8px; height:8px; border-radius:50%; background:#83a84c; box-shadow:0 0 0 5px #83a84c18; }
+.hero-note a { color:inherit; text-underline-offset:3px; }
+.ws-card { transition:box-shadow .18s ease,border-color .18s ease; }
+.ws-card:hover { border-color:#ccd9bd; box-shadow:0 8px 28px #21341208; }
+.ws-policy-body section { padding-bottom:22px; border-bottom:1px solid #e7eddf; margin-bottom:24px; }
+.ws-policy-body h2 { letter-spacing:-.025em; }
+@media (prefers-reduced-motion:reduce) { *,*::before,*::after { animation:none!important; transition:none!important; scroll-behavior:auto!important; } }
+@media (max-width:640px) { .release-note { margin-inline:20px; padding:18px; } .release-note a { margin-left:0; } }

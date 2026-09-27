@@ -5,12 +5,14 @@ automatic load balancing, circuit breaking, and mock test emulation.
 """
 
 import asyncio
+import json
 import time
 import uuid
 from collections.abc import AsyncGenerator
 from typing import Any
 
 import httpx
+from fastapi import HTTPException
 
 from speedinfer.config import get_settings
 from speedinfer.engine.registry import ModelEntry, ModelRegistry
@@ -45,7 +47,14 @@ class InferenceProxy:
         """Get or initialize persistent HTTP async client."""
         if self.http_client is None or self.http_client.is_closed:
             settings = get_settings()
-            self.http_client = httpx.AsyncClient(timeout=settings.vllm_timeout_seconds)
+            self.http_client = httpx.AsyncClient(
+                timeout=settings.vllm_timeout_seconds,
+                headers=(
+                    {"Authorization": f"Bearer {settings.vllm_api_key.get_secret_value()}"}
+                    if settings.vllm_api_key
+                    else {}
+                ),
+            )
         return self.http_client
 
     async def close(self) -> None:
@@ -77,22 +86,42 @@ class InferenceProxy:
         model_entry: ModelEntry,
     ) -> ChatCompletionResponse:
         """Dispatch non-streaming chat completion to worker or generate mock completion."""
-        worker = self.registry.get_healthy_backend(request.model)
+        worker = self.registry.get_healthy_backend(
+            request.model, strategy="round_robin", allow_fallback=False
+        )
         client = await self.get_client()
 
         # If a live worker backend exists, attempt forwarding
         if worker is not None and not worker.url.startswith("http://mock-"):
+            worker.active_requests += 1
             try:
                 target_url = f"{worker.url.rstrip('/')}/v1/chat/completions"
                 payload = request.model_dump(exclude_none=True)
                 resp = await client.post(target_url, json=payload)
                 if resp.status_code == 200:
-                    worker.record_success()
                     data = resp.json()
-                    return ChatCompletionResponse.model_validate(data)
+                    if data.get("model") != request.model:
+                        raise ValueError("Worker returned a different model")
+                    result = ChatCompletionResponse.model_validate(data)
+                    worker.record_success()
+                    return result
                 worker.record_failure()
             except Exception:
                 worker.record_failure()
+            finally:
+                worker.active_requests = max(0, worker.active_requests - 1)
+
+        if get_settings().environment != "test":
+            raise HTTPException(
+                503,
+                detail={
+                    "error": {
+                        "message": "Inference backend unavailable. No charge applied.",
+                        "type": "server_error",
+                        "code": "backend_unavailable",
+                    }
+                },
+            )
 
         # Fallback / Test emulation mode
         prompt_tokens = self.estimate_prompt_tokens(request.messages)
@@ -143,14 +172,18 @@ class InferenceProxy:
         created = int(time.time())
 
         # Check for live worker backend
-        worker = self.registry.get_healthy_backend(request.model)
+        worker = self.registry.get_healthy_backend(
+            request.model, strategy="round_robin", allow_fallback=False
+        )
         client = await self.get_client()
 
         if worker is not None and not worker.url.startswith("http://mock-"):
+            worker.active_requests += 1
             try:
                 target_url = f"{worker.url.rstrip('/')}/v1/chat/completions"
                 payload = request.model_dump(exclude_none=True)
                 payload["stream"] = True
+                payload["stream_options"] = {"include_usage": True}
 
                 async with client.stream("POST", target_url, json=payload) as response:
                     if response.status_code == 200:
@@ -162,6 +195,20 @@ class InferenceProxy:
                 worker.record_failure()
             except Exception:
                 worker.record_failure()
+            finally:
+                worker.active_requests = max(0, worker.active_requests - 1)
+
+        if get_settings().environment != "test":
+            raise HTTPException(
+                503,
+                detail={
+                    "error": {
+                        "message": "Inference backend unavailable. No charge applied.",
+                        "type": "server_error",
+                        "code": "backend_unavailable",
+                    }
+                },
+            )
 
         # Fallback / Test emulation mode
         user_msg = ""
@@ -239,6 +286,28 @@ class InferenceProxy:
         )
         yield f"data: {chunk_final.model_dump_json(exclude_none=True)}\n\n"
 
+        # Test-only usage event follows the same upstream usage contract.
+        prompt_tokens = self.estimate_prompt_tokens(request.messages)
+        completion_tokens = max(1, len("".join(words)) // 4)
+        yield (
+            "data: "
+            + json.dumps(
+                {
+                    "id": cmpl_id,
+                    "object": "chat.completion.chunk",
+                    "created": created,
+                    "model": request.model,
+                    "choices": [],
+                    "usage": {
+                        "prompt_tokens": prompt_tokens,
+                        "completion_tokens": completion_tokens,
+                        "total_tokens": prompt_tokens + completion_tokens,
+                    },
+                }
+            )
+            + "\n\n"
+        )
+
         # 4. Termination sentinel
         yield "data: [DONE]\n\n"
 
@@ -248,21 +317,41 @@ class InferenceProxy:
         model_entry: ModelEntry,
     ) -> CompletionResponse:
         """Dispatch legacy text completion to worker or generate mock completion."""
-        worker = self.registry.get_healthy_backend(request.model)
+        worker = self.registry.get_healthy_backend(
+            request.model, strategy="round_robin", allow_fallback=False
+        )
         client = await self.get_client()
 
         if worker is not None and not worker.url.startswith("http://mock-"):
+            worker.active_requests += 1
             try:
                 target_url = f"{worker.url.rstrip('/')}/v1/completions"
                 payload = request.model_dump(exclude_none=True)
                 resp = await client.post(target_url, json=payload)
                 if resp.status_code == 200:
-                    worker.record_success()
                     data = resp.json()
-                    return CompletionResponse.model_validate(data)
+                    if data.get("model") != request.model:
+                        raise ValueError("Worker returned a different model")
+                    result = CompletionResponse.model_validate(data)
+                    worker.record_success()
+                    return result
                 worker.record_failure()
             except Exception:
                 worker.record_failure()
+            finally:
+                worker.active_requests = max(0, worker.active_requests - 1)
+
+        if get_settings().environment != "test":
+            raise HTTPException(
+                503,
+                detail={
+                    "error": {
+                        "message": "Inference backend unavailable. No charge applied.",
+                        "type": "server_error",
+                        "code": "backend_unavailable",
+                    }
+                },
+            )
 
         # Fallback / Test emulation mode
         prompt_tokens = self.estimate_prompt_tokens(request.prompt)

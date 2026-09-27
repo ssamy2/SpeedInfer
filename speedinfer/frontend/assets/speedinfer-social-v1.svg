@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+<defs><linearGradient id="bg" x2="1" y2="1"><stop stop-color="#0a1420"/><stop offset="1" stop-color="#18372b"/></linearGradient><linearGradient id="green"><stop stop-color="#cbf73e"/><stop offset="1" stop-color="#38ef7d"/></linearGradient></defs>
+<rect width="1200" height="630" fill="url(#bg)"/>
+<g fill="none" stroke="#88c768" stroke-opacity=".12"><circle cx="1130" cy="580" r="230"/><circle cx="1130" cy="580" r="310"/><circle cx="1130" cy="580" r="390"/><circle cx="1130" cy="580" r="470"/></g>
+<rect x="70" y="70" width="86" height="86" rx="23" fill="#0c1920" stroke="#7caa43"/>
+<path d="M90 94h47l-19 21H90l24 21h24" fill="none" stroke="url(#green)" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="178" y="131" font-family="DejaVu Sans" font-size="51" font-weight="bold" fill="#fff">SpeedInfer<tspan fill="#cbf73e">.</tspan></text>
+<text x="72" y="298" font-family="DejaVu Sans" font-size="72" font-weight="bold" fill="#fff">Your models.</text>
+<text x="72" y="386" font-family="DejaVu Sans" font-size="72" font-weight="bold" fill="#cbf73e">One workspace.</text>
+<text x="76" y="450" font-family="DejaVu Sans" font-size="24" fill="#b6c7bb">Model APIs · Transparent usage · Built for AI builders</text>
+<path d="M76 509h1048" stroke="#718373" stroke-opacity=".4"/>
+<text x="76" y="556" font-family="DejaVu Sans" font-size="23" fill="#dbe5d7">speedinfer.com</text><text x="898" y="556" font-family="DejaVu Sans" font-size="18" fill="#b6c7bb">PLATFORM PREVIEW</text>
+</svg>

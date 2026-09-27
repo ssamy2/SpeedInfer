@@ -10,6 +10,7 @@ from typing import Any
 
 import fakeredis
 import fakeredis.aioredis
+from fastapi import HTTPException
 
 from speedinfer.config import get_settings
 
@@ -56,6 +57,8 @@ async def get_async_redis() -> Any:
         _async_redis_client = client
         return _async_redis_client
     except Exception:
+        if env != "test":
+            raise HTTPException(503, detail="Rate limit service unavailable.") from None
         server = get_fake_server()
         return fakeredis.aioredis.FakeRedis(server=server, decode_responses=True)
 
@@ -91,6 +94,8 @@ def get_sync_redis() -> Any:
         _sync_redis_client = client
         return _sync_redis_client
     except Exception:
+        if env != "test":
+            raise HTTPException(503, detail="Rate limit service unavailable.") from None
         server = get_fake_server()
         _sync_redis_client = fakeredis.FakeRedis(server=server, decode_responses=True)
         return _sync_redis_client

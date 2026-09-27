@@ -18,6 +18,7 @@ os.environ.setdefault("API_KEY_PEPPER", "speedinfer-standalone-migration-pepper-
 
 # 2. Import application settings
 # 3. Import database models so SQLModel.metadata discovers all tables
+import speedinfer.core.inference_billing  # noqa: F401, E402
 import speedinfer.database.models  # noqa: F401, E402
 from speedinfer.config import get_settings  # noqa: E402
 

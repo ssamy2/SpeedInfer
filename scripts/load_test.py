@@ -14,6 +14,7 @@ Usage:
   python3 scripts/load_test.py --headless -u 10 -r 2 --run-time 15s --host http://localhost:8000
 """
 
+import json
 import os
 import time
 
@@ -126,7 +127,22 @@ class StreamingChatUser(BaseSpeedInferUser):
                         continue
                     line_str = line.decode("utf-8") if isinstance(line, bytes) else line
                     if line_str.startswith("data: "):
-                        if not ttft_recorded:
+                        raw = line_str[6:].strip()
+                        if raw == "[DONE]":
+                            received_done = True
+                            break
+                        try:
+                            event = json.loads(raw)
+                        except ValueError:
+                            response.failure("Invalid SSE JSON")
+                            return
+                        if event.get("error"):
+                            response.failure("Worker reported a stream failure")
+                            return
+                        has_content = any(
+                            c.get("delta", {}).get("content") for c in event.get("choices", [])
+                        )
+                        if has_content and not ttft_recorded:
                             ttft = (time.perf_counter() - start_time) * 1000
                             events.request.fire(
                                 request_type="SSE_TTFT",
@@ -137,11 +153,6 @@ class StreamingChatUser(BaseSpeedInferUser):
                                 context=None,
                             )
                             ttft_recorded = True
-
-                        raw = line_str[6:].strip()
-                        if raw == "[DONE]":
-                            received_done = True
-                            break
                         chunks += 1
 
                 if received_done and chunks > 0:

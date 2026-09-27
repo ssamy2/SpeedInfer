@@ -44,6 +44,7 @@ def test_environment_vars() -> Generator[None, None, None]:
     os.environ["API_KEY_PEPPER"] = TEST_PEPPER
     os.environ["DATABASE_URL"] = "sqlite:///:memory:"
     os.environ["REDIS_URL"] = "redis://localhost:6379/0"
+    get_settings.cache_clear()
     yield
     os.environ.clear()
     os.environ.update(old_env)
@@ -139,24 +140,40 @@ async def async_mock_redis() -> AsyncGenerator[fakeredis.aioredis.FakeRedis, Non
 # Async Client Fixture
 # ---------------------------------------------------------------------------
 @pytest.fixture(scope="function")
-async def async_client() -> AsyncGenerator[httpx.AsyncClient, None]:
-    """Provide an AsyncClient pointing to the SpeedInfer gateway or mock app."""
+async def async_client(tmp_path, async_mock_redis) -> AsyncGenerator[httpx.AsyncClient, None]:
+    """Isolated per-request sessions: never use the import-time development database."""
+    from speedinfer.database.session import get_session
+    from speedinfer.engine.registry import BackendWorker
+    from speedinfer.gateway.app import _seed_test_keys_if_needed, app, get_registry
+    from speedinfer.gateway.redis import get_async_redis
+
+    saved = dict(app.dependency_overrides)
+    isolated_engine = create_engine(
+        f"sqlite:///{tmp_path / 'gateway.db'}",
+        connect_args={"check_same_thread": False, "timeout": 20},
+    )
+    SQLModel.metadata.create_all(isolated_engine)
+    with Session(isolated_engine) as session:
+        _seed_test_keys_if_needed(session, TEST_PEPPER)
+
+    def isolated_session():
+        with Session(isolated_engine) as session:
+            yield session
+
+    app.dependency_overrides.setdefault(get_session, isolated_session)
+    app.dependency_overrides.setdefault(get_async_redis, lambda: async_mock_redis)
+    registry = get_registry()
+    registry.register_model(
+        name=TEST_MODEL_NAME,
+        base_model_path=TEST_MODEL_NAME,
+        backends=[BackendWorker(url="http://mock-vllm")],
+    )
     try:
-        from speedinfer.gateway.app import app
-
-        transport = httpx.ASGITransport(app=app)
-        async with httpx.AsyncClient(transport=transport, base_url="http://testserver") as client:
+        async with httpx.AsyncClient(
+            transport=httpx.ASGITransport(app=app), base_url="http://testserver"
+        ) as client:
             yield client
-    except (ImportError, AttributeError):
-        # Fallback ASGI application to verify HTTP client fixture mechanics
-        from starlette.applications import Starlette
-        from starlette.responses import JSONResponse
-        from starlette.routing import Route
-
-        async def health(request):
-            return JSONResponse({"status": "healthy", "service": "speedinfer-test-harness"})
-
-        stub_app = Starlette(routes=[Route("/health", health)])
-        transport = httpx.ASGITransport(app=stub_app)
-        async with httpx.AsyncClient(transport=transport, base_url="http://testserver") as client:
-            yield client
+    finally:
+        app.dependency_overrides.clear()
+        app.dependency_overrides.update(saved)
+        isolated_engine.dispose()

@@ -11,12 +11,11 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.responses import JSONResponse
 from sqlmodel import Session, select
 
-from speedinfer.core.auth import get_authenticated_api_key
+from speedinfer.core.auth import require_scope
+from speedinfer.core.inference_billing import reserve, settle
 from speedinfer.core.metering import (
     calculate_token_cost,
-    deduct_balance_atomic_async,
     estimate_max_cost,
-    sync_usage_to_db,
 )
 from speedinfer.core.rate_limiter import async_check_rate_limit, build_rate_limit_headers
 from speedinfer.database.models import ApiKey, ModelVersion
@@ -86,13 +85,23 @@ def _resolve_model_entry(
 )
 async def create_completion(
     request: CompletionRequest,
-    api_key: Annotated[ApiKey, Depends(get_authenticated_api_key)],
+    api_key: Annotated[ApiKey, Depends(require_scope("completions"))],
     registry: Annotated[ModelRegistry, Depends(get_model_registry)],
     proxy: Annotated[InferenceProxy, Depends(get_inference_proxy)],
     redis_client: Annotated[Any, Depends(get_async_redis)],
     session: Annotated[Session, Depends(get_session)],
 ) -> Any:
     """Process OpenAI-compatible text completion request."""
+    request.max_tokens = request.max_tokens or 16
+    request.n = request.n or 1
+    if request.stream:
+        raise HTTPException(
+            400, detail="Legacy streaming is unsupported; use /v1/chat/completions."
+        )
+    if isinstance(request.prompt, list):
+        raise HTTPException(
+            400, detail="Batch prompts are unsupported; send one prompt per request."
+        )
     # 1. Resolve model
     model_entry = _resolve_model_entry(request.model, registry, session)
 
@@ -101,7 +110,7 @@ async def create_completion(
     rate_result = await async_check_rate_limit(
         redis_client,
         api_key=api_key,
-        requested_tokens=est_max_tokens,
+        requested_tokens=est_max_tokens + proxy.estimate_prompt_tokens(request.prompt),
     )
     headers = build_rate_limit_headers(rate_result, api_key.rpm_limit, api_key.tpm_limit)
 
@@ -120,80 +129,39 @@ async def create_completion(
         )
 
     # 3. Pre-flight credit check
-    prompt_tokens = proxy.estimate_prompt_tokens(request.prompt)
     estimated_cost = estimate_max_cost(
-        prompt_tokens=prompt_tokens,
+        prompt_tokens=model_entry.context_length,
         max_tokens=est_max_tokens,
-        context_window=model_entry.context_length,
+        context_window=model_entry.context_length + est_max_tokens,
         prompt_price_per_m=model_entry.prompt_price_per_million,
         completion_price_per_m=model_entry.completion_price_per_million,
     )
 
-    if api_key.credit_balance < estimated_cost:
-        raise HTTPException(
-            status_code=status.HTTP_402_PAYMENT_REQUIRED,
-            detail={
-                "error": {
-                    "message": (
-                        f"Insufficient credit balance. Required: ${estimated_cost:.6f}, "
-                        f"Available: ${api_key.credit_balance:.6f}"
-                    ),
-                    "type": "insufficient_quota",
-                    "param": None,
-                    "code": "insufficient_balance",
-                }
-            },
-            headers=headers,
-        )
+    if est_max_tokens > model_entry.context_length:
+        raise HTTPException(400, detail="max_tokens exceeds the model context limit.")
+    hold_id = reserve(session, api_key.id, estimated_cost)
 
     start_time = time.perf_counter()
 
-    # 4. Execute completion
-    completion_resp = await proxy.execute_completion(request, model_entry)
-    latency_ms = (time.perf_counter() - start_time) * 1000.0
-
-    actual_cost = calculate_token_cost(
-        prompt_tokens=completion_resp.usage.prompt_tokens,
-        completion_tokens=completion_resp.usage.completion_tokens,
-        prompt_price_per_m=model_entry.prompt_price_per_million,
-        completion_price_per_m=model_entry.completion_price_per_million,
-    )
-
-    # 5. Atomic balance deduction
     try:
-        await deduct_balance_atomic_async(
-            redis_client,
-            api_key.id,
-            actual_cost,
-            initial_balance=api_key.credit_balance,
-            initial_trial=getattr(api_key, "trial_balance", 0.0),
-            initial_paid=getattr(api_key, "paid_balance", 0.0),
+        completion_resp = await proxy.execute_completion(request, model_entry)
+        usage = completion_resp.usage
+        actual_cost = calculate_token_cost(
+            usage.prompt_tokens,
+            usage.completion_tokens,
+            model_entry.prompt_price_per_million,
+            model_entry.completion_price_per_million,
         )
-    except Exception:
-        raise HTTPException(
-            status_code=status.HTTP_402_PAYMENT_REQUIRED,
-            detail={
-                "error": {
-                    "message": "Insufficient credit balance during transaction deduction.",
-                    "type": "insufficient_quota",
-                    "param": None,
-                    "code": "insufficient_balance",
-                }
-            },
-            headers=headers,
-        ) from None
-
-    # 6. Record usage in database
-    sync_usage_to_db(
-        session=session,
-        api_key_id=api_key.id,
-        request_id=completion_resp.id,
-        model=request.model,
-        prompt_tokens=completion_resp.usage.prompt_tokens,
-        completion_tokens=completion_resp.usage.completion_tokens,
-        cost=actual_cost,
-        latency_ms=latency_ms,
-        ttft_ms=None,
-    )
-
-    return JSONResponse(content=completion_resp.model_dump(), headers=headers)
+        settle(
+            session,
+            hold_id,
+            cost=actual_cost,
+            model=request.model,
+            prompt_tokens=usage.prompt_tokens,
+            completion_tokens=usage.completion_tokens,
+            latency_ms=(time.perf_counter() - start_time) * 1000,
+            success=True,
+        )
+        return JSONResponse(content=completion_resp.model_dump(), headers=headers)
+    finally:
+        settle(session, hold_id)

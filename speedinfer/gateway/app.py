@@ -110,53 +110,65 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     """Application lifespan manager for startup and shutdown hooks."""
     settings = get_settings()
 
-    # 1. Ensure database tables exist and schema compatibility
-    SQLModel.metadata.create_all(bind=engine)
-    with engine.connect() as conn:
-        insp = inspect(conn)
-        if "user" in insp.get_table_names():
-            cols = [c["name"] for c in insp.get_columns("user")]
-            for col_name, col_sql in [
-                ("password_hash", 'ALTER TABLE "user" ADD COLUMN password_hash VARCHAR(255)'),
-                ("referral_code", 'ALTER TABLE "user" ADD COLUMN referral_code VARCHAR(32)'),
-                ("referred_by_id", 'ALTER TABLE "user" ADD COLUMN referred_by_id INTEGER'),
-                ("signup_ip_hash", 'ALTER TABLE "user" ADD COLUMN signup_ip_hash VARCHAR(64)'),
-                (
-                    "device_fingerprint",
-                    'ALTER TABLE "user" ADD COLUMN device_fingerprint VARCHAR(128)',
-                ),
-                (
-                    "referral_reward_claimed",
-                    'ALTER TABLE "user" ADD COLUMN referral_reward_claimed BOOLEAN DEFAULT 0',
-                ),
-                ("is_verified", 'ALTER TABLE "user" ADD COLUMN is_verified BOOLEAN DEFAULT 0'),
-                ("email_verified_at", 'ALTER TABLE "user" ADD COLUMN email_verified_at TIMESTAMP'),
-                ("avatar_url", 'ALTER TABLE "user" ADD COLUMN avatar_url TEXT'),
-                ("location", 'ALTER TABLE "user" ADD COLUMN location VARCHAR(255)'),
-                ("organization", 'ALTER TABLE "user" ADD COLUMN organization VARCHAR(255)'),
-            ]:
-                if col_name not in cols:
-                    conn.execute(text(col_sql))
+    if settings.environment in {"production", "staging"}:
+        with engine.connect() as conn:
+            inspector = inspect(conn)
+            if "alembic_version" not in inspector.get_table_names():
+                raise RuntimeError("Run verified database migrations before production startup.")
+            revision = conn.execute(text("SELECT version_num FROM alembic_version")).scalar()
+            if revision != "0007_inference_reservations":
+                raise RuntimeError("Database migration 0007_inference_reservations is required.")
+    else:
+        # 1. Ensure database tables exist and schema compatibility
+        SQLModel.metadata.create_all(bind=engine)
+        with engine.connect() as conn:
+            insp = inspect(conn)
+            if "user" in insp.get_table_names():
+                cols = [c["name"] for c in insp.get_columns("user")]
+                for col_name, col_sql in [
+                    ("password_hash", 'ALTER TABLE "user" ADD COLUMN password_hash VARCHAR(255)'),
+                    ("referral_code", 'ALTER TABLE "user" ADD COLUMN referral_code VARCHAR(32)'),
+                    ("referred_by_id", 'ALTER TABLE "user" ADD COLUMN referred_by_id INTEGER'),
+                    ("signup_ip_hash", 'ALTER TABLE "user" ADD COLUMN signup_ip_hash VARCHAR(64)'),
+                    (
+                        "device_fingerprint",
+                        'ALTER TABLE "user" ADD COLUMN device_fingerprint VARCHAR(128)',
+                    ),
+                    (
+                        "referral_reward_claimed",
+                        'ALTER TABLE "user" ADD COLUMN referral_reward_claimed BOOLEAN DEFAULT 0',
+                    ),
+                    ("is_verified", 'ALTER TABLE "user" ADD COLUMN is_verified BOOLEAN DEFAULT 0'),
+                    (
+                        "email_verified_at",
+                        'ALTER TABLE "user" ADD COLUMN email_verified_at TIMESTAMP',
+                    ),
+                    ("avatar_url", 'ALTER TABLE "user" ADD COLUMN avatar_url TEXT'),
+                    ("location", 'ALTER TABLE "user" ADD COLUMN location VARCHAR(255)'),
+                    ("organization", 'ALTER TABLE "user" ADD COLUMN organization VARCHAR(255)'),
+                ]:
+                    if col_name not in cols:
+                        conn.execute(text(col_sql))
+                        conn.commit()
+            if "apikey" in insp.get_table_names():
+                api_cols = [c["name"] for c in insp.get_columns("apikey")]
+                if "trial_balance" not in api_cols:
+                    conn.execute(
+                        text('ALTER TABLE "apikey" ADD COLUMN trial_balance FLOAT DEFAULT 0.0')
+                    )
                     conn.commit()
-        if "apikey" in insp.get_table_names():
-            api_cols = [c["name"] for c in insp.get_columns("apikey")]
-            if "trial_balance" not in api_cols:
+                if "paid_balance" not in api_cols:
+                    conn.execute(
+                        text('ALTER TABLE "apikey" ADD COLUMN paid_balance FLOAT DEFAULT 0.0')
+                    )
+                    conn.commit()
                 conn.execute(
-                    text('ALTER TABLE "apikey" ADD COLUMN trial_balance FLOAT DEFAULT 0.0')
+                    text(
+                        'UPDATE "apikey" SET paid_balance = credit_balance '
+                        "WHERE (trial_balance + paid_balance) = 0.0 AND credit_balance > 0.0"
+                    )
                 )
                 conn.commit()
-            if "paid_balance" not in api_cols:
-                conn.execute(
-                    text('ALTER TABLE "apikey" ADD COLUMN paid_balance FLOAT DEFAULT 0.0')
-                )
-                conn.commit()
-            conn.execute(
-                text(
-                    'UPDATE "apikey" SET paid_balance = credit_balance '
-                    'WHERE (trial_balance + paid_balance) = 0.0 AND credit_balance > 0.0'
-                )
-            )
-            conn.commit()
 
     # 2. Register default model in registry
     model_name = settings.default_model
@@ -217,7 +229,7 @@ def create_app() -> FastAPI:
     fastapi_app.add_middleware(
         CORSMiddleware,
         allow_origins=["*"],
-        allow_credentials=True,
+        allow_credentials=False,
         allow_methods=["*"],
         allow_headers=["*"],
     )
@@ -229,6 +241,9 @@ def create_app() -> FastAPI:
         start_time = time.perf_counter()
         response = await call_next(request)
         duration_ms = (time.perf_counter() - start_time) * 1000.0
+        response.headers["X-Content-Type-Options"] = "nosniff"
+        response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+        response.headers["X-Frame-Options"] = "DENY"
         response.headers["x-request-id"] = req_id
         response.headers["x-response-time-ms"] = f"{duration_ms:.2f}"
         return response
@@ -317,6 +332,10 @@ def create_app() -> FastAPI:
     frontend_dir = Path(__file__).resolve().parent.parent / "frontend"
     if frontend_dir.exists():
         fastapi_app.mount("/static", StaticFiles(directory=str(frontend_dir)), name="static")
+
+        @fastapi_app.get("/guide", include_in_schema=False)
+        async def serve_guide() -> FileResponse:
+            return FileResponse(frontend_dir / "guide.html")
 
         @fastapi_app.get("/", include_in_schema=False)
         @fastapi_app.get("/app", include_in_schema=False)

@@ -1,3 +1,5 @@
+> Historical plan/report. This file does not certify current production readiness. The current scope, measured verification and launch blockers are in [the readiness audit](docs/PRODUCTION_READINESS_AR.md).
+
 # SpeedInfer Test Harness Readiness Report (`TEST_READY.md`)
 
 **Date**: 2026-09-25T21:35:00Z  

@@ -18,6 +18,7 @@ RUN pip install --no-cache-dir --upgrade pip hatchling
 
 # Copy project specification
 COPY pyproject.toml .
+COPY speedinfer/ ./speedinfer/
 
 # Install dependencies into virtualenv
 RUN python -m venv /opt/venv

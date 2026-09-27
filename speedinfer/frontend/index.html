@@ -3,15 +3,32 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SpeedInfer AI — High-Performance TensorRT-LLM Inference Engine & Developer Platform</title>
-  <meta name="description" content="High-throughput, OpenAI-compatible serverless inference engine accelerated by NVIDIA TensorRT-LLM and Triton for open-weight models.">
-  <link rel="stylesheet" href="/static/css/theme.css?v=20260927-inception-release">
-  <link rel="stylesheet" href="/static/css/styles.css?v=20260927-inception-release">
-  <link rel="stylesheet" href="/static/css/responsive.css?v=20260927-inception-release">
-  <link rel="stylesheet" href="/static/css/identity.css?v=20260927-inception-release">
-  <link rel="stylesheet" href="/static/css/benchmarks.css?v=20260927-inception-release">
-  <link rel="stylesheet" href="/static/css/gateway.css?v=20260927-inception-release">
-  <link rel="stylesheet" href="/static/css/workspace.css?v=20260927-inception-release">
+  <title>SpeedInfer AI — Managed Model APIs & Developer Platform</title>
+  <meta name="description" content="An OpenAI-compatible inference gateway with transparent token pricing and a preview workspace for model training and deployment.">
+  <link rel="canonical" href="https://speedinfer.com/">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="SpeedInfer">
+  <meta property="og:title" content="SpeedInfer — Your models. One workspace.">
+  <meta property="og:description" content="Managed model APIs, transparent usage, and a connected workspace for AI builders.">
+  <meta property="og:url" content="https://speedinfer.com/">
+  <meta property="og:image" content="https://speedinfer.com/static/assets/speedinfer-social-v1.png">
+  <meta property="og:image:type" content="image/png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="SpeedInfer logo — Your models. One workspace.">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="SpeedInfer — Your models. One workspace.">
+  <meta name="twitter:description" content="Managed model APIs and a connected workspace for AI builders.">
+  <meta name="twitter:image" content="https://speedinfer.com/static/assets/speedinfer-social-v1.png">
+  <link rel="apple-touch-icon" href="/static/assets/speedinfer-touch.png">
+  <link rel="stylesheet" href="/static/css/polish.css?v=20260927-readiness">
+  <link rel="stylesheet" href="/static/css/theme.css?v=20260927-readiness-r2">
+  <link rel="stylesheet" href="/static/css/styles.css?v=20260927-readiness-r2">
+  <link rel="stylesheet" href="/static/css/responsive.css?v=20260927-readiness-r2">
+  <link rel="stylesheet" href="/static/css/identity.css?v=20260927-readiness-r2">
+  <link rel="stylesheet" href="/static/css/benchmarks.css?v=20260927-readiness-r2">
+  <link rel="stylesheet" href="/static/css/gateway.css?v=20260927-readiness-r2">
+  <link rel="stylesheet" href="/static/css/workspace.css?v=20260927-readiness-r2">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23354b26' stroke-width='3'><path d='M5 6h15l-8 6H4l8 6h8'/></svg>">
   <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 </head>
@@ -22,18 +39,18 @@
     <a class="skip-link" href="#platform">Skip to content</a>
     <div class="sales-topbar"><div><span>FOR ENTERPRISE TEAMS</span><p>Planning a private deployment or high-volume workload?</p><button data-contact="sales">Talk to sales <b>↗</b></button><a href="mailto:Sales@speedinfer.com" data-sales-email>Sales@speedinfer.com</a></div></div>
     <header class="site-header"><a href="#" class="wordmark" aria-label="SpeedInfer home"><span class="brand-symbol"> <svg viewBox="0 0 32 32" fill="none" aria-hidden="true"><path d="M7 8h20L17 16H5l10 8h10" stroke="currentColor" stroke-width="5" stroke-linejoin="round"/></svg></span>SpeedInfer<span class="wordmark-period">.</span></a>
-      <nav aria-label="Main navigation"><a href="#gateway">Gateway</a><a href="#pricing">Pricing</a><a href="#benchmarks" data-benchmarks-link>Benchmarks</a><a href="#platform">Platform</a><a href="#developers">Developers</a><a href="#contact">Contact</a><a href="/docs">Docs ↗</a></nav>
+      <nav aria-label="Main navigation"><a href="#gateway">Gateway</a><a href="#pricing">Pricing</a><a href="#benchmarks" data-benchmarks-link>Benchmarks</a><a href="#platform">Platform</a><a href="#developers">Developers</a><a href="#contact">Contact</a><a href="/guide">Docs ↗</a></nav>
       <div class="site-actions"><button class="text-button" data-auth="login">Log in</button><button class="btn ink-button" data-auth="register">Start building <span>↗</span></button></div>
     </header>
     <main>
       <section class="hero site-width">
-        <div class="hero-copy"><div class="eyebrow"><span class="small-orbit"></span> AI DEVELOPER PLATFORM</div><h1>Your ideas.<br>Open models.<br><span>No limits.</span></h1><p>Build AI products with an ultra-low latency inference engine powered by TensorRT-LLM and Triton dynamic batching on NVIDIA accelerated architectures. Fine-tune, evaluate, and serve open-weight models through an OpenAI-compatible API.</p><div class="hero-actions"><button class="btn lime-button" data-auth="register">Build with SpeedInfer <span>↗</span></button><a class="outline-link" href="#developers">Explore the API <span>→</span></a></div><div class="hero-note"><span>OpenAI-compatible</span><span>TensorRT-LLM Accelerated</span><span>Sub-100ms TTFT</span><span>Zero Data Retention</span></div></div>
+        <div class="hero-copy"><div class="eyebrow"><span class="small-orbit"></span> AI DEVELOPER PLATFORM</div><h1>Your ideas.<br>Open models.<br><span>Your next chapter.</span></h1><p>Build with an OpenAI-compatible model API, clear usage metering, and a connected workspace for your data and models. Explore training and deployment workflows in preview; live inference requires a connected model worker.</p><div class="hero-actions"><button class="btn lime-button" data-auth="register">Build with SpeedInfer <span>↗</span></button><a class="outline-link" href="#developers">Explore the API <span>→</span></a></div><div class="hero-note"><span>OpenAI-compatible</span><span>Measured usage</span><span>Private workspace</span><a href="/ready">Check API readiness ↗</a></div></div>
         <div class="inference-art" role="img" aria-label="Illustration: one API connects applications to an open-model inference engine and streams a response.">
           <div class="art-topline"><span>THE INFERENCE ENGINE</span><span>01 / ∞</span></div><div class="orbit orbit-one"></div><div class="orbit orbit-two"></div><div class="orbit orbit-three"></div><div class="art-axis"></div>
           <div class="model-node node-a"><span class="node-icon">⌘</span> Open models</div><div class="model-node node-b"><span class="node-icon">{ }</span> Your application</div><div class="engine-core"><svg viewBox="0 0 32 32" fill="none"><path d="M7 8h20L17 16H5l10 8h10" stroke="currentColor" stroke-width="4" stroke-linejoin="round"/></svg><span>SpeedInfer</span><small>BUILT TO FLOW</small></div><div class="token-node">token → token → <span>token</span><i></i></div><div class="art-caption"><span class="signal-bars"><i></i><i></i><i></i><i></i><i></i></span><span>Less friction. More invention.</span><span>↗</span></div>
         </div>
       </section>
-      <section class="foundation site-width" aria-label="Technology foundation"><span>OPEN BY DESIGN.<br>POWERED BY POSSIBILITY.</span><strong class="nvidia-text">NVIDIA TensorRT-LLM</strong><strong class="nvidia-text">NVIDIA Triton</strong><strong>CUDA 12+</strong><strong>FlashAttention-3</strong><strong>vLLM</strong><strong>PyTorch</strong><strong>OpenAI <small>compatible API</small></strong></section>
+      <div class="release-note site-width"><span class="release-dot"></span><strong>Platform preview</strong><span>Training &amp; deployment simulations · Live inference depends on connected workers</span><a href="/guide">Developer guide ↗</a></div><section class="foundation site-width" aria-label="Technology foundation"><span>OPEN BY DESIGN.<br>POWERED BY POSSIBILITY.</span><strong class="nvidia-text">NVIDIA TensorRT-LLM</strong><strong class="nvidia-text">NVIDIA Triton</strong><strong>CUDA 12+</strong><strong>FlashAttention-3</strong><strong>vLLM</strong><strong>PyTorch</strong><strong>OpenAI <small>compatible API</small></strong></section>
       <section class="gateway-section" id="gateway">
         <div class="site-width">
           <div class="gateway-heading"><div class="eyebrow">01 — ONE API. MANY POSSIBILITIES.</div><h2>A multi-model gateway,<br><em>built around your stack.</em></h2><p>Explore hosted open models alongside external API families from OpenAI and Anthropic. SpeedInfer keeps one catalog and a familiar request format while showing clearly how each model is accessed.</p></div>
@@ -57,13 +74,13 @@
         </div>
       </section>
       <section class="pricing-section site-width" id="pricing" style="padding-block: 60px 40px;">
-        <div class="section-heading"><div><div class="eyebrow">02 — INFERENCE PRICING</div><h2>Transparent pricing.<br><em>Predictable compute.</em></h2></div><p>Pay only for what you run with clear token pricing, or scale with dedicated TensorRT-LLM private endpoints with enterprise throughput and Zero Data Retention.</p></div>
+        <div class="section-heading"><div><div class="eyebrow">02 — INFERENCE PRICING</div><h2>Transparent pricing.<br><em>Predictable compute.</em></h2></div><p>Separate input and output token prices. Training and dedicated endpoint workflows are currently simulations with no compute charges.</p></div>
         <div class="pricing-grid" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(min(320px, 100%), 1fr)); gap:24px; margin-top:36px;">
           <article class="pricing-card" style="background:#fff; border:1px solid #dfe5d6; border-radius:14px; padding:32px; display:flex; flex-direction:column; justify-content:space-between;">
             <div>
               <div class="eyebrow" style="color:#63773b; margin-bottom:12px;">SERVERLESS INFERENCE</div>
               <h3 style="font-size:26px; font-weight:600; margin-bottom:8px;">Pay-As-You-Go API</h3>
-              <p style="font-size:13px; color:#68735c; line-height:1.6; margin-bottom:20px;">Direct API access to leading open-weight models accelerated with TensorRT-LLM in-flight batching.</p>
+              <p style="font-size:13px; color:#68735c; line-height:1.6; margin-bottom:20px;">API access to models configured by the deployment operator. Check the live catalog and readiness before sending requests.</p>
               <div style="margin-bottom:20px; padding-bottom:18px; border-bottom:1px solid #e1e7d8;">
                 <div style="display:flex; align-items:baseline; gap:6px;">
                   <span style="font-size:36px; font-weight:700; color:var(--ink);">$0.20</span>
@@ -75,10 +92,10 @@
                 </div>
               </div>
               <ul style="list-style:none; padding:0; margin:0 0 24px; display:flex; flex-direction:column; gap:10px; font-size:13px; color:#58654a;">
-                <li style="display:flex; align-items:center; gap:8px;"><span>✓</span> Sub-100ms Time-to-First-Token (TTFT)</li>
-                <li style="display:flex; align-items:center; gap:8px;"><span>✓</span> Strict Zero Data Retention (ZDR) guarantee</li>
-                <li style="display:flex; align-items:center; gap:8px;"><span>✓</span> Full OpenAI SDK / API compatibility</li>
-                <li style="display:flex; align-items:center; gap:8px;"><span>✓</span> DeepSeek-R1, Qwen 2.5, Llama 3.3, Nemotron</li>
+                <li style="display:flex; align-items:center; gap:8px;"><span>✓</span> Measured latency; no fixed speed guarantee</li>
+                <li style="display:flex; align-items:center; gap:8px;"><span>✓</span> Published data handling and retention disclosures</li>
+                <li style="display:flex; align-items:center; gap:8px;"><span>✓</span> OpenAI-compatible text chat and SSE</li>
+                <li style="display:flex; align-items:center; gap:8px;"><span>✓</span> Configured models listed in /v1/models</li>
               </ul>
             </div>
             <button class="btn ink-button" data-auth="register" style="width:100%; justify-content:center;">Start building <span>↗</span></button>
@@ -88,19 +105,19 @@
             <div>
               <div class="eyebrow" style="color:#63773b; margin-bottom:12px;">DEDICATED CAPACITY</div>
               <h3 style="font-size:26px; font-weight:600; margin-bottom:8px;">Dedicated Endpoints</h3>
-              <p style="font-size:13px; color:#68735c; line-height:1.6; margin-bottom:20px;">Dedicated private TensorRT-LLM and Triton instances on Hopper &amp; Blackwell architectures with custom LoRA adapters.</p>
+              <p style="font-size:13px; color:#68735c; line-height:1.6; margin-bottom:20px;">Plan a managed model deployment with separate datasets and weights. Capacity remains simulated until provider integration is complete.</p>
               <div style="margin-bottom:20px; padding-bottom:18px; border-bottom:1px solid #dfe5d6;">
                 <div style="display:flex; align-items:baseline; gap:6px;">
                   <span style="font-size:32px; font-weight:700; color:var(--ink);">Custom</span>
                   <span style="font-size:12px; color:#79806f; font-family:var(--font-mono);">/ dedicated SLA</span>
                 </div>
-                <div style="font-size:12px; color:#7a866a; margin-top:6px;">Single-tenant isolation &amp; guaranteed TPS throughput</div>
+                <div style="font-size:12px; color:#7a866a; margin-top:6px;">Dedicated deployment planning · simulated capacity</div>
               </div>
               <ul style="list-style:none; padding:0; margin:0 0 24px; display:flex; flex-direction:column; gap:10px; font-size:13px; color:#58654a;">
-                <li style="display:flex; align-items:center; gap:8px;"><span>✓</span> Single-tenant NVIDIA Hopper (H100/H200) &amp; Blackwell</li>
-                <li style="display:flex; align-items:center; gap:8px;"><span>✓</span> Custom model weights &amp; dynamic LoRA serving</li>
-                <li style="display:flex; align-items:center; gap:8px;"><span>✓</span> Zero Data Retention + VPC Peering / PrivateLink</li>
-                <li style="display:flex; align-items:center; gap:8px;"><span>✓</span> Custom latency SLA &amp; 99.95% uptime commitment</li>
+                <li style="display:flex; align-items:center; gap:8px;"><span>✓</span> GPU capacity subject to provisioning</li>
+                <li style="display:flex; align-items:center; gap:8px;"><span>✓</span> Separate datasets and model weights</li>
+                <li style="display:flex; align-items:center; gap:8px;"><span>✓</span> Private networking subject to agreement</li>
+                <li style="display:flex; align-items:center; gap:8px;"><span>✓</span> No uptime SLA during preview</li>
               </ul>
             </div>
             <button class="btn lime-button" data-contact="sales" style="width:100%; justify-content:center;">Talk to sales <span>↗</span></button>
@@ -108,37 +125,36 @@
         </div>
       </section>
       <section class="platform-section site-width" id="platform"><div class="section-heading"><div><div class="eyebrow">03 — THE PLATFORM</div><h2>Everything between<br>an idea and intelligence.</h2></div><p>A connected toolkit for teams building with open AI. Less infrastructure to piece together. More room to create.</p></div>
-      <div class="feature-grid"><article class="feature-card feature-inference"><div class="feature-top"><span class="feature-icon">↗</span><span>01 / INFERENCE</span></div><div class="wave-graphic" aria-hidden="true"><i style="--bar:16px"></i><i style="--bar:27px"></i><i style="--bar:41px"></i><i style="--bar:24px"></i><i style="--bar:59px"></i><i style="--bar:80px"></i><i style="--bar:48px"></i><i style="--bar:99px"></i><i style="--bar:68px"></i><i style="--bar:116px"></i><i style="--bar:89px"></i><i style="--bar:59px"></i><i style="--bar:104px"></i><i style="--bar:75px"></i><i style="--bar:45px"></i><i style="--bar:88px"></i><i style="--bar:59px"></i><i style="--bar:35px"></i><i style="--bar:63px"></i><i style="--bar:40px"></i><i style="--bar:23px"></i><i style="--bar:34px"></i></div><h3>Let your ideas run.</h3><p>Serve open-weight models with TensorRT-LLM, continuous in-flight batching, and sub-100ms streaming.</p><a href="#technology">Explore the engine <span>↗</span></a></article>
+      <div class="feature-grid"><article class="feature-card feature-inference"><div class="feature-top"><span class="feature-icon">↗</span><span>01 / INFERENCE</span></div><div class="wave-graphic" aria-hidden="true"><i style="--bar:16px"></i><i style="--bar:27px"></i><i style="--bar:41px"></i><i style="--bar:24px"></i><i style="--bar:59px"></i><i style="--bar:80px"></i><i style="--bar:48px"></i><i style="--bar:99px"></i><i style="--bar:68px"></i><i style="--bar:116px"></i><i style="--bar:89px"></i><i style="--bar:59px"></i><i style="--bar:104px"></i><i style="--bar:75px"></i><i style="--bar:45px"></i><i style="--bar:88px"></i><i style="--bar:59px"></i><i style="--bar:35px"></i><i style="--bar:63px"></i><i style="--bar:40px"></i><i style="--bar:23px"></i><i style="--bar:34px"></i></div><h3>Let your ideas run.</h3><p>Connect a compatible model worker and serve text through authenticated, metered API requests.</p><a href="#technology">Explore the engine <span>↗</span></a></article>
       <article class="feature-card"><div class="feature-top"><span class="feature-icon">⌘</span><span>02 / CUSTOMIZATION</span></div><div class="tuning-graphic" aria-hidden="true"><span>BASE MODEL</span><div><i></i><i></i><i></i><b>+</b><em>Your data</em></div><span>↓ &nbsp; A MODEL THAT FITS</span></div><h3>Make it your own.</h3><p>Adapt models with LoRA and QLoRA. Track experiments, evaluate, and export your model.</p><a href="#technology">Discover the workflow <span>↗</span></a></article>
       <article class="feature-card"><div class="feature-top"><span class="feature-icon">◈</span><span>03 / CONTROL</span></div><div class="control-graphic" aria-hidden="true"><div><span>API access</span><b>Scoped keys ↗</b></div><div><span>Token usage</span><b>Metered ◉</b></div><div><span>Infrastructure</span><b>Dedicated Endpoints ⌁</b></div></div><h3>Keep the controls.</h3><p>Manage API keys, monitor token usage, and set rate limits from one focused workspace.</p><button class="feature-link" data-auth="login">Open your console <span>↗</span></button></article></div></section>
-      <section class="technology-section" id="technology"><div class="site-width technology-inner"><div><div class="eyebrow">04 — BUILT ON OPEN TECHNOLOGY</div><h2>From your data.<br>To your deployment.</h2><p>SpeedInfer connects the full open-model lifecycle: fine-tuning, evaluation, and high-performance API serving powered by NVIDIA accelerated computing.</p><a href="/docs" class="outline-link">Read the API documentation ↗</a></div><div class="lifecycle"><div><span>01</span><h3>Adapt</h3><p>LoRA / QLoRA fine-tuning</p></div><div><span>02</span><h3>Evaluate</h3><p>Experiment tracking & model evaluation</p></div><div><span>03</span><h3>Serve</h3><p>TensorRT-LLM inference & metered API access</p></div></div></div></section>
-      <section class="developer-section site-width" id="developers"><div><div class="eyebrow">05 — DEVELOPERS FIRST</div><h2>Familiar API.<br>Fresh possibilities.</h2><p>Keep the SDK you know. Connect your application to SpeedInfer and start streaming from your deployed model with FP8 TensorRT-LLM acceleration.</p><div class="developer-points"><span>✓ OpenAI-compatible endpoints</span><span>✓ Server-sent event streaming</span><span>✓ Per-key access and usage tracking</span><span>✓ FP8 GEMM kernel acceleration</span></div><a href="/docs" class="outline-link">Explore documentation ↗</a></div><div class="code-window"><div class="code-top"><div class="code-tabs" role="tablist" aria-label="API Code Examples"><span><i></i><i></i><i></i></span><button class="code-tab active" id="tab-python" type="button" role="tab" aria-selected="true" aria-controls="landing-code">Python</button><button class="code-tab" id="tab-curl" type="button" role="tab" aria-selected="false" aria-controls="landing-code">cURL</button></div><span id="code-file-label">inference.py</span><button id="copy-example" aria-label="Copy code example">Copy ↗</button></div><pre><code id="landing-code">from openai import OpenAI
+      <section class="technology-section" id="technology"><div class="site-width technology-inner"><div><div class="eyebrow">04 — BUILT ON OPEN TECHNOLOGY</div><h2>From your data.<br>To your deployment.</h2><p>Organize data and weights, explore simulated training and evaluation, and connect a compatible inference worker for live model serving.</p><a href="/docs" class="outline-link">Read the API documentation ↗</a></div><div class="lifecycle"><div><span>01</span><h3>Adapt</h3><p>LoRA / QLoRA workflow preview</p></div><div><span>02</span><h3>Evaluate</h3><p>Simulated evaluation workflow</p></div><div><span>03</span><h3>Serve</h3><p>Connected inference & metered API access</p></div></div></div></section>
+      <section class="developer-section site-width" id="developers"><div><div class="eyebrow">05 — DEVELOPERS FIRST</div><h2>Familiar API.<br>Fresh possibilities.</h2><p>Use the supported text chat API through the OpenAI SDK. Create a key, add credit, and check model readiness before starting.</p><div class="developer-points"><span>✓ OpenAI-compatible endpoints</span><span>✓ Server-sent event streaming</span><span>✓ Per-key access and usage tracking</span><span>✓ Authoritative upstream token accounting</span></div><a href="/docs" class="outline-link">Explore documentation ↗</a></div><div class="code-window"><div class="code-top"><div class="code-tabs" role="tablist" aria-label="API Code Examples"><span><i></i><i></i><i></i></span><button class="code-tab active" id="tab-python" type="button" role="tab" aria-selected="true" aria-controls="landing-code">Python</button><button class="code-tab" id="tab-curl" type="button" role="tab" aria-selected="false" aria-controls="landing-code">cURL</button></div><span id="code-file-label">inference.py</span><button id="copy-example" aria-label="Copy code example">Copy ↗</button></div><pre><code id="landing-code">import os
+from openai import OpenAI
 
-# Connect to SpeedInfer's NVIDIA TensorRT-LLM accelerated endpoint
+# Select a model returned by client.models.list()
 client = OpenAI(
-    base_url="https://api.speedinfer.com/v1",
-    api_key="sk-speedinfer-live-key",
+    base_url="https://speedinfer.com/v1",
+    api_key=os.environ["SPEEDINFER_API_KEY"],
 )
 
 stream = client.chat.completions.create(
-    model="deepseek-ai/DeepSeek-R1",
+    model=client.models.list().data[0].id,
     messages=[
         {"role": "user", "content": "Explain quantum teleportation in two sentences."}
     ],
-    extra_body={
-        "kv_cache_dtype": "fp8",
-        "tensorrt_llm_runtime": True
-    },
+    max_tokens=128,
     stream=True,
 )
 
 for chunk in stream:
-    print(chunk.choices[0].delta.content or "", end="", flush=True)</code></pre><div class="code-bottom"><span id="code-lang-label">Python / OpenAI SDK (FP8 Accelerated)</span><span>Real endpoint: https://api.speedinfer.com/v1 ↗</span></div></div></section>
+    if chunk.choices:
+        print(chunk.choices[0].delta.content or "", end="", flush=True)</code></pre><div class="code-bottom"><span id="code-lang-label">Python / OpenAI SDK (text chat)</span><span>Real endpoint: https://speedinfer.com/v1 ↗</span></div></div></section>
 
       <section class="company-section site-width" id="company">
-        <div class="section-heading"><div><div class="eyebrow">06 — PURPOSE-BUILT FOR AI TEAMS</div><h2>Real infrastructure.<br>A clear path to production.</h2></div><p>SpeedInfer is a high-performance inference platform and developer ecosystem powered by NVIDIA accelerated computing, built to give developers an ultra-fast workflow from experimentation to production serving.</p></div>
-        <div class="architecture-grid"><article><span class="feature-icon">⌘</span><h3>One connected stack</h3><p>An API gateway handles access, rate limits, and token metering, routing requests to NVIDIA TensorRT-LLM and Triton inference engines on Hopper &amp; Blackwell architectures. Features Sub-100ms TTFT, FP8 GEMM kernel acceleration, and dynamic in-flight batching for maximum throughput.</p><div class="architecture-flow"><span>Your app</span><b>→</b><span>SpeedInfer Gateway</span><b>→</b><span>TensorRT-LLM / Triton</span></div></article><article><span class="feature-icon">↗</span><h3>Built for your workload</h3><p>Build conversational assistants, developer tools, and domain-specific text applications. Adapt open models with LoRA or QLoRA and serve with enterprise Zero Data Retention.</p><a class="outline-link" href="/docs">Inspect the API ↗</a></article></div>
-        <div class="technology-note"><span>TECHNOLOGY FOUNDATION</span><p>NVIDIA TensorRT-LLM · NVIDIA Triton Inference Server · CUDA 12+ · FlashAttention-3 · vLLM · PyTorch</p><small>Accelerated on NVIDIA Hopper (H100/H200) and Blackwell architectures with FP8 precision and in-flight batching.</small></div>
+        <div class="section-heading"><div><div class="eyebrow">06 — PURPOSE-BUILT FOR AI TEAMS</div><h2>Real infrastructure.<br>A clear path to production.</h2></div><p>SpeedInfer is building a managed model platform: authenticated inference, usage accounting and a workspace for model workflows. GPU performance and production capacity are validated per deployment.</p></div>
+        <div class="architecture-grid"><article><span class="feature-icon">⌘</span><h3>One connected stack</h3><p>The gateway verifies permissions, rate limits and available credit before contacting a compatible model worker. Worker failures are explicit; measured performance depends on the GPU, model, precision and workload.</p><div class="architecture-flow"><span>Your app</span><b>→</b><span>SpeedInfer Gateway</span><b>→</b><span>Compatible worker</span></div></article><article><span class="feature-icon">↗</span><h3>Built for your workload</h3><p>Build conversational assistants, developer tools, and domain-specific text applications. Preview model adaptation workflows and review data handling with your team before sending sensitive information.</p><a class="outline-link" href="/docs">Inspect the API ↗</a></article></div>
+        <div class="technology-note"><span>TECHNOLOGY FOUNDATION</span><p>NVIDIA TensorRT-LLM · NVIDIA Triton Inference Server · CUDA 12+ · FlashAttention-3 · vLLM · PyTorch</p><small>Technology roadmap; this list does not assert installed hardware, certification, membership or measured performance.</small></div>
       </section>
       <section class="contact-section" id="contact"><div class="site-width">
         <div class="section-heading"><div><div class="eyebrow">07 — LET’S BUILD TOGETHER</div><h2>Big plans.<br>Start a conversation.</h2></div><p>Tell us what you’re building, ask a technical question, or get help with your workspace. Our team follows up by email.</p></div>
@@ -146,7 +162,7 @@ for chunk in stream:
         <article class="contact-card"><div class="contact-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M4 13v-1a8 8 0 0 1 16 0v1M4 12H2v6h4v-6H4zm16 0h2v6h-4v-6h2zm0 6v2h-6"/></svg></div><span class="eyebrow">A LITTLE HELP GOES A LONG WAY</span><h3>We’re here to help.</h3><p>Report an issue, get help connecting to the API, or ask a general question about SpeedInfer.</p><a class="email-link" href="mailto:Support@speedinfer.com" data-support-email>Support@speedinfer.com ↗</a><button class="btn btn-secondary" data-contact="support">Send a support request <span>↗</span></button><small>Include the request ID and error message. Keep API keys and passwords private.</small></article></div>
       </div></section>
       <section class="closing-cta site-width"><div class="eyebrow">THE NEXT THING STARTS WITH YOU</div><h2>Build something<br>worth speeding up.</h2><button class="btn ink-button" data-auth="register">Start building <span>↗</span></button><div class="cta-mark" aria-hidden="true">↗</div></section>
-    </main><footer class="site-footer site-width"><div><a class="wordmark" href="#">SpeedInfer.</a><p>Open intelligence. In your hands.</p></div><div><a href="#pricing">Pricing</a><a href="#platform">Platform</a><a href="#company">About the platform</a><a href="#contact">Contact</a><a href="/legal/terms">Terms of Service</a><a href="/legal/privacy">Privacy &amp; ZDR Policy</a><a href="/docs">API documentation ↗</a><button class="text-button" data-auth="login">Developer console ↗</button></div><small>© 2026 SpeedInfer AI Technologies. Built for what comes next. <span class="location-badge">Cairo, Egypt</span></small></footer>
+    </main><footer class="site-footer site-width"><div><a class="wordmark" href="#">SpeedInfer.</a><p>Open intelligence. In your hands.</p></div><div><a href="#pricing">Pricing</a><a href="#platform">Platform</a><a href="#company">About the platform</a><a href="#contact">Contact</a><a href="/legal/terms">Terms of Service</a><a href="/legal/privacy">Privacy &amp; Data Handling</a><a href="/docs">API documentation ↗</a><button class="text-button" data-auth="login">Developer console ↗</button></div><small>© 2026 SpeedInfer.com. Built for what comes next. <span class="location-badge">Cairo, Egypt</span></small></footer>
   </div>
 
   <div id="benchmarks-page" class="benchmarks-page" hidden>
@@ -170,7 +186,7 @@ for chunk in stream:
       <section class="benchmark-sources" id="benchmark-sources"><div class="site-width"><div><div class="eyebrow">04 — SOURCE LEDGER</div><h2>Every number<br>has a trail.</h2></div><div class="source-list"><a href="https://platform.openai.com/docs/models" target="_blank" rel="noopener"><span>PRIMARY SOURCE / OPENAI</span><b>OpenAI API model catalog</b><small>OpenAI · active GPT model specifications and context limits ↗</small></a><a href="https://docs.anthropic.com/en/docs/about-claude/model-deprecations" target="_blank" rel="noopener"><span>PRIMARY SOURCE / ANTHROPIC</span><b>Claude active model lifecycle</b><small>Anthropic · current model IDs and retirement status ↗</small></a><a href="https://github.com/deepseek-ai/DeepSeek-V3#4-evaluation-results" target="_blank" rel="noopener"><span>PRIMARY SOURCE / COMPARABLE SET</span><b>DeepSeek V3 official evaluation table</b><small>DeepSeek AI · Chat model benchmarks · accessed 26 Sep 2026 ↗</small></a><a href="https://arxiv.org/abs/2501.12948" target="_blank" rel="noopener"><span>PRIMARY SOURCE / DEEPSEEK REASONING</span><b>DeepSeek-R1 technical report</b><small>DeepSeek AI · incentives via large-scale RL (arXiv:2501.12948) ↗</small></a><a href="https://github.com/QwenLM/Qwen3" target="_blank" rel="noopener"><span>PRIMARY SOURCE / QWEN FAMILY</span><b>Qwen3 official model documentation</b><small>Qwen Team · architecture and long-context releases ↗</small></a><a href="https://ai.meta.com/llama/get-started/" target="_blank" rel="noopener"><span>PRIMARY SOURCE / LLAMA FAMILY</span><b>Meta Llama official model documentation</b><small>Meta · Llama 3.1 and Llama 4 model specifications ↗</small></a><a href="https://ai.google.dev/gemma/docs/core/model_card_3#benchmark_results" target="_blank" rel="noopener"><span>PRIMARY SOURCE / GEMMA FAMILY</span><b>Gemma 3 official model card</b><small>Google AI for Developers · instruction-tuned 27B results ↗</small></a><a href="https://github.com/NVIDIA-NeMo/Nemotron/tree/main/usage-cookbook/Nemotron-3-Ultra-Base" target="_blank" rel="noopener"><span>PRIMARY SOURCE / NVIDIA NEMOTRON</span><b>Nemotron 3 Ultra official documentation</b><small>NVIDIA · architecture, context, and evaluation suite ↗</small></a><a href="https://mistral.ai/news/mistral-small-3-1/" target="_blank" rel="noopener"><span>PRIMARY SOURCE / MISTRAL</span><b>Mistral Small 3.1 release</b><small>Mistral AI · model capabilities and 128K context ↗</small></a><a href="https://arxiv.org/abs/2412.08905" target="_blank" rel="noopener"><span>PRIMARY SOURCE / MICROSOFT RESEARCH</span><b>Phi-4 technical report</b><small>Microsoft Research · 14B compact reasoning (arXiv:2412.08905) ↗</small></a></div></div></section>
       <section class="benchmark-cta site-width"><span class="eyebrow">FROM COMPARISON TO PRODUCTION</span><h2>Found your model?<br>Make it move.</h2><p>Compare hosted and external API models in one catalog, then connect through a familiar API with streaming, access controls, and usage metering.</p><button class="btn ink-button" data-auth="register">Start building <span>↗</span></button></section>
     </main>
-    <footer class="site-footer site-width"><div><a class="wordmark" href="#">SpeedInfer.</a><p>Open intelligence. In your hands.</p></div><div><a href="/#pricing">Pricing</a><a href="#benchmark-board">Leaderboard</a><a href="#benchmark-methodology">Methodology</a><a href="#benchmark-sources">Sources</a><a href="/legal/terms">Terms of Service</a><a href="/legal/privacy">Privacy &amp; ZDR Policy</a><a href="/docs">API documentation ↗</a></div><small>© 2026 SpeedInfer AI Technologies. Cairo, Egypt. Benchmarks with provenance. <span class="location-badge">Cairo, Egypt</span></small></footer>
+    <footer class="site-footer site-width"><div><a class="wordmark" href="#">SpeedInfer.</a><p>Open intelligence. In your hands.</p></div><div><a href="/#pricing">Pricing</a><a href="#benchmark-board">Leaderboard</a><a href="#benchmark-methodology">Methodology</a><a href="#benchmark-sources">Sources</a><a href="/legal/terms">Terms of Service</a><a href="/legal/privacy">Privacy &amp; Data Handling</a><a href="/docs">API documentation ↗</a></div><small>© 2026 SpeedInfer.com. Cairo, Egypt. Benchmarks with provenance. <span class="location-badge">Cairo, Egypt</span></small></footer>
   </div>
 
   <!-- Floating Toast Notifications Stack -->
@@ -479,6 +495,7 @@ for chunk in stream:
                 Use the OpenAI SDK with your deployment. Set <code style="font-family:var(--font-mono); color:var(--primary);">base_url</code> and pass your SpeedInfer API key:
               </p>
               <pre id="console-code" style="background:var(--bg-base); padding:var(--space-4); border-radius:var(--radius-md); border:1px solid var(--border-subtle); font-family:var(--font-mono); font-size:var(--text-xs); color:var(--text-primary); overflow-x:auto;">
+import os
 from openai import OpenAI
 
 client = OpenAI(
@@ -493,7 +510,8 @@ response = client.chat.completions.create(
 )
 
 for chunk in response:
-    print(chunk.choices[0].delta.content or "", end="")</pre>
+    if chunk.choices:
+        print(chunk.choices[0].delta.content or "", end="")</pre>
             </div>
 
             <!-- Health & Worker Status -->
@@ -991,9 +1009,9 @@ for chunk in response:
   <dialog id="contact-dialog" class="contact-dialog" aria-labelledby="contact-dialog-title"><div class="contact-dialog-header"><span class="eyebrow" id="contact-dialog-eyebrow">LET’S TALK</span><button class="btn-icon" type="button" data-close-contact aria-label="Close contact form">×</button></div><h2 id="contact-dialog-title">Tell us what you’re building.</h2><p id="contact-dialog-description">Share your requirements. Our team will follow up by email.</p>
     <form id="contact-form"><input type="hidden" name="category" value="sales"><div class="contact-form-grid"><div class="form-group"><label class="form-label" for="contact-name">Your name</label><input id="contact-name" name="name" class="form-input" autocomplete="name" minlength="2" maxlength="100" required></div><div class="form-group"><label class="form-label" for="contact-email">Reply email</label><input id="contact-email" name="email" class="form-input" type="email" autocomplete="email" maxlength="254" required></div></div><div class="form-group"><label class="form-label" for="contact-company">Company <span>(optional)</span></label><input id="contact-company" name="company" class="form-input" autocomplete="organization" maxlength="120"></div><div class="form-group"><label class="form-label" for="contact-subject">Subject</label><input id="contact-subject" name="subject" class="form-input" minlength="3" maxlength="160" required></div><div class="form-group"><label class="form-label" for="contact-message">How can we help?</label><textarea id="contact-message" name="message" class="form-textarea" rows="4" minlength="20" maxlength="3000" required placeholder="Tell us about your use case or the issue you’re experiencing…"></textarea><div class="form-hint">At least 20 characters. Please don’t include passwords, API keys, or sensitive data.</div></div><div class="contact-trap" aria-hidden="true"><label for="contact-website">Website</label><input id="contact-website" name="website" tabindex="-1" autocomplete="off"></div><label class="consent-label"><input name="consent" type="checkbox" required><span>I agree to SpeedInfer storing this request and contacting me by email about it. <button type="button" class="inline-link" data-privacy>Read the data notice</button>.</span></label><div class="cf-turnstile" id="turnstile-contact" data-sitekey="0x4AAAAAAFFIh2opZ2El7AU9" data-action="contact" data-theme="light" style="margin: 10px 0;"></div><div id="contact-result" role="status" aria-live="polite" tabindex="-1"></div><button id="contact-submit" class="btn ink-button" type="submit">Send request <span>↗</span></button><p class="contact-alternative">Prefer email? <a id="contact-direct-email" href="mailto:Sales@speedinfer.com">Sales@speedinfer.com</a></p></form>
   </dialog>
-  <dialog id="privacy-dialog" class="contact-dialog privacy-dialog" aria-labelledby="privacy-title"><div class="contact-dialog-header"><span class="eyebrow">PRIVACY &amp; ZDR DATA POLICY</span><button class="btn-icon" data-close-privacy aria-label="Close data notice">×</button></div><h2 id="privacy-title">How your data and requests are handled.</h2><p><strong>Enterprise Zero Data Retention (ZDR) Guarantee:</strong> All prompt and completion tokens submitted to SpeedInfer inference endpoints are processed strictly ephemerally in GPU memory (VRAM) and are never logged, stored on persistent disk, or used for model training.</p><p>When you submit a sales or support request, SpeedInfer stores your name, email, optional company, subject, and message so the team can handle your request and respond by email. Requests are visible only to authorized administrators.</p><p>Contact details are used to handle your request, not to enroll you in marketing. Requests remain in the system until removed by the operator. For access, corrections, or deletion, email <a href="mailto:Support@speedinfer.com" data-support-email>Support@speedinfer.com</a>.</p><p>Account and API key metadata are used strictly for authentication and aggregated token usage metering. Dedicated enterprise VPC deployment options with VPC Peering / PrivateLink and custom SLAs are available via enterprise sales.</p></dialog>
+  <dialog id="privacy-dialog" class="contact-dialog privacy-dialog" aria-labelledby="privacy-title"><div class="contact-dialog-header"><span class="eyebrow">PRIVACY &amp; DATA HANDLING</span><button class="btn-icon" data-close-privacy aria-label="Close data notice">×</button></div><h2 id="privacy-title">How your data and requests are handled.</h2><p>Inference requests pass through the gateway and the configured worker. Usage records contain token counts, cost and timing. Worker and provider retention depend on deployment configuration; there is no blanket zero-retention guarantee. Read the <a href="/legal/privacy">full privacy policy</a> before sending sensitive data.</p><p>When you submit a sales or support request, SpeedInfer stores your name, email, optional company, subject, and message so the team can handle your request and respond by email. Requests are visible only to authorized administrators.</p><p>Contact details are used to handle your request, not to enroll you in marketing. Requests remain in the system until removed by the operator. For access, corrections, or deletion, email <a href="mailto:Support@speedinfer.com" data-support-email>Support@speedinfer.com</a>.</p><p>Account and API key metadata are used strictly for authentication and aggregated token usage metering. Private networking and any service-level commitments require a separate written agreement.</p></dialog>
 
-  <script src="/static/js/benchmarks.js?v=20260927-inception-release"></script>
-  <script type="module" src="/static/js/app.js?v=20260927-inception-release"></script>
+  <script src="/static/js/benchmarks.js?v=20260927-readiness-r2"></script>
+  <script type="module" src="/static/js/app.js?v=20260927-readiness-r2"></script>
 </body>
 </html>

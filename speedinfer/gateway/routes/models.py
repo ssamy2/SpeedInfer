@@ -11,7 +11,7 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, Header, HTTPException, status
 from sqlmodel import Session, select
 
-from speedinfer.core.auth import authenticate_api_key
+from speedinfer.core.auth import authenticate_api_key, check_scope_permission
 from speedinfer.core.security import get_current_user
 from speedinfer.database.models import ApiKey, ModelVersion, User
 from speedinfer.database.session import get_session
@@ -60,7 +60,10 @@ def get_caller_auth(
         )
     token = parts[1]
     if token.startswith("sk-speedinfer-"):
-        return authenticate_api_key(authorization, session)
+        key = authenticate_api_key(authorization, session)
+        if not check_scope_permission(key, "models:read"):
+            raise HTTPException(403, detail="Missing models:read permission.")
+        return key
 
     # Decode and authenticate user via JWT
     return get_current_user(authorization=authorization, session=session)

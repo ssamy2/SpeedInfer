@@ -10,7 +10,7 @@ Heuristics strictly enforce anti-fraud protections against:
 
 import hashlib
 
-from sqlalchemy import func
+from sqlalchemy import func, update
 from sqlmodel import Session, select
 
 from speedinfer.config import Settings, get_settings
@@ -268,9 +268,14 @@ def award_referee_bonus(
         ).first()
 
         if key is not None:
-            key.trial_balance = round(key.trial_balance + bonus, 6)
-            key.credit_balance = round(key.trial_balance + key.paid_balance, 6)
-            session.add(key)
+            session.execute(
+                update(ApiKey)
+                .where(ApiKey.id == key.id)
+                .values(
+                    trial_balance=ApiKey.trial_balance + bonus,
+                    credit_balance=ApiKey.credit_balance + bonus,
+                )
+            )
             _sync_redis_balance(key.id, bonus, is_trial=True)
         else:
             pepper = (
@@ -351,11 +356,14 @@ def check_and_award_referrer_bonus(
 
     reward = referral.reward_amount or cfg.referral_reward_amount
     if referrer_key is not None:
-        referrer_key.trial_balance = round(referrer_key.trial_balance + reward, 6)
-        referrer_key.credit_balance = round(
-            referrer_key.trial_balance + referrer_key.paid_balance, 6
+        session.execute(
+            update(ApiKey)
+            .where(ApiKey.id == referrer_key.id)
+            .values(
+                trial_balance=ApiKey.trial_balance + reward,
+                credit_balance=ApiKey.credit_balance + reward,
+            )
         )
-        session.add(referrer_key)
         _sync_redis_balance(referrer_key.id, reward, is_trial=True)
     else:
         pepper = (

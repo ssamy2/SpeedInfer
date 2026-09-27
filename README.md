@@ -1,3 +1,5 @@
+> **Current release: preview, not production-certified.** See [production readiness audit](docs/PRODUCTION_READINESS_AR.md) and the served `/guide` for supported APIs, billing and GPU launch gates. No measured GPU performance or blanket zero-retention guarantee is claimed.
+
 <p align="center">
   <img src="speedinfer/frontend/assets/speedinfer-icon.svg" width="140" height="140" alt="SpeedInfer AI Logo">
 </p>
@@ -5,16 +7,14 @@
 <h1 align="center">SpeedInfer AI ⚡</h1>
 
 <p align="center">
-  <b>High-Performance TensorRT-LLM Inference Engine & Developer Platform</b><br>
-  <i>Ultra-low latency, OpenAI-compatible serverless LLM serving accelerated by NVIDIA Hopper &amp; Blackwell architectures.</i>
+  <b>Managed Model API & Developer Platform</b><br>
+  <i>OpenAI-compatible text serving through a connected model worker; training and deployment workspace workflows are currently simulated.</i>
 </p>
 
 <p align="center">
   <a href="https://speedinfer.com"><img src="https://img.shields.io/badge/Live_Site-speedinfer.com-38ef7d?style=for-the-badge&logo=fastapi&logoColor=white" alt="Live Site"></a>
   <a href="https://speedinfer.com/docs"><img src="https://img.shields.io/badge/Docs-API_Reference-3b82f6?style=for-the-badge&logo=gitbook&logoColor=white" alt="Documentation"></a>
-  <img src="https://img.shields.io/badge/NVIDIA-TensorRT--LLM-76b900?style=for-the-badge&logo=nvidia&logoColor=white" alt="NVIDIA TensorRT-LLM">
   <img src="https://img.shields.io/badge/OpenAI-Drop--in_API-412991?style=for-the-badge&logo=openai&logoColor=white" alt="OpenAI Compatible">
-  <img src="https://img.shields.io/badge/Tests-217_Passed-10b981?style=for-the-badge&logo=pytest&logoColor=white" alt="Tests">
 </p>
 
 <p align="center">
@@ -25,12 +25,12 @@
 
 ## 🚀 Key Features
 
-- **OpenAI-Compatible API Gateway:** Seamless drop-in replacement for OpenAI SDKs (`/v1/chat/completions` with unbuffered SSE streaming, `/v1/completions`, `/v1/models`, `/v1/usage`, `/health`).
+- **OpenAI-Compatible API Gateway:** Supported text-only OpenAI-compatible API subset (`/v1/chat/completions` with unbuffered SSE streaming, `/v1/completions`, `/v1/models`, `/v1/usage`, `/health`).
 - **High-Performance Inference Engine:** Built on **vLLM** with tensor parallelism, PagedAttention, KV cache management, continuous batching, and circuit-breaker fault tolerance.
-- **Enterprise Authentication & Metering:** Cryptographically secure API keys (`sk-speedinfer-...`) with HMAC-SHA256 hashing and pepper, atomic Redis Lua balance deduction, pre-flight credit checks, and token-bucket RPM/TPM rate limiting.
+- **Enterprise Authentication & Metering:** Cryptographically secure API keys (`sk-speedinfer-...`) with HMAC-SHA256 hashing and pepper, durable database reservations and settlement, pre-flight credit checks, and token-bucket RPM/TPM rate limiting.
 - **Model Lifecycle & Fine-Tuning:** Hugging Face `transformers` + `peft` (LoRA/QLoRA) + `trl`, YAML-driven configs, MLflow experiment tracking and model registry, automated adapter merging, and perplexity evaluation harness.
 - **Dual Persistence Layer:** SQLModel / SQLAlchemy unified schema supporting SQLite for rapid local testing and PostgreSQL for high-concurrency production deployments, managed via Alembic migrations.
-- **Production-Ready Deployment:** Multi-container Docker Compose 7-service topology (Gateway, vLLM, PostgreSQL, Redis, MLflow, Prometheus, Grafana), Caddy reverse proxy with automatic TLS, and bare-metal systemd unit definitions.
+- **Deployment templates (require environment validation):** Multi-container Docker Compose 7-service topology (Gateway, vLLM, PostgreSQL, Redis, MLflow, Prometheus, Grafana), Caddy reverse proxy with automatic TLS, and bare-metal systemd unit definitions.
 
 ---
 
@@ -256,7 +256,7 @@ Installs and enables `speedinfer-vllm.service` and `speedinfer-gateway.service`.
 
 ### Automated Unit and Integration Tests
 
-Run the full pytest suite (148 tests):
+Run the unit and integration suites (see the readiness audit for current results):
 ```bash
 pytest -v
 ```

@@ -8,11 +8,13 @@ version = "0.1.0"
 description = "High-performance OpenAI-compatible TensorRT-LLM inference engine and developer platform"
 requires-python = ">=3.12"
 dependencies = [
+  "alembic>=1.14,<2",
   "fastapi>=0.115,<1",
   "fakeredis>=2.26,<3",
   "httpx>=0.27,<1",
   "pydantic-settings>=2.6,<3",
   "pyjwt>=2.8,<3",
+  "psycopg2-binary>=2.9,<3",
   "sqlmodel>=0.0.22,<1",
   "structlog>=24.4,<26",
   "redis>=5.2,<7",
@@ -21,6 +23,7 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = [
+  "fakeredis[lua]>=2.26,<3",
   "pytest>=8.3,<9",
   "pytest-asyncio>=0.24,<1",
   "ruff>=0.8,<1",

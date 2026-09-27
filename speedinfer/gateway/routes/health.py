@@ -7,9 +7,15 @@ Provides:
 from datetime import UTC, datetime
 from typing import Annotated, Any
 
+import httpx
 from fastapi import APIRouter, Depends
+from fastapi.responses import JSONResponse
+from sqlmodel import Session, text
 
+from speedinfer.config import get_settings
+from speedinfer.database.session import get_session
 from speedinfer.engine.registry import ModelRegistry
+from speedinfer.gateway.redis import get_async_redis
 from speedinfer.gateway.schemas import HealthResponse
 
 router = APIRouter(tags=["Health"])
@@ -25,7 +31,7 @@ def get_model_registry() -> ModelRegistry:
 @router.get(
     "/health",
     response_model=HealthResponse,
-    summary="Health and readiness probe",
+    summary="Gateway liveness (not GPU readiness)",
     description="Reports gateway status and the model/worker state known to the registry.",
 )
 async def health_check(
@@ -42,7 +48,6 @@ async def health_check(
                 {
                     "model": m.name,
                     "worker_id": b.worker_id,
-                    "url": b.url,
                     "status": str(b.status),
                     "health": str(b.health),
                     "active_requests": b.active_requests,
@@ -59,4 +64,40 @@ async def health_check(
         # This gateway does not query a GPU telemetry source. Returning an explicit
         # unknown value avoids presenting configured capacity as measured hardware.
         gpu={"status": "not_reported"},
+    )
+
+
+@router.get("/ready", summary="Live inference readiness", tags=["Health"])
+async def readiness(session: Annotated[Session, Depends(get_session)]):
+    """Check the actual dependencies; never claim GPU throughput or expose worker URLs."""
+    checks = {"database": False, "redis": False, "inference": False}
+    try:
+        session.execute(text("SELECT 1"))
+        checks["database"] = True
+    except Exception:
+        session.rollback()
+    try:
+        redis = await get_async_redis()
+        checks["redis"] = bool(await redis.ping())
+    except Exception:
+        pass
+    settings = get_settings()
+    try:
+        headers = (
+            {"Authorization": f"Bearer {settings.vllm_api_key.get_secret_value()}"}
+            if settings.vllm_api_key
+            else {}
+        )
+        async with httpx.AsyncClient(timeout=3.0, headers=headers) as client:
+            response = await client.get(settings.vllm_base_url.rstrip("/") + "/v1/models")
+            response.raise_for_status()
+            checks["inference"] = any(
+                m.get("id") == settings.default_model for m in response.json().get("data", [])
+            )
+    except Exception:
+        pass
+    ready = all(checks.values())
+    return JSONResponse(
+        {"status": "ready" if ready else "not_ready", "checks": checks},
+        status_code=200 if ready else 503,
     )

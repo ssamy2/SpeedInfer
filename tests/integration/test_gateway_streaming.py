@@ -77,6 +77,9 @@ async def test_streaming_chunks_format_and_termination(async_client, require_gat
             chunk_obj = json.loads(raw_data)
             assert chunk_obj["object"] == "chat.completion.chunk"
             assert chunk_obj["id"].startswith("chatcmpl-")
+            if chunk_obj.get("usage"):
+                assert chunk_obj["usage"]["total_tokens"] >= 0
+                continue
             assert len(chunk_obj["choices"]) > 0
             collected_chunks.append(chunk_obj)
 

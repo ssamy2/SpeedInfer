@@ -1,3 +1,5 @@
+> Historical plan/report. This file does not certify current production readiness. The current scope, measured verification and launch blockers are in [the readiness audit](docs/PRODUCTION_READINESS_AR.md).
+
 # الدليل الهندسي الشامل: تشغيل 6 خدمات ذكاء اصطناعي متزامنة ومضمونة العائد (100% حلال ومغلقة)
 ## استراتيجية تسييل رصيد €10,000 على كرت NVIDIA L40S (48GB VRAM) وتحويله إلى كاش حقيقي
 

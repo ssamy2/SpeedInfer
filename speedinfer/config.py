@@ -20,6 +20,7 @@ class Settings(BaseSettings):
     api_key_pepper: SecretStr = Field(min_length=16)
     default_model: str = "Qwen/Qwen2.5-7B-Instruct"
     vllm_base_url: str = "http://vllm:8000"
+    vllm_api_key: SecretStr | None = None
     vllm_timeout_seconds: float = Field(default=120.0, gt=0, le=600)
     prompt_price_per_million: float = Field(default=0.20, ge=0)
     completion_price_per_million: float = Field(default=0.60, ge=0)

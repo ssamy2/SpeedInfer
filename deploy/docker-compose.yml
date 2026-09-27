@@ -6,11 +6,11 @@ services:
     container_name: speedinfer-gateway
     restart: unless-stopped
     ports:
-      - "8000:8000"
+      - "127.0.0.1:8000:8000"
     env_file:
       - ../.env
     environment:
-      - DATABASE_URL=postgresql://speedinfer:speedinfer_pass@postgres:5432/speedinfer_db
+      - DATABASE_URL=postgresql://speedinfer:${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD}@postgres:5432/speedinfer_db
       - REDIS_URL=redis://redis:6379/0
       - VLLM_BASE_URL=http://vllm:8000
     depends_on:
@@ -22,13 +22,14 @@ services:
       - speedinfer-network
 
   vllm:
-    image: vllm/vllm-openai:v0.6.3.post1
+    image: ${VLLM_IMAGE:?Set a tested pinned vLLM image tag or digest}
     container_name: speedinfer-vllm
     restart: unless-stopped
     runtime: nvidia
     ports:
-      - "8001:8000"
+      - "127.0.0.1:8001:8000"
     environment:
+      - VLLM_API_KEY=${VLLM_API_KEY:?Set VLLM_API_KEY}
       - HUGGING_FACE_HUB_TOKEN=${HUGGING_FACE_HUB_TOKEN:-}
     volumes:
       - ~/.cache/huggingface:/root/.cache/huggingface
@@ -38,7 +39,6 @@ services:
       --tensor-parallel-size 1
       --gpu-memory-utilization 0.90
       --max-model-len 32768
-      --trust-remote-code
     deploy:
       resources:
         reservations:
@@ -61,10 +61,10 @@ services:
     restart: unless-stopped
     environment:
       - POSTGRES_USER=speedinfer
-      - POSTGRES_PASSWORD=speedinfer_pass
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD}
       - POSTGRES_DB=speedinfer_db
     ports:
-      - "5432:5432"
+      - "127.0.0.1:5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -81,7 +81,7 @@ services:
     restart: unless-stopped
     command: redis-server --appendonly yes --save 60 1000
     ports:
-      - "6379:6379"
+      - "127.0.0.1:6379:6379"
     volumes:
       - redis_data:/data
     healthcheck:
@@ -97,15 +97,15 @@ services:
     container_name: speedinfer-mlflow
     restart: unless-stopped
     ports:
-      - "5000:5000"
+      - "127.0.0.1:5000:5000"
     environment:
-      - BACKEND_STORE_URI=postgresql://speedinfer:speedinfer_pass@postgres:5432/speedinfer_db
+      - BACKEND_STORE_URI=postgresql://speedinfer:${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD}@postgres:5432/speedinfer_db
       - ARTIFACT_ROOT=/mlartifacts
     volumes:
       - mlflow_data:/mlartifacts
     command: >
       mlflow server
-      --backend-store-uri postgresql://speedinfer:speedinfer_pass@postgres:5432/speedinfer_db
+      --backend-store-uri postgresql://speedinfer:${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD}@postgres:5432/speedinfer_db
       --default-artifact-root /mlartifacts
       --host 0.0.0.0
       --port 5000
@@ -120,7 +120,7 @@ services:
     container_name: speedinfer-prometheus
     restart: unless-stopped
     ports:
-      - "9090:9090"
+      - "127.0.0.1:9090:9090"
     volumes:
       - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
       - prometheus_data:/prometheus
@@ -135,10 +135,10 @@ services:
     container_name: speedinfer-grafana
     restart: unless-stopped
     ports:
-      - "3000:3000"
+      - "127.0.0.1:3000:3000"
     environment:
       - GF_SECURITY_ADMIN_USER=admin
-      - GF_SECURITY_ADMIN_PASSWORD=admin_password
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD:?Set GRAFANA_ADMIN_PASSWORD}
     volumes:
       - grafana_data:/var/lib/grafana
     depends_on:

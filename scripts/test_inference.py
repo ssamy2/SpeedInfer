@@ -201,7 +201,10 @@ def test_streaming_chat(
                 ttft_ms = (time.perf_counter() - t0) * 1000
 
             chunk = json.loads(raw)
-            delta = chunk.get("choices", [{}])[0].get("delta", {})
+            if chunk.get("error"):
+                raise RuntimeError("Worker stream reported an error")
+            choices = chunk.get("choices") or []
+            delta = choices[0].get("delta", {}) if choices else {}
             piece = delta.get("content", "")
             if piece:
                 streamed_text += piece
