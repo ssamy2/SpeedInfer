@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 780 180" width="780" height="180">
+  <defs>
+    <linearGradient id="bolt-grad-l" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#84c414"/>
+      <stop offset="50%" stop-color="#5fa809"/>
+      <stop offset="100%" stop-color="#16a34a"/>
+    </linearGradient>
+    <linearGradient id="icon-bg-l" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0e1526"/>
+      <stop offset="100%" stop-color="#060a12"/>
+    </linearGradient>
+    <filter id="glow-l" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="4" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+  </defs>
+  <!-- Icon squircle -->
+  <rect x="16" y="20" width="140" height="140" rx="36" fill="url(#icon-bg-l)"/>
+  <!-- Icon bolt -->
+  <path d="M48 58 h76 L94 90 H50 l38 32 h38" 
+        fill="none" 
+        stroke="#bdf232" 
+        stroke-width="12" 
+        stroke-linecap="round" 
+        stroke-linejoin="round"/>
+  <!-- Typography SpeedInfer in Deep Navy / Ink -->
+  <text x="180" y="114" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Inter', sans-serif" font-weight="800" font-size="76" fill="#0d1526" letter-spacing="-1.5">SpeedInfer</text>
+  <!-- Dot / Accent period -->
+  <text x="578" y="114" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Inter', sans-serif" font-weight="900" font-size="84" fill="#7cb813">.</text>
+  <!-- Tagline -->
+  <text x="184" y="146" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Inter', sans-serif" font-weight="600" font-size="18" fill="#596b82" letter-spacing="2.8">HIGH-PERFORMANCE INFERENCE PLATFORM</text>
+</svg>

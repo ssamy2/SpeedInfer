@@ -1,0 +1,22 @@
+[Unit]
+Description=SpeedInfer vLLM Worker Supervisor Service
+After=network.target
+Wants=network.target
+
+[Service]
+Type=simple
+User=speedinfer
+Group=speedinfer
+WorkingDirectory=/opt/speedinfer
+EnvironmentFile=/opt/speedinfer/.env
+Environment="PATH=/opt/speedinfer/venv/bin:/usr/local/cuda/bin:/usr/bin" "CUDA_VISIBLE_DEVICES=0"
+ExecStart=/opt/speedinfer/venv/bin/python3 -m vllm.entrypoints.openai.api_server --model Qwen/Qwen2.5-7B-Instruct --port 8001 --tensor-parallel-size 1 --gpu-memory-utilization 0.90 --max-model-len 32768 --trust-remote-code
+Restart=always
+RestartSec=10s
+LimitNOFILE=1048576
+LimitMEMLOCK=infinity
+KillMode=process
+TimeoutStopSec=60s
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,44 @@
+# SpeedInfer High-Performance Caddy Configuration
+# Features:
+# - Automatic HTTPS via Let's Encrypt / ZeroSSL
+# - HTTP/2 and HTTP/3 (QUIC) support
+# - Unbuffered Server-Sent Events (SSE) streaming (flush_interval -1)
+# - Compression and security headers
+
+{
+    email admin@speedinfer.local
+    admin off
+}
+
+# Public Gateway Entrypoint
+:80, :443 {
+    # Logging
+    log {
+        output stdout
+        format json
+    }
+
+    # Security Headers
+    header {
+        Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+        X-Content-Type-Options "nosniff"
+        X-Frame-Options "DENY"
+        Referrer-Policy "strict-origin-when-cross-origin"
+        -Server
+    }
+
+    # Enable Zstandard and Gzip compression for non-streamed responses
+    encode zstd gzip
+
+    # Reverse proxy to FastAPI Gateway with unbuffered SSE streaming
+    reverse_proxy gateway:8000 {
+        # Flush response buffers immediately for ultra-low latency SSE streaming
+        flush_interval -1
+
+        # Keepalive upstream pool connections
+        transport http {
+            keepalive 300s
+            keepalive_idle_conns 100
+        }
+    }
+}

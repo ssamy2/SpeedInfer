@@ -1,0 +1,21 @@
+[Unit]
+Description=SpeedInfer API and web application
+After=network-online.target redis-server.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=ubuntu
+Group=ubuntu
+WorkingDirectory=/opt/speedinfer
+EnvironmentFile=/etc/speedinfer/speedinfer.env
+ExecStart=/opt/speedinfer/.venv/bin/uvicorn speedinfer.gateway.app:app --host 127.0.0.1 --port 8000 --proxy-headers
+Restart=always
+RestartSec=5
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+ReadWritePaths=/opt/speedinfer/data
+
+[Install]
+WantedBy=multi-user.target

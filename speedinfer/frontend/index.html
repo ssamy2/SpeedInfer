@@ -1,0 +1,779 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SpeedInfer AI — High-Performance TensorRT-LLM Inference Engine & Developer Platform</title>
+  <meta name="description" content="High-throughput, OpenAI-compatible serverless inference engine accelerated by NVIDIA TensorRT-LLM and Triton for open-weight models.">
+  <link rel="stylesheet" href="/static/css/theme.css?v=20260927-inception-release">
+  <link rel="stylesheet" href="/static/css/styles.css?v=20260927-inception-release">
+  <link rel="stylesheet" href="/static/css/responsive.css?v=20260927-inception-release">
+  <link rel="stylesheet" href="/static/css/identity.css?v=20260927-inception-release">
+  <link rel="stylesheet" href="/static/css/benchmarks.css?v=20260927-inception-release">
+  <link rel="stylesheet" href="/static/css/gateway.css?v=20260927-inception-release">
+  <link rel="stylesheet" href="/static/css/workspace.css?v=20260927-inception-release">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23354b26' stroke-width='3'><path d='M5 6h15l-8 6H4l8 6h8'/></svg>">
+</head>
+<body>
+
+
+  <div id="landing-page">
+    <a class="skip-link" href="#platform">Skip to content</a>
+    <div class="sales-topbar"><div><span>FOR ENTERPRISE TEAMS</span><p>Planning a private deployment or high-volume workload?</p><button data-contact="sales">Talk to sales <b>↗</b></button><a href="mailto:Sales@speedinfer.com" data-sales-email>Sales@speedinfer.com</a></div></div>
+    <header class="site-header"><a href="#" class="wordmark" aria-label="SpeedInfer home"><span class="brand-symbol"> <svg viewBox="0 0 32 32" fill="none" aria-hidden="true"><path d="M7 8h20L17 16H5l10 8h10" stroke="currentColor" stroke-width="5" stroke-linejoin="round"/></svg></span>SpeedInfer<span class="wordmark-period">.</span></a>
+      <nav aria-label="Main navigation"><a href="#gateway">Gateway</a><a href="#pricing">Pricing</a><a href="#benchmarks" data-benchmarks-link>Benchmarks</a><a href="#platform">Platform</a><a href="#developers">Developers</a><a href="#contact">Contact</a><a href="/docs">Docs ↗</a></nav>
+      <div class="site-actions"><button class="text-button" data-auth="login">Log in</button><button class="btn ink-button" data-auth="register">Start building <span>↗</span></button></div>
+    </header>
+    <main>
+      <section class="hero site-width">
+        <div class="hero-copy"><div class="eyebrow"><span class="small-orbit"></span> AI DEVELOPER PLATFORM</div><h1>Your ideas.<br>Open models.<br><span>No limits.</span></h1><p>Build AI products with an ultra-low latency inference engine powered by TensorRT-LLM and Triton dynamic batching on NVIDIA accelerated architectures. Fine-tune, evaluate, and serve open-weight models through an OpenAI-compatible API.</p><div class="hero-actions"><button class="btn lime-button" data-auth="register">Build with SpeedInfer <span>↗</span></button><a class="outline-link" href="#developers">Explore the API <span>→</span></a></div><div class="hero-note"><span>OpenAI-compatible</span><span>TensorRT-LLM Accelerated</span><span>Sub-100ms TTFT</span><span>Zero Data Retention</span></div></div>
+        <div class="inference-art" role="img" aria-label="Illustration: one API connects applications to an open-model inference engine and streams a response.">
+          <div class="art-topline"><span>THE INFERENCE ENGINE</span><span>01 / ∞</span></div><div class="orbit orbit-one"></div><div class="orbit orbit-two"></div><div class="orbit orbit-three"></div><div class="art-axis"></div>
+          <div class="model-node node-a"><span class="node-icon">⌘</span> Open models</div><div class="model-node node-b"><span class="node-icon">{ }</span> Your application</div><div class="engine-core"><svg viewBox="0 0 32 32" fill="none"><path d="M7 8h20L17 16H5l10 8h10" stroke="currentColor" stroke-width="4" stroke-linejoin="round"/></svg><span>SpeedInfer</span><small>BUILT TO FLOW</small></div><div class="token-node">token → token → <span>token</span><i></i></div><div class="art-caption"><span class="signal-bars"><i></i><i></i><i></i><i></i><i></i></span><span>Less friction. More invention.</span><span>↗</span></div>
+        </div>
+      </section>
+      <section class="foundation site-width" aria-label="Technology foundation"><span>OPEN BY DESIGN.<br>POWERED BY POSSIBILITY.</span><strong class="nvidia-text">NVIDIA TensorRT-LLM</strong><strong class="nvidia-text">NVIDIA Triton</strong><strong>CUDA 12+</strong><strong>FlashAttention-3</strong><strong>vLLM</strong><strong>PyTorch</strong><strong>OpenAI <small>compatible API</small></strong></section>
+      <section class="gateway-section" id="gateway">
+        <div class="site-width">
+          <div class="gateway-heading"><div class="eyebrow">01 — ONE API. MANY POSSIBILITIES.</div><h2>A multi-model gateway,<br><em>built around your stack.</em></h2><p>Explore hosted open models alongside external API families from OpenAI and Anthropic. SpeedInfer keeps one catalog and a familiar request format while showing clearly how each model is accessed.</p></div>
+          <div class="gateway-map" role="img" aria-label="Diagram showing an application connecting through the SpeedInfer gateway to hosted and external API model families.">
+            <svg class="gateway-wires" viewBox="0 0 1200 500" preserveAspectRatio="none" aria-hidden="true"><path class="request-wire" d="M107 116 C250 116 332 126 480 156"/><path d="M600 248 C600 296 112 296 112 366"/><path d="M600 248 C600 302 251 302 251 366"/><path d="M600 248 C600 308 390 308 390 366"/><path d="M600 248 C600 314 529 314 529 366"/><path d="M600 248 C600 314 668 314 668 366"/><path d="M600 248 C600 308 807 308 807 366"/><path d="M600 248 C600 302 946 302 946 366"/><path d="M600 248 C600 296 1085 296 1085 366"/><circle cx="600" cy="248" r="5"/></svg>
+            <div class="gateway-app-node"><span class="gateway-node-label">YOUR APPLICATION</span><div><i></i><i></i><i></i><b>POST /v1/chat</b><small>OpenAI SDK</small></div></div>
+            <div class="gateway-core-node"><span class="gateway-node-label">INTELLIGENCE LAYER</span><div class="gateway-cube"><span class="brand-symbol"><svg viewBox="0 0 32 32" fill="none" aria-hidden="true"><path d="M7 8h20L17 16H5l10 8h10" stroke="currentColor" stroke-width="5" stroke-linejoin="round"/></svg></span><strong>SpeedInfer</strong><small>GATEWAY</small></div><div class="gateway-capabilities"><span>AUTH</span><span>ROUTE</span><span>METER</span><span>FALLBACK</span></div></div>
+            <div class="gateway-model-pool" id="model-pool">
+              <article style="--model-accent:#d5f091"><span class="model-logo"><img src="/static/assets/models/deepseek-icon.svg" alt="" loading="lazy"></span><strong>DeepSeek</strong><small>Reasoning</small></article>
+              <article style="--model-accent:#e4e1ff"><span class="model-logo"><img src="/static/assets/models/qwen.png" alt="" loading="lazy"></span><strong>Qwen</strong><small>Multilingual</small></article>
+              <article style="--model-accent:#dceaff"><span class="model-logo"><img src="/static/assets/models/meta.svg" alt="" loading="lazy"></span><strong>Llama</strong><small>General</small></article>
+              <article style="--model-accent:#ebe3f5"><span class="model-logo"><img src="/static/assets/models/gemma.svg" alt="" loading="lazy"></span><strong>Gemma</strong><small>Efficient</small></article>
+              <article style="--model-accent:#ffe4d8"><span class="model-logo"><img src="/static/assets/models/mistral.svg" alt="" loading="lazy"></span><strong>Mistral</strong><small>Multimodal</small></article>
+              <article style="--model-accent:#e5f2cf"><span class="model-logo"><img src="/static/assets/models/nvidia.svg" alt="" loading="lazy"></span><strong>Nemotron</strong><small>Agentic</small></article>
+              <article style="--model-accent:#d7ebe5"><span class="model-logo"><img src="/static/assets/models/openai.svg" alt="" loading="lazy"></span><strong>OpenAI</strong><small>External API</small></article>
+              <article style="--model-accent:#ead8ca"><span class="model-logo"><img src="/static/assets/models/anthropic.svg" alt="" loading="lazy"></span><strong>Anthropic</strong><small>External API</small></article>
+            </div>
+            <div class="gateway-pool-caption"><span>UNIFIED MODEL CATALOG</span><b>Hosted open models and external API families.</b><a href="#benchmarks">Compare models ↗</a></div>
+          </div>
+          <div class="gateway-proof"><div><span>01</span><p><strong>Call one endpoint</strong>Keep the SDK and request format your team already knows.</p></div><div><span>02</span><p><strong>Resolve the model</strong>The registry maps model IDs to healthy inference workers.</p></div><div><span>03</span><p><strong>Stream the result</strong>Tokens flow back through one metered, controlled gateway.</p></div></div>
+        </div>
+      </section>
+      <section class="pricing-section site-width" id="pricing" style="padding-block: 60px 40px;">
+        <div class="section-heading"><div><div class="eyebrow">02 — INFERENCE PRICING</div><h2>Transparent pricing.<br><em>Predictable compute.</em></h2></div><p>Pay only for what you run with clear token pricing, or scale with dedicated TensorRT-LLM private endpoints with enterprise throughput and Zero Data Retention.</p></div>
+        <div class="pricing-grid" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(min(320px, 100%), 1fr)); gap:24px; margin-top:36px;">
+          <article class="pricing-card" style="background:#fff; border:1px solid #dfe5d6; border-radius:14px; padding:32px; display:flex; flex-direction:column; justify-content:space-between;">
+            <div>
+              <div class="eyebrow" style="color:#63773b; margin-bottom:12px;">SERVERLESS INFERENCE</div>
+              <h3 style="font-size:26px; font-weight:600; margin-bottom:8px;">Pay-As-You-Go API</h3>
+              <p style="font-size:13px; color:#68735c; line-height:1.6; margin-bottom:20px;">Direct API access to leading open-weight models accelerated with TensorRT-LLM in-flight batching.</p>
+              <div style="margin-bottom:20px; padding-bottom:18px; border-bottom:1px solid #e1e7d8;">
+                <div style="display:flex; align-items:baseline; gap:6px;">
+                  <span style="font-size:36px; font-weight:700; color:var(--ink);">$0.20</span>
+                  <span style="font-size:12px; color:#79806f; font-family:var(--font-mono);">/ 1M input tokens</span>
+                </div>
+                <div style="display:flex; align-items:baseline; gap:6px; margin-top:4px;">
+                  <span style="font-size:36px; font-weight:700; color:var(--ink);">$0.60</span>
+                  <span style="font-size:12px; color:#79806f; font-family:var(--font-mono);">/ 1M output tokens</span>
+                </div>
+              </div>
+              <ul style="list-style:none; padding:0; margin:0 0 24px; display:flex; flex-direction:column; gap:10px; font-size:13px; color:#58654a;">
+                <li style="display:flex; align-items:center; gap:8px;"><span>✓</span> Sub-100ms Time-to-First-Token (TTFT)</li>
+                <li style="display:flex; align-items:center; gap:8px;"><span>✓</span> Strict Zero Data Retention (ZDR) guarantee</li>
+                <li style="display:flex; align-items:center; gap:8px;"><span>✓</span> Full OpenAI SDK / API compatibility</li>
+                <li style="display:flex; align-items:center; gap:8px;"><span>✓</span> DeepSeek-R1, Qwen 2.5, Llama 3.3, Nemotron</li>
+              </ul>
+            </div>
+            <button class="btn ink-button" data-auth="register" style="width:100%; justify-content:center;">Start building <span>↗</span></button>
+          </article>
+          <article class="pricing-card" style="background:#f4f7ee; border:2px solid #c8d9ab; border-radius:14px; padding:32px; display:flex; flex-direction:column; justify-content:space-between; position:relative;">
+            <div style="position:absolute; top:-12px; right:24px; background:var(--lime); color:var(--ink); font:9px var(--font-mono); font-weight:700; padding:4px 10px; border-radius:20px; border:1px solid #bed67f; letter-spacing:0.5px;">ENTERPRISE DEDICATED</div>
+            <div>
+              <div class="eyebrow" style="color:#63773b; margin-bottom:12px;">DEDICATED CAPACITY</div>
+              <h3 style="font-size:26px; font-weight:600; margin-bottom:8px;">Dedicated Endpoints</h3>
+              <p style="font-size:13px; color:#68735c; line-height:1.6; margin-bottom:20px;">Dedicated private TensorRT-LLM and Triton instances on Hopper &amp; Blackwell architectures with custom LoRA adapters.</p>
+              <div style="margin-bottom:20px; padding-bottom:18px; border-bottom:1px solid #dfe5d6;">
+                <div style="display:flex; align-items:baseline; gap:6px;">
+                  <span style="font-size:32px; font-weight:700; color:var(--ink);">Custom</span>
+                  <span style="font-size:12px; color:#79806f; font-family:var(--font-mono);">/ dedicated SLA</span>
+                </div>
+                <div style="font-size:12px; color:#7a866a; margin-top:6px;">Single-tenant isolation &amp; guaranteed TPS throughput</div>
+              </div>
+              <ul style="list-style:none; padding:0; margin:0 0 24px; display:flex; flex-direction:column; gap:10px; font-size:13px; color:#58654a;">
+                <li style="display:flex; align-items:center; gap:8px;"><span>✓</span> Single-tenant NVIDIA Hopper (H100/H200) &amp; Blackwell</li>
+                <li style="display:flex; align-items:center; gap:8px;"><span>✓</span> Custom model weights &amp; dynamic LoRA serving</li>
+                <li style="display:flex; align-items:center; gap:8px;"><span>✓</span> Zero Data Retention + VPC Peering / PrivateLink</li>
+                <li style="display:flex; align-items:center; gap:8px;"><span>✓</span> Custom latency SLA &amp; 99.95% uptime commitment</li>
+              </ul>
+            </div>
+            <button class="btn lime-button" data-contact="sales" style="width:100%; justify-content:center;">Talk to sales <span>↗</span></button>
+          </article>
+        </div>
+      </section>
+      <section class="platform-section site-width" id="platform"><div class="section-heading"><div><div class="eyebrow">03 — THE PLATFORM</div><h2>Everything between<br>an idea and intelligence.</h2></div><p>A connected toolkit for teams building with open AI. Less infrastructure to piece together. More room to create.</p></div>
+      <div class="feature-grid"><article class="feature-card feature-inference"><div class="feature-top"><span class="feature-icon">↗</span><span>01 / INFERENCE</span></div><div class="wave-graphic" aria-hidden="true"><i style="--bar:16px"></i><i style="--bar:27px"></i><i style="--bar:41px"></i><i style="--bar:24px"></i><i style="--bar:59px"></i><i style="--bar:80px"></i><i style="--bar:48px"></i><i style="--bar:99px"></i><i style="--bar:68px"></i><i style="--bar:116px"></i><i style="--bar:89px"></i><i style="--bar:59px"></i><i style="--bar:104px"></i><i style="--bar:75px"></i><i style="--bar:45px"></i><i style="--bar:88px"></i><i style="--bar:59px"></i><i style="--bar:35px"></i><i style="--bar:63px"></i><i style="--bar:40px"></i><i style="--bar:23px"></i><i style="--bar:34px"></i></div><h3>Let your ideas run.</h3><p>Serve open-weight models with TensorRT-LLM, continuous in-flight batching, and sub-100ms streaming.</p><a href="#technology">Explore the engine <span>↗</span></a></article>
+      <article class="feature-card"><div class="feature-top"><span class="feature-icon">⌘</span><span>02 / CUSTOMIZATION</span></div><div class="tuning-graphic" aria-hidden="true"><span>BASE MODEL</span><div><i></i><i></i><i></i><b>+</b><em>Your data</em></div><span>↓ &nbsp; A MODEL THAT FITS</span></div><h3>Make it your own.</h3><p>Adapt models with LoRA and QLoRA. Track experiments, evaluate, and export your model.</p><a href="#technology">Discover the workflow <span>↗</span></a></article>
+      <article class="feature-card"><div class="feature-top"><span class="feature-icon">◈</span><span>03 / CONTROL</span></div><div class="control-graphic" aria-hidden="true"><div><span>API access</span><b>Scoped keys ↗</b></div><div><span>Token usage</span><b>Metered ◉</b></div><div><span>Infrastructure</span><b>Dedicated Endpoints ⌁</b></div></div><h3>Keep the controls.</h3><p>Manage API keys, monitor token usage, and set rate limits from one focused workspace.</p><button class="feature-link" data-auth="login">Open your console <span>↗</span></button></article></div></section>
+      <section class="technology-section" id="technology"><div class="site-width technology-inner"><div><div class="eyebrow">04 — BUILT ON OPEN TECHNOLOGY</div><h2>From your data.<br>To your deployment.</h2><p>SpeedInfer connects the full open-model lifecycle: fine-tuning, evaluation, and high-performance API serving powered by NVIDIA accelerated computing.</p><a href="/docs" class="outline-link">Read the API documentation ↗</a></div><div class="lifecycle"><div><span>01</span><h3>Adapt</h3><p>LoRA / QLoRA fine-tuning</p></div><div><span>02</span><h3>Evaluate</h3><p>Experiment tracking & model evaluation</p></div><div><span>03</span><h3>Serve</h3><p>TensorRT-LLM inference & metered API access</p></div></div></div></section>
+      <section class="developer-section site-width" id="developers"><div><div class="eyebrow">05 — DEVELOPERS FIRST</div><h2>Familiar API.<br>Fresh possibilities.</h2><p>Keep the SDK you know. Connect your application to SpeedInfer and start streaming from your deployed model with FP8 TensorRT-LLM acceleration.</p><div class="developer-points"><span>✓ OpenAI-compatible endpoints</span><span>✓ Server-sent event streaming</span><span>✓ Per-key access and usage tracking</span><span>✓ FP8 GEMM kernel acceleration</span></div><a href="/docs" class="outline-link">Explore documentation ↗</a></div><div class="code-window"><div class="code-top"><div class="code-tabs" role="tablist" aria-label="API Code Examples"><span><i></i><i></i><i></i></span><button class="code-tab active" id="tab-python" type="button" role="tab" aria-selected="true" aria-controls="landing-code">Python</button><button class="code-tab" id="tab-curl" type="button" role="tab" aria-selected="false" aria-controls="landing-code">cURL</button></div><span id="code-file-label">inference.py</span><button id="copy-example" aria-label="Copy code example">Copy ↗</button></div><pre><code id="landing-code">from openai import OpenAI
+
+# Connect to SpeedInfer's NVIDIA TensorRT-LLM accelerated endpoint
+client = OpenAI(
+    base_url="https://api.speedinfer.com/v1",
+    api_key="sk-speedinfer-live-key",
+)
+
+stream = client.chat.completions.create(
+    model="deepseek-ai/DeepSeek-R1",
+    messages=[
+        {"role": "user", "content": "Explain quantum teleportation in two sentences."}
+    ],
+    extra_body={
+        "kv_cache_dtype": "fp8",
+        "tensorrt_llm_runtime": True
+    },
+    stream=True,
+)
+
+for chunk in stream:
+    print(chunk.choices[0].delta.content or "", end="", flush=True)</code></pre><div class="code-bottom"><span id="code-lang-label">Python / OpenAI SDK (FP8 Accelerated)</span><span>Real endpoint: https://api.speedinfer.com/v1 ↗</span></div></div></section>
+
+      <section class="company-section site-width" id="company">
+        <div class="section-heading"><div><div class="eyebrow">06 — PURPOSE-BUILT FOR AI TEAMS</div><h2>Real infrastructure.<br>A clear path to production.</h2></div><p>SpeedInfer is a high-performance inference platform and developer ecosystem powered by NVIDIA accelerated computing, built to give developers an ultra-fast workflow from experimentation to production serving.</p></div>
+        <div class="architecture-grid"><article><span class="feature-icon">⌘</span><h3>One connected stack</h3><p>An API gateway handles access, rate limits, and token metering, routing requests to NVIDIA TensorRT-LLM and Triton inference engines on Hopper &amp; Blackwell architectures. Features Sub-100ms TTFT, FP8 GEMM kernel acceleration, and dynamic in-flight batching for maximum throughput.</p><div class="architecture-flow"><span>Your app</span><b>→</b><span>SpeedInfer Gateway</span><b>→</b><span>TensorRT-LLM / Triton</span></div></article><article><span class="feature-icon">↗</span><h3>Built for your workload</h3><p>Build conversational assistants, developer tools, and domain-specific text applications. Adapt open models with LoRA or QLoRA and serve with enterprise Zero Data Retention.</p><a class="outline-link" href="/docs">Inspect the API ↗</a></article></div>
+        <div class="technology-note"><span>TECHNOLOGY FOUNDATION</span><p>NVIDIA TensorRT-LLM · NVIDIA Triton Inference Server · CUDA 12+ · FlashAttention-3 · vLLM · PyTorch</p><small>Accelerated on NVIDIA Hopper (H100/H200) and Blackwell architectures with FP8 precision and in-flight batching.</small></div>
+      </section>
+      <section class="contact-section" id="contact"><div class="site-width">
+        <div class="section-heading"><div><div class="eyebrow">07 — LET’S BUILD TOGETHER</div><h2>Big plans.<br>Start a conversation.</h2></div><p>Tell us what you’re building, ask a technical question, or get help with your workspace. Our team follows up by email.</p></div>
+        <div class="contact-grid"><article class="contact-card sales-card"><div class="contact-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M3 7h18v13H3zM8 7V4h8v3M3 12l9 4 9-4"/></svg></div><span class="eyebrow">FOR YOUR NEXT DEPLOYMENT</span><h3>Talk to sales.</h3><p>Discuss your models, expected traffic, private inference requirements, and commercial options.</p><a class="email-link" href="mailto:Sales@speedinfer.com" data-sales-email>Sales@speedinfer.com ↗</a><button class="btn ink-button" data-contact="sales">Submit a sales request <span>↗</span></button><small>Prefer a form? Share your requirements and receive a reply by email.</small></article>
+        <article class="contact-card"><div class="contact-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M4 13v-1a8 8 0 0 1 16 0v1M4 12H2v6h4v-6H4zm16 0h2v6h-4v-6h2zm0 6v2h-6"/></svg></div><span class="eyebrow">A LITTLE HELP GOES A LONG WAY</span><h3>We’re here to help.</h3><p>Report an issue, get help connecting to the API, or ask a general question about SpeedInfer.</p><a class="email-link" href="mailto:Support@speedinfer.com" data-support-email>Support@speedinfer.com ↗</a><button class="btn btn-secondary" data-contact="support">Send a support request <span>↗</span></button><small>Include the request ID and error message. Keep API keys and passwords private.</small></article></div>
+      </div></section>
+      <section class="closing-cta site-width"><div class="eyebrow">THE NEXT THING STARTS WITH YOU</div><h2>Build something<br>worth speeding up.</h2><button class="btn ink-button" data-auth="register">Start building <span>↗</span></button><div class="cta-mark" aria-hidden="true">↗</div></section>
+    </main><footer class="site-footer site-width"><div><a class="wordmark" href="#">SpeedInfer.</a><p>Open intelligence. In your hands.</p></div><div><a href="#pricing">Pricing</a><a href="#platform">Platform</a><a href="#company">About the platform</a><a href="#contact">Contact</a><a href="/legal/terms">Terms of Service</a><a href="/legal/privacy">Privacy &amp; ZDR Policy</a><a href="/docs">API documentation ↗</a><button class="text-button" data-auth="login">Developer console ↗</button></div><small>© 2026 SpeedInfer AI Technologies. Built for what comes next. <span class="location-badge">Cairo, Egypt</span></small></footer>
+  </div>
+
+  <div id="benchmarks-page" class="benchmarks-page" hidden>
+    <div class="sales-topbar benchmark-sales-topbar"><div><span>FOR ENTERPRISE TEAMS</span><p>Planning a private deployment or high-volume workload?</p><button data-contact="sales">Talk to sales <b>↗</b></button><a href="mailto:Sales@speedinfer.com" data-sales-email>Sales@speedinfer.com</a></div></div>
+    <header class="site-header benchmark-header"><a href="#" class="wordmark" aria-label="SpeedInfer home"><span class="brand-symbol"><svg viewBox="0 0 32 32" fill="none" aria-hidden="true"><path d="M7 8h20L17 16H5l10 8h10" stroke="currentColor" stroke-width="5" stroke-linejoin="round"/></svg></span>SpeedInfer<span class="wordmark-period">.</span></a><nav aria-label="Benchmark navigation"><a href="#benchmark-board">Leaderboard</a><a href="#benchmark-methodology">Methodology</a><a href="#benchmark-sources">Sources</a></nav><div class="site-actions"><a class="text-button" href="#">Back home</a><button class="btn ink-button" data-auth="register">Start building <span>↗</span></button></div></header>
+    <main>
+      <section class="benchmark-hero"><div class="benchmark-hero-grid"></div><div class="benchmark-hero-copy"><div class="eyebrow"><span class="live-pulse"></span> MODEL INTELLIGENCE / VERIFIED SOURCES</div><h1>Choose with<br><em>evidence.</em></h1><p>A source-backed view of leading hosted and API models, including OpenAI and Anthropic. Compare quality where protocols align, then inspect context, access method, architecture, and deployment character across the full catalog.</p><div class="benchmark-hero-actions"><a class="btn lime-button" href="#benchmark-board">Explore the leaderboard <span>↓</span></a><span>Updated 26 Sep 2026</span></div></div><div class="benchmark-orbit" aria-hidden="true"><div class="orbit-label orbit-label-a"><b>90.2</b><span>MATH-500</span></div><div class="orbit-label orbit-label-b"><b>86.1</b><span>IF-Eval</span></div><div class="orbit-label orbit-label-c"><b>59.1</b><span>GPQA</span></div><div class="orbit-core"><span>6</span><small>BENCHMARKS</small></div></div></section>
+
+      <section class="benchmark-overview site-width"><div><span>20</span><p>Hosted + API<br>models profiled</p></div><div><span>06</span><p>Quality dimensions<br>in one view</p></div><div><span>09</span><p>Provider families<br>covered</p></div><div><span>100%</span><p>Numbers linked<br>to primary sources</p></div></section>
+
+      <section class="benchmark-board site-width" id="benchmark-board"><div class="benchmark-section-head"><div><div class="eyebrow">01 — QUALITY LEADERBOARD</div><h2>See where every<br>model pulls ahead.</h2></div><p>The catalog includes 20 leading models available through hosted open weights, direct provider APIs, and leading open-weight models optimized for NVIDIA architectures alongside unified API routing. Scores appear only where a source publishes the same metric; unavailable or incompatible results stay blank rather than being estimated.</p></div>
+        <div class="benchmark-toolbar"><div class="benchmark-tabs" role="tablist" aria-label="Benchmark category"><button class="active" data-benchmark="all">Overall</button><button data-benchmark="reasoning">Reasoning</button><button data-benchmark="code">Code</button><button data-benchmark="math">Math</button><button data-benchmark="instruction">Instruction</button></div><label class="benchmark-search"><span>⌕</span><input id="benchmark-search" type="search" placeholder="Find a model" aria-label="Find a model"></label></div>
+        <div class="benchmark-layout"><aside class="benchmark-spotlight"><span class="spotlight-rank">01 / PICK</span><div class="spotlight-mark">D</div><h3>DeepSeek V3</h3><p>Leads the comparable set across all six displayed quality benchmarks.</p><dl><div><dt>Architecture</dt><dd>MoE · 37B active</dd></div><div><dt>Context</dt><dd>128K tokens</dd></div><div><dt>Best at</dt><dd>Math & code</dd></div></dl><button class="btn lime-button" data-auth="register">Run with SpeedInfer <span>↗</span></button></aside><div class="benchmark-table-wrap"><table class="benchmark-table"><thead><tr><th>Model</th><th data-metric="reasoning">MMLU-Pro <small>Knowledge</small></th><th data-metric="reasoning">GPQA <small>Reasoning</small></th><th data-metric="code">LiveCode <small>Code</small></th><th data-metric="math">AIME '24 <small>Math</small></th><th data-metric="math">MATH-500 <small>Math</small></th><th data-metric="instruction">IF-Eval <small>Following</small></th></tr></thead><tbody id="benchmark-body"></tbody></table><div id="benchmark-empty" class="benchmark-empty" hidden>No model matches that search.</div></div></div>
+        <p class="benchmark-table-note"><span>↑</span> Scores represent the cited publishers’ reported evaluations. “—” means the metric is not published under that model’s source protocol; it is never inferred or estimated.</p>
+      </section>
+
+      <section class="benchmark-profile-band"><div class="site-width"><div class="benchmark-section-head light"><div><div class="eyebrow">02 — MODEL PROFILES</div><h2>More than<br>a single score.</h2></div><p>Compare context, capability, and access method alongside quality. Proprietary providers do not publish parameter counts, so those fields are marked undisclosed.</p></div><div class="profile-grid" id="benchmark-profiles"></div></div></section>
+
+      <section class="methodology site-width" id="benchmark-methodology"><div class="benchmark-section-head"><div><div class="eyebrow">03 — READ THE NUMBERS RIGHT</div><h2>Transparent by<br>construction.</h2></div><p>A leaderboard is useful only when its limits are visible. We keep provenance and protocol beside the results.</p></div><div class="method-grid"><article><span>01</span><h3>Comparable cohort</h3><p>DeepSeek V3, Qwen2.5 72B Instruct, and Llama 3.1 405B Instruct come from the same evaluation table, with an 8K output cap and repeated runs for smaller test sets.</p></article><article><span>02</span><h3>Publisher reported</h3><p>These are primary-source results, not SpeedInfer lab claims. They measure model quality and do not represent serving speed, latency, or cost.</p></article><article><span>03</span><h3>Protocol matters</h3><p>Prompting, number of shots, sampling, model version, and harness can change a score. Compare cells in the same cohort before comparing across sources.</p></article></div></section>
+
+      <section class="benchmark-sources" id="benchmark-sources"><div class="site-width"><div><div class="eyebrow">04 — SOURCE LEDGER</div><h2>Every number<br>has a trail.</h2></div><div class="source-list"><a href="https://platform.openai.com/docs/models" target="_blank" rel="noopener"><span>PRIMARY SOURCE / OPENAI</span><b>OpenAI API model catalog</b><small>OpenAI · active GPT model specifications and context limits ↗</small></a><a href="https://docs.anthropic.com/en/docs/about-claude/model-deprecations" target="_blank" rel="noopener"><span>PRIMARY SOURCE / ANTHROPIC</span><b>Claude active model lifecycle</b><small>Anthropic · current model IDs and retirement status ↗</small></a><a href="https://github.com/deepseek-ai/DeepSeek-V3#4-evaluation-results" target="_blank" rel="noopener"><span>PRIMARY SOURCE / COMPARABLE SET</span><b>DeepSeek V3 official evaluation table</b><small>DeepSeek AI · Chat model benchmarks · accessed 26 Sep 2026 ↗</small></a><a href="https://arxiv.org/abs/2501.12948" target="_blank" rel="noopener"><span>PRIMARY SOURCE / DEEPSEEK REASONING</span><b>DeepSeek-R1 technical report</b><small>DeepSeek AI · incentives via large-scale RL (arXiv:2501.12948) ↗</small></a><a href="https://github.com/QwenLM/Qwen3" target="_blank" rel="noopener"><span>PRIMARY SOURCE / QWEN FAMILY</span><b>Qwen3 official model documentation</b><small>Qwen Team · architecture and long-context releases ↗</small></a><a href="https://ai.meta.com/llama/get-started/" target="_blank" rel="noopener"><span>PRIMARY SOURCE / LLAMA FAMILY</span><b>Meta Llama official model documentation</b><small>Meta · Llama 3.1 and Llama 4 model specifications ↗</small></a><a href="https://ai.google.dev/gemma/docs/core/model_card_3#benchmark_results" target="_blank" rel="noopener"><span>PRIMARY SOURCE / GEMMA FAMILY</span><b>Gemma 3 official model card</b><small>Google AI for Developers · instruction-tuned 27B results ↗</small></a><a href="https://github.com/NVIDIA-NeMo/Nemotron/tree/main/usage-cookbook/Nemotron-3-Ultra-Base" target="_blank" rel="noopener"><span>PRIMARY SOURCE / NVIDIA NEMOTRON</span><b>Nemotron 3 Ultra official documentation</b><small>NVIDIA · architecture, context, and evaluation suite ↗</small></a><a href="https://mistral.ai/news/mistral-small-3-1/" target="_blank" rel="noopener"><span>PRIMARY SOURCE / MISTRAL</span><b>Mistral Small 3.1 release</b><small>Mistral AI · model capabilities and 128K context ↗</small></a><a href="https://arxiv.org/abs/2412.08905" target="_blank" rel="noopener"><span>PRIMARY SOURCE / MICROSOFT RESEARCH</span><b>Phi-4 technical report</b><small>Microsoft Research · 14B compact reasoning (arXiv:2412.08905) ↗</small></a></div></div></section>
+      <section class="benchmark-cta site-width"><span class="eyebrow">FROM COMPARISON TO PRODUCTION</span><h2>Found your model?<br>Make it move.</h2><p>Compare hosted and external API models in one catalog, then connect through a familiar API with streaming, access controls, and usage metering.</p><button class="btn ink-button" data-auth="register">Start building <span>↗</span></button></section>
+    </main>
+    <footer class="site-footer site-width"><div><a class="wordmark" href="#">SpeedInfer.</a><p>Open intelligence. In your hands.</p></div><div><a href="/#pricing">Pricing</a><a href="#benchmark-board">Leaderboard</a><a href="#benchmark-methodology">Methodology</a><a href="#benchmark-sources">Sources</a><a href="/legal/terms">Terms of Service</a><a href="/legal/privacy">Privacy &amp; ZDR Policy</a><a href="/docs">API documentation ↗</a></div><small>© 2026 SpeedInfer AI Technologies. Cairo, Egypt. Benchmarks with provenance. <span class="location-badge">Cairo, Egypt</span></small></footer>
+  </div>
+
+  <!-- Floating Toast Notifications Stack -->
+  <div id="toast-container" aria-live="polite"></div>
+
+  <!-- =======================================================================
+       1. Authentication Container (Sign In / Register)
+       ======================================================================= -->
+  <div id="auth-container" class="auth-page-container" style="display: none;">
+    <div class="auth-card">
+      <button class="text-button auth-back" data-home>← Back to SpeedInfer</button>
+      <div class="auth-header">
+        <div style="display:inline-flex; align-items:center; justify-content:center; width:48px; height:48px; border-radius:12px; background:#e8efda; color:var(--primary); margin-bottom:var(--space-2);">
+          <svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M5 6h15l-8 6H4l8 6h8"/></svg>
+        </div>
+        <h2>SpeedInfer</h2>
+        <p>Ultra-Low Latency LLM Inference Gateway</p>
+      </div>
+
+      <div class="auth-tabs" role="tablist">
+        <button id="tab-btn-login" class="auth-tab-btn active" type="button" role="tab">Sign In</button>
+        <button id="tab-btn-register" class="auth-tab-btn" type="button" role="tab">Create Account</button>
+      </div>
+
+      <!-- Sign In Form -->
+      <form id="login-form" class="auth-form">
+        <div class="form-group">
+          <label class="form-label" for="login-email">Email Address</label>
+          <input id="login-email" class="form-input" type="email" placeholder="developer@speedinfer.com" required autocomplete="email">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="login-password">Password</label>
+          <input id="login-password" class="form-input" type="password" placeholder="••••••••••••" required autocomplete="current-password">
+        </div>
+        <button id="login-submit-btn" class="btn btn-primary" type="submit" style="width:100%; margin-top:var(--space-2);">
+          Sign In
+        </button>
+        <p style="font-size:var(--text-xs); color:var(--text-muted); text-align:center;">
+          Your workspace for open-model inference.
+        </p>
+      </form>
+
+      <!-- Register Form -->
+      <form id="register-form" class="auth-form" style="display: none;">
+        <div class="form-group">
+          <label class="form-label" for="register-name">Full Name (Optional)</label>
+          <input id="register-name" class="form-input" type="text" placeholder="Dr. Alan Turing" autocomplete="name">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="register-email">Email Address</label>
+          <input id="register-email" class="form-input" type="email" placeholder="alan@speedinfer.com" required autocomplete="email">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="register-password">Password (min 8 chars)</label>
+          <input id="register-password" class="form-input" type="password" placeholder="••••••••••••" minlength="8" required autocomplete="new-password">
+        </div>
+        <div class="alert-banner alert-success" style="font-size:var(--text-xs);">
+          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          <div>Your workspace starts without an API key. Create one when you need live inference. Training and deployment simulations are free.</div>
+        </div>
+        <label class="consent-label"><input id="register-policy-consent" type="checkbox" required><span>I agree to the <a href="/legal/terms" target="_blank" rel="noopener">preview terms</a> and acknowledge the <a href="/legal/privacy" target="_blank" rel="noopener">privacy policy</a>.</span></label>
+        <button id="register-submit-btn" class="btn btn-primary" type="submit" style="width:100%; margin-top:var(--space-2);">
+          Create workspace
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- =======================================================================
+       2. Application Shell (Authenticated)
+       ======================================================================= -->
+  <div id="app-shell" style="display: none; height: 100vh; width: 100%; overflow: hidden;">
+    <!-- Mobile Backdrop -->
+    <div class="sidebar-backdrop"></div>
+
+    <!-- Left Navigation Sidebar -->
+    <aside class="app-sidebar">
+      <div class="sidebar-header">
+        <div class="brand-logo">
+          <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" style="color:var(--primary);"><path d="M5 6h15l-8 6H4l8 6h8"/></svg>
+          <span>SpeedInfer</span>
+        </div>
+        <button class="home-icon" data-home aria-label="Back to homepage">↗</button>
+      </div>
+
+      <nav class="sidebar-nav" aria-label="Workspace navigation"><span class="nav-group-label">WORKSPACE</span>
+        <div class="nav-item active" data-view="dashboard">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></svg>
+          <span>Overview</span>
+        </div>
+        <div class="nav-item" data-view="playground">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="m3 21 1.9-5.7a8.5 8.5 0 1 1 3.8 3.8z"/></svg>
+          <span>Playground</span>
+        </div>
+        <div class="nav-item" data-view="keys">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="m15.5 7.5 2.3 2.3a1 1 0 0 0 1.4 0l2.1-2.1a1 1 0 0 0 0-1.4L19 4a1 1 0 0 0-1.4 0l-2.1 2.1a1 1 0 0 0 0 1.4z"/><path d="m21 2-9.6 9.6"/><circle cx="7.5" cy="15.5" r="5.5"/></svg>
+          <span>API Keys</span>
+        </div>
+        <div class="nav-item" data-view="models">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="m12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.9a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83Z"/><path d="m22 12-8.58 3.9a2 2 0 0 1-1.66 0L2 12"/><path d="m22 17-8.58 3.9a2 2 0 0 1-1.66 0L2 17"/></svg>
+          <span>Models</span>
+        </div>
+        <div class="nav-item" data-view="usage">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+          <span>Usage & Billing</span>
+        </div>
+        <span class="nav-group-label">RESOURCES</span>
+        <button class="nav-item" data-view="help"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9 9a3 3 0 1 1 4 3c-1 .5-1 1-1 2m0 3h.01"/></svg><span>Help & contact</span></button>
+        <button class="nav-item" data-view="inbox" id="inbox-nav" hidden><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 6 9 7 9-7"/></svg><span>Team inbox</span></button>
+        <a class="nav-item" href="/docs" target="_blank" rel="noopener"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M5 3h10l4 4v14H5zM9 11h6m-6 4h6"/></svg><span>Documentation ↗</span></a>
+      </nav>
+      <div class="sidebar-callout"><span>Building at scale?</span><p>Let’s find the right setup.</p><button class="text-button" data-contact="sales">Talk to sales ↗</button></div>
+      <div class="sidebar-footer">
+        <div class="cluster-status-pill">
+          <div class="status-dot-container">
+            <div id="cluster-status-dot" class="status-dot"></div>
+            <span id="cluster-status-text" style="color:var(--text-secondary); font-weight:500;">Cluster Operational</span>
+          </div>
+          <span style="color:var(--text-muted); font-size:var(--text-2xs); font-family:var(--font-mono);">v0.1.0</span>
+        </div>
+        <button id="logout-btn" class="btn btn-secondary btn-sm" style="width:100%;" type="button">
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/></svg>
+          <span>Sign Out</span>
+        </button>
+      </div>
+    </aside>
+
+    <!-- Main Viewport Area -->
+    <main class="app-main">
+      <!-- Top Header -->
+      <header class="app-header">
+        <div class="header-left">
+          <button class="mobile-menu-btn" aria-label="Toggle navigation">
+            <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/></svg>
+          </button>
+          <span class="console-breadcrumb">Workspace <span>/</span></span><span class="header-title">Overview</span>
+        </div>
+        <div class="header-right">
+          <div class="balance-pill">
+            <span>Balance:</span>
+            <span id="header-balance-val" class="balance-amount">$0.0000 USD</span>
+          </div>
+          <div class="user-profile"><span id="profile-avatar" class="profile-avatar" aria-hidden="true">S</span>
+            <span id="header-user-email" class="user-email">developer@speedinfer.com</span>
+          </div>
+        </div>
+      </header>
+
+      <!-- View Container -->
+      <div class="view-viewport">
+        <!-- =================================================================
+             View 1: Dashboard
+             ================================================================= -->
+        <section id="view-dashboard" class="view-panel" style="display:flex; flex-direction:column; gap:var(--space-6);">
+          <div class="view-content-wrapper">
+            <div class="view-header">
+              <div class="view-header-text">
+                <div class="eyebrow">YOUR DEVELOPER WORKSPACE</div><h1 id="dashboard-greeting">Welcome to your workspace.</h1>
+                <p>Your models, keys, and next idea. All in one place.</p>
+              </div>
+              <div class="view-actions">
+                <button class="btn btn-secondary" onclick="document.querySelector('[data-view=playground]').click()">
+                  Open Playground
+                </button>
+                <button class="btn btn-primary" onclick="document.getElementById('open-create-key-modal-btn').click()">
+                  + New API Key
+                </button>
+              </div>
+            </div>
+
+            <div class="workspace-banner"><div><span class="eyebrow">FROM IDEA TO YOUR FIRST TOKEN</span><h2>What will you build today?</h2><p>Connect a model, add your API key, and put your next idea to the test.</p><button class="btn lime-button" data-workspace-view="playground">Try the playground ↗</button></div><div class="workspace-art" aria-hidden="true"><span>{ }</span><i></i><b>↗</b></div></div>
+            <!-- Metrics Grid -->
+            <div class="metrics-grid">
+              <div class="card metric-card">
+                <div class="metric-header">
+                  <span>Available Balance</span>
+                  <div class="metric-icon">
+                    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                  </div>
+                </div>
+                <div id="dash-balance-val" class="metric-value">$0.0000</div>
+                <div class="metric-footer" style="color:var(--success);">
+                  <span>Available across your active keys</span>
+                </div>
+              </div>
+
+              <div class="card metric-card">
+                <div class="metric-header">
+                  <span>Active API Keys</span>
+                  <div class="metric-icon">
+                    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="m21 2-9.6 9.6"/><circle cx="7.5" cy="15.5" r="5.5"/></svg>
+                  </div>
+                </div>
+                <div id="dash-keys-val" class="metric-value">0</div>
+                <div class="metric-footer">
+                  <span>Manage access for your applications</span>
+                </div>
+              </div>
+
+              <div class="card metric-card">
+                <div class="metric-header">
+                  <span>Registered models</span>
+                  <div class="metric-icon">
+                    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="m12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.9a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83Z"/></svg>
+                  </div>
+                </div>
+                <div id="dash-models-val" class="metric-value">1</div>
+                <div class="metric-footer">
+                  <span>Explore your model catalog</span>
+                </div>
+              </div>
+
+              <div class="card metric-card">
+                <div class="metric-header">
+                  <span>Gateway status</span>
+                  <div class="metric-icon" style="color:var(--success); background:rgba(16,185,129,0.1);">
+                    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+                  </div>
+                </div>
+                <div id="dash-status-val" class="metric-value" style="color:var(--success);">Healthy</div>
+                <div class="metric-footer">
+                  <span>Latest response from the gateway</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="dashboard-columns">
+            <!-- Quickstart Card -->
+            <div class="card" style="display:flex; flex-direction:column; gap:var(--space-4);">
+              <div style="display:flex; justify-content:space-between; align-items:center;">
+                <h3>Connect your application</h3><button id="copy-console-code" class="btn btn-secondary btn-sm">Copy code</button>
+                
+              </div>
+              <p style="font-size:var(--text-sm); color:var(--text-secondary);">
+                Use the OpenAI SDK with your deployment. Set <code style="font-family:var(--font-mono); color:var(--primary);">base_url</code> and pass your SpeedInfer API key:
+              </p>
+              <pre id="console-code" style="background:var(--bg-base); padding:var(--space-4); border-radius:var(--radius-md); border:1px solid var(--border-subtle); font-family:var(--font-mono); font-size:var(--text-xs); color:var(--text-primary); overflow-x:auto;">
+from openai import OpenAI
+
+client = OpenAI(
+    base_url="http://localhost:8000/v1",
+    api_key="sk-speedinfer-your-key-here"
+)
+
+response = client.chat.completions.create(
+    model="Qwen/Qwen2.5-7B-Instruct",
+    messages=[{"role": "user", "content": "What is PagedAttention in vLLM?"}],
+    stream=True
+)
+
+for chunk in response:
+    print(chunk.choices[0].delta.content or "", end="")</pre>
+            </div>
+
+            <!-- Health & Worker Status -->
+            <div class="card" style="display:flex; flex-direction:column; gap:var(--space-3);">
+              <h3 style="font-size:var(--text-base); font-weight:700;">Registered workers</h3>
+              <p class="section-subtitle">Status reported by the registry, not a live GPU benchmark.</p><div id="dash-workers-list"></div>
+              <div class="workspace-checklist"><h4>Your next steps</h4><button data-workspace-view="keys"><span>01</span> Manage an API key <b>↗</b></button><button data-workspace-view="models"><span>02</span> Choose a model <b>↗</b></button><button data-workspace-view="playground"><span>03</span> Send your first prompt <b>↗</b></button></div>
+            </div></div>
+          </div>
+        </section>
+
+        <!-- =================================================================
+             View 2: Playground
+             ================================================================= -->
+        <section id="view-playground" class="view-panel" style="display:none; flex:1; height:100%;">
+          <div class="playground-layout" style="width:100%;">
+            <!-- Parameters Sidebar -->
+            <div class="playground-controls">
+              <h3 style="font-size:var(--text-sm); font-weight:700; text-transform:uppercase; letter-spacing:0.05em; color:var(--text-muted);">
+                Parameters
+              </h3>
+
+              <div class="form-group">
+                <label class="form-label" for="playground-model-select">Target Model</label>
+                <select id="playground-model-select" class="form-select">
+                  <option value="Qwen/Qwen2.5-7B-Instruct">Qwen/Qwen2.5-7B-Instruct</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="playground-key-select">API key</label>
+                <select id="playground-key-select" class="form-select">
+                  <option value="">Loading active keys...</option>
+                </select>
+                <div class="form-hint">Choose the key to associate with this session.</div>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="playground-custom-key">Custom API Key (Optional)</label>
+                <input id="playground-custom-key" class="form-input" type="password" placeholder="sk-speedinfer-...">
+                <div class="form-hint">Paste the full secret for the selected key. It stays in this session.</div>
+              </div>
+
+              <div class="form-group">
+                <div style="display:flex; justify-content:space-between;">
+                  <label class="form-label" for="param-temperature">Temperature</label>
+                  <span id="param-temperature-val" style="font-size:var(--text-xs); font-family:var(--font-mono); color:var(--primary);">0.7</span>
+                </div>
+                <input id="param-temperature" type="range" min="0" max="2" step="0.1" value="0.7" style="width:100%; accent-color:var(--primary);">
+              </div>
+
+              <div class="form-group">
+                <div style="display:flex; justify-content:space-between;">
+                  <label class="form-label" for="param-max-tokens">Max Tokens</label>
+                  <span id="param-max-tokens-val" style="font-size:var(--text-xs); font-family:var(--font-mono); color:var(--primary);">1024</span>
+                </div>
+                <input id="param-max-tokens" type="range" min="64" max="4096" step="64" value="1024" style="width:100%; accent-color:var(--primary);">
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="param-system-prompt">System instructions</label>
+                <textarea id="param-system-prompt" class="form-textarea" rows="3" placeholder="You are SpeedInfer, a fast and helpful AI assistant."></textarea>
+              </div>
+            </div>
+
+            <!-- Chat Main Viewport -->
+            <div class="playground-main">
+              <div class="playground-header">
+                <div style="display:flex; align-items:center; gap:var(--space-2);">
+                  <div class="status-dot"></div>
+                  <span style="font-weight:600; font-size:var(--text-sm);">Model playground</span>
+                </div>
+                <button id="clear-chat-btn" class="btn btn-secondary btn-sm" type="button">
+                  Clear Thread
+                </button>
+              </div>
+
+              <!-- Chat Message Scroll Container -->
+              <div id="chat-thread" class="chat-thread">
+                <!-- Rendered dynamically -->
+              </div>
+
+              <!-- Input Area -->
+              <div class="playground-input-container">
+                <div class="quick-prompts-bar">
+                  <span style="font-size:var(--text-2xs); color:var(--text-muted); font-weight:600;">Quick Prompts:</span>
+                  <div class="quick-prompt-chip" data-prompt="Explain PagedAttention in vLLM and how it saves GPU VRAM.">
+                    PagedAttention VRAM
+                  </div>
+                  <div class="quick-prompt-chip" data-prompt="Write a Python script for Redis token bucket rate limiting.">
+                    Rate Limiting Script
+                  </div>
+                  <div class="quick-prompt-chip" data-prompt="Count from 1 to 5.">
+                    Count to 5
+                  </div>
+                </div>
+
+                <div class="input-box-wrapper">
+                  <textarea aria-label="Message to the model" id="chat-input-textarea" class="chat-input" placeholder="Ask your model anything…"></textarea>
+                  <button id="chat-send-btn" class="btn btn-primary" type="button" style="height:48px; padding:0 var(--space-5);">
+                    <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="22" x2="11" y1="2" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+                    <span>Send</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- =================================================================
+             View 3: API Keys Management
+             ================================================================= -->
+        <section id="view-keys" class="view-panel" style="display:none; flex-direction:column; gap:var(--space-6);">
+          <div class="view-content-wrapper">
+            <div class="view-header">
+              <div class="view-header-text">
+                <div class="eyebrow">ACCESS & SECURITY</div><h1>Your API keys.</h1>
+                <p>Give each application its own key. Set limits and revoke access whenever you need.</p>
+              </div>
+              <div class="view-actions">
+                <button id="open-create-key-modal-btn" class="btn btn-primary" type="button">
+                  + Create New API Key
+                </button>
+              </div>
+            </div>
+
+            <!-- Keys Table -->
+            <div id="keys-table-container" class="table-container">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Key Name</th>
+                    <th>Key Secret</th>
+                    <th>Status</th>
+                    <th>Balance</th>
+                    <th>Rate Limits</th>
+                    <th>Created</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody id="keys-table-body">
+                  <!-- Populated dynamically -->
+                </tbody>
+              </table>
+            </div>
+
+            <!-- Empty State for Keys -->
+            <div id="keys-empty-state" class="empty-state card" style="display:none;">
+              <div class="empty-state-icon">
+                <svg width="48" height="48" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><circle cx="7.5" cy="15.5" r="5.5"/><path d="m21 2-9.6 9.6"/></svg>
+              </div>
+              <h3 style="font-weight:700; color:var(--text-primary);">No API Keys Generated</h3>
+              <p style="font-size:var(--text-sm); max-width:400px;">
+                You don't have any active API keys yet. Create an API key to access chat and completions endpoints.
+              </p>
+              <button class="btn btn-primary" onclick="document.getElementById('open-create-key-modal-btn').click()">
+                Generate Your First Key
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <!-- =================================================================
+             View 4: Models Catalog
+             ================================================================= -->
+        <section id="view-models" class="view-panel" style="display:none; flex-direction:column; gap:var(--space-6);">
+          <div class="view-content-wrapper">
+            <div class="view-header">
+              <div class="view-header-text">
+                <div class="eyebrow">OPEN MODEL WORKSPACE</div><h1>Find your next model.</h1>
+                <p>Explore the models registered in your deployment and test them in the playground.</p>
+              </div>
+            </div>
+
+            <div class="catalog-toolbar"><label for="model-search">Search models</label><input class="form-input" type="search" id="model-search" placeholder="Search by model name…"><span id="model-count"></span></div>
+            <div id="models-grid" class="model-catalog">
+              <!-- Rendered dynamically -->
+            </div>
+          </div>
+        </section>
+
+        <!-- =================================================================
+             View 5: Usage & Billing
+             ================================================================= -->
+        <section id="view-usage" class="view-panel" style="display:none; flex-direction:column; gap:var(--space-6);">
+          <div class="view-content-wrapper">
+            <div class="view-header">
+              <div class="view-header-text">
+                <div class="eyebrow">SPEND WITH CLARITY</div><h1>Usage & credits.</h1>
+                <p>Understand your available credit, per-model pricing, and the limits on each key.</p>
+              </div>
+            </div>
+
+            <div class="metrics-grid">
+              <div class="card metric-card">
+                <div class="metric-header">
+                  <span>Total User Balance</span>
+                  <div class="metric-icon">
+                    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                  </div>
+                </div>
+                <div id="usage-total-balance" class="metric-value">$0.0000 USD</div>
+                <div class="metric-footer" style="color:var(--success);">
+                  <span>Aggregated across all active non-expired keys</span>
+                </div>
+              </div>
+
+              <div class="card metric-card">
+                <div class="metric-header">
+                  <span>Prompt Pricing</span>
+                  <div class="metric-icon">
+                    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                  </div>
+                </div>
+                <div class="metric-value"><span id="usage-input-price">—</span> <span style="font-size:var(--text-sm); font-weight:normal; color:var(--text-muted);">/ 1M tokens</span></div>
+                <div class="metric-footer">
+                  <span><span class="usage-model-label">Select a model to view pricing</span></span>
+                </div>
+              </div>
+
+              <div class="card metric-card">
+                <div class="metric-header">
+                  <span>Completion Pricing</span>
+                  <div class="metric-icon">
+                    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                  </div>
+                </div>
+                <div class="metric-value"><span id="usage-output-price">—</span> <span style="font-size:var(--text-sm); font-weight:normal; color:var(--text-muted);">/ 1M tokens</span></div>
+                <div class="metric-footer">
+                  <span><span class="usage-model-label">Select a model to view pricing</span></span>
+                </div>
+              </div>
+            </div>
+
+            <label class="pricing-model-label" for="pricing-model">Pricing for <select id="pricing-model" class="form-select"></select></label>
+            <section class="billing-topup card" aria-labelledby="topup-heading">
+              <div><div class="eyebrow">PREPAID, ON YOUR TERMS</div><h2 id="topup-heading">Add credits securely.</h2><p>Choose a package and continue through Whop's secure checkout. Credits appear on your selected API key as soon as payment clears.</p></div>
+              <div id="billing-packages" class="billing-packages" aria-live="polite"><span class="billing-loading">Loading credit packages…</span></div>
+            </section>
+            <!-- Per-key Breakdown -->
+            <div class="card" style="display:flex; flex-direction:column; gap:var(--space-4);">
+              <h3 style="font-size:var(--text-base); font-weight:700;">Balance Distribution by Key</h3>
+              <div id="usage-keys-breakdown">
+                <!-- Rendered dynamically -->
+              </div>
+            </div>
+          </div>
+        </section>
+        <section id="view-help" class="view-panel" style="display:none"><div class="view-content-wrapper"><div class="view-header"><div class="view-header-text"><div class="eyebrow">HUMANS BEHIND THE PLATFORM</div><h1>A little help. A big difference.</h1><p>Get help with your workspace or plan your next deployment with our team.</p></div></div><div class="help-grid"><article class="card help-card"><span class="feature-icon">↗</span><h2>Let’s talk scale.</h2><p>Models, traffic, private deployments, or commercial questions. Tell us what you need.</p><a class="email-link" href="mailto:Sales@speedinfer.com" data-sales-email>Sales@speedinfer.com ↗</a><button class="btn btn-primary" data-contact="sales">Contact sales ↗</button></article><article class="card help-card"><span class="feature-icon">?</span><h2>We’ve got your back.</h2><p>Report a problem or ask a general question. We’ll follow up at the email address you provide.</p><a class="email-link" href="mailto:Support@speedinfer.com" data-support-email>Support@speedinfer.com ↗</a><button class="btn btn-secondary" data-contact="support">Submit a support request ↗</button></article></div><div class="card help-docs"><div><h3>Prefer to explore?</h3><p>Find endpoint definitions, request schemas, and API examples in the documentation.</p></div><a class="btn btn-secondary" href="/docs" target="_blank" rel="noopener">Open documentation ↗</a></div></div></section>
+        <section id="view-inbox" class="view-panel" style="display:none"><div class="view-content-wrapper"><div class="view-header"><div class="view-header-text"><div class="eyebrow">TEAM ONLY</div><h1>Conversations start here.</h1><p>Sales and support requests. Open a reply in your email app to respond to the requester.</p></div><button id="refresh-inbox" class="btn btn-secondary">Refresh inbox</button></div><div id="inbox-list" aria-live="polite"></div><div class="inbox-pagination"><button id="inbox-previous" class="btn btn-secondary">← Previous</button><span id="inbox-page"></span><button id="inbox-next" class="btn btn-secondary">Next →</button></div></div></section>
+      </div>
+    </main>
+  </div>
+
+  <!-- =======================================================================
+       Modals
+       ======================================================================= -->
+
+  <!-- Modal 1: Create API Key -->
+  <div id="modal-create-key" class="modal-overlay">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>Create New API Key</h3>
+        <button class="btn-icon modal-close-btn" type="button" aria-label="Close modal">&times;</button>
+      </div>
+      <form id="create-key-form">
+        <div class="modal-body">
+          <div class="form-group">
+            <label class="form-label" for="new-key-name">Key Name</label>
+            <input id="new-key-name" class="form-input" type="text" placeholder="production-inference-key" required>
+            <div class="form-hint">A descriptive label to identify this key.</div>
+          </div>
+          <div class="form-hint">New keys start at $0. Add credit safely from Usage &amp; Billing after creating the key.</div>
+          <div style="display:grid; grid-template-columns: 1fr 1fr; gap:var(--space-3);">
+            <div class="form-group">
+              <label class="form-label" for="new-key-rpm">RPM Limit</label>
+              <input id="new-key-rpm" class="form-input" type="number" min="1" max="10000" value="60" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="new-key-tpm">TPM Limit</label>
+              <input id="new-key-tpm" class="form-input" type="number" min="1000" max="10000000" value="60000" required>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary modal-close-btn" type="button">Cancel</button>
+          <button id="create-key-submit-btn" class="btn btn-primary" type="submit">Generate API Key</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal 2: One-time Secret Key Reveal -->
+  <div id="modal-secret-key-reveal" class="modal-overlay">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 style="color:var(--success);">API Key Generated Successfully</h3>
+        <button class="btn-icon modal-close-btn" type="button" aria-label="Close modal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="alert-banner alert-warning">
+          <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" x2="12" y1="9" y2="13"/><line x1="12" x2="12.01" y1="17" y2="17"/></svg>
+          <div>
+            <strong>Save your secret key now!</strong> For your security, this key will not be displayed again. If you lose it, you will need to generate a new one.
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Plaintext Secret Key</label>
+          <div id="modal-secret-key-val" class="secret-key-display">sk-speedinfer-...</div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button id="copy-revealed-key-btn" class="btn btn-primary" type="button">
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
+          <span>Copy to Clipboard</span>
+        </button>
+        <button class="btn btn-secondary modal-close-btn" type="button">I Have Saved My Key</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal 3: Revoke Confirmation -->
+  <div id="modal-revoke-confirm" class="modal-overlay">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 style="color:var(--danger);">Revoke API Key</h3>
+        <button class="btn-icon modal-close-btn" type="button" aria-label="Close modal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p style="font-size:var(--text-sm); color:var(--text-secondary);">
+          Are you sure you want to revoke key <strong id="revoke-key-name-display" style="color:var(--text-primary);"></strong>?
+        </p>
+        <div class="alert-banner alert-danger">
+          <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polygon points="7.86 2 16.14 2 22 7.86 22 16.14 16.14 22 7.86 22 2 16.14 2 7.86 7.86 2"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></svg>
+          <div>Applications and pipelines using this API key will immediately receive HTTP 401 Unauthorized errors.</div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary modal-close-btn" type="button">Cancel</button>
+        <button id="confirm-revoke-btn" class="btn btn-danger" type="button">Revoke Key</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Load Master Script -->
+
+  <dialog id="contact-dialog" class="contact-dialog" aria-labelledby="contact-dialog-title"><div class="contact-dialog-header"><span class="eyebrow" id="contact-dialog-eyebrow">LET’S TALK</span><button class="btn-icon" type="button" data-close-contact aria-label="Close contact form">×</button></div><h2 id="contact-dialog-title">Tell us what you’re building.</h2><p id="contact-dialog-description">Share your requirements. Our team will follow up by email.</p>
+    <form id="contact-form"><input type="hidden" name="category" value="sales"><div class="contact-form-grid"><div class="form-group"><label class="form-label" for="contact-name">Your name</label><input id="contact-name" name="name" class="form-input" autocomplete="name" minlength="2" maxlength="100" required></div><div class="form-group"><label class="form-label" for="contact-email">Reply email</label><input id="contact-email" name="email" class="form-input" type="email" autocomplete="email" maxlength="254" required></div></div><div class="form-group"><label class="form-label" for="contact-company">Company <span>(optional)</span></label><input id="contact-company" name="company" class="form-input" autocomplete="organization" maxlength="120"></div><div class="form-group"><label class="form-label" for="contact-subject">Subject</label><input id="contact-subject" name="subject" class="form-input" minlength="3" maxlength="160" required></div><div class="form-group"><label class="form-label" for="contact-message">How can we help?</label><textarea id="contact-message" name="message" class="form-textarea" rows="4" minlength="20" maxlength="3000" required placeholder="Tell us about your use case or the issue you’re experiencing…"></textarea><div class="form-hint">At least 20 characters. Please don’t include passwords, API keys, or sensitive data.</div></div><div class="contact-trap" aria-hidden="true"><label for="contact-website">Website</label><input id="contact-website" name="website" tabindex="-1" autocomplete="off"></div><label class="consent-label"><input name="consent" type="checkbox" required><span>I agree to SpeedInfer storing this request and contacting me by email about it. <button type="button" class="inline-link" data-privacy>Read the data notice</button>.</span></label><div id="contact-result" role="status" aria-live="polite" tabindex="-1"></div><button id="contact-submit" class="btn ink-button" type="submit">Send request <span>↗</span></button><p class="contact-alternative">Prefer email? <a id="contact-direct-email" href="mailto:Sales@speedinfer.com">Sales@speedinfer.com</a></p></form>
+  </dialog>
+  <dialog id="privacy-dialog" class="contact-dialog privacy-dialog" aria-labelledby="privacy-title"><div class="contact-dialog-header"><span class="eyebrow">PRIVACY &amp; ZDR DATA POLICY</span><button class="btn-icon" data-close-privacy aria-label="Close data notice">×</button></div><h2 id="privacy-title">How your data and requests are handled.</h2><p><strong>Enterprise Zero Data Retention (ZDR) Guarantee:</strong> All prompt and completion tokens submitted to SpeedInfer inference endpoints are processed strictly ephemerally in GPU memory (VRAM) and are never logged, stored on persistent disk, or used for model training.</p><p>When you submit a sales or support request, SpeedInfer stores your name, email, optional company, subject, and message so the team can handle your request and respond by email. Requests are visible only to authorized administrators.</p><p>Contact details are used to handle your request, not to enroll you in marketing. Requests remain in the system until removed by the operator. For access, corrections, or deletion, email <a href="mailto:Support@speedinfer.com" data-support-email>Support@speedinfer.com</a>.</p><p>Account and API key metadata are used strictly for authentication and aggregated token usage metering. Dedicated enterprise VPC deployment options with VPC Peering / PrivateLink and custom SLAs are available via enterprise sales.</p></dialog>
+
+  <script src="/static/js/benchmarks.js?v=20260927-inception-release"></script>
+  <script type="module" src="/static/js/app.js?v=20260927-inception-release"></script>
+</body>
+</html>

@@ -1,0 +1,25 @@
+# Prometheus Monitoring Configuration for SpeedInfer Platform
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  - job_name: "speedinfer-gateway"
+    metrics_path: "/metrics"
+    static_configs:
+      - targets: ["gateway:8000"]
+        labels:
+          service: "gateway"
+          env: "production"
+
+  - job_name: "speedinfer-vllm"
+    metrics_path: "/metrics"
+    static_configs:
+      - targets: ["vllm:8000"]
+        labels:
+          service: "vllm-engine"
+          env: "production"
+
+  - job_name: "prometheus"
+    static_configs:
+      - targets: ["localhost:9090"]

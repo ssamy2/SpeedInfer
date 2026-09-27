@@ -1,0 +1,201 @@
+/**
+ * SpeedInfer Responsive Media Queries
+ * Breakpoints: Mobile (<= 768px, optimized for 390px), Tablet (769px - 1024px, optimized for 768px), Desktop (>= 1025px, optimized for 1440px)
+ */
+
+/* ==========================================================================
+   Tablet Styles (max-width: 1024px)
+   ========================================================================== */
+@media (max-width: 1024px) {
+  :root {
+    --sidebar-width: 220px;
+    --space-6: 1.25rem;
+  }
+
+  .metrics-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .playground-layout {
+    flex-direction: column;
+    height: auto;
+    min-height: calc(100vh - var(--header-height) - var(--space-8));
+    gap: var(--space-4);
+  }
+
+  .playground-controls {
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: var(--space-3);
+  }
+
+  .playground-main {
+    min-height: 520px;
+  }
+}
+
+/* ==========================================================================
+   Mobile Styles (max-width: 767px) - Includes iPhone 390px & Android
+   ========================================================================== */
+@media (max-width: 767px) {
+  /* Sidebar off-canvas drawer */
+  .app-sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: 280px;
+    transform: translateX(-100%);
+    box-shadow: var(--shadow-lg);
+  }
+
+  .app-sidebar.mobile-open {
+    transform: translateX(0);
+  }
+
+  .sidebar-backdrop {
+    position: fixed;
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(2px);
+    z-index: 90;
+    opacity: 0;
+    visibility: hidden;
+    transition: all var(--transition-normal);
+  }
+
+  .sidebar-backdrop.active {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  .mobile-menu-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* Header compacting */
+  .app-header {
+    padding: 0 var(--space-4);
+  }
+
+  .user-email {
+    display: none;
+  }
+
+  .balance-pill {
+    padding: var(--space-1) var(--space-2);
+    font-size: var(--text-2xs);
+  }
+
+  /* Viewport spacing */
+  .view-viewport {
+    padding: var(--space-4);
+  }
+
+  .metrics-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .view-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-3);
+  }
+
+  .view-actions {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  /* Playground Mobile Layout */
+  .playground-layout {
+    flex-direction: column;
+    height: auto;
+    min-height: calc(100vh - var(--header-height) - var(--space-8));
+  }
+
+  .playground-controls {
+    width: 100%;
+    max-height: 280px;
+  }
+
+  .playground-main {
+    min-height: 480px;
+  }
+
+  .chat-message {
+    max-width: 95%;
+  }
+
+  /* Tables container */
+  .table-container {
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Modals */
+  .modal-card {
+    max-width: 100%;
+    margin: var(--space-2);
+  }
+
+  /* Auth Page */
+  .auth-card {
+    padding: var(--space-5);
+  }
+}
+
+/* ==========================================================================
+   Ultra-Compact Mobile (max-width: 420px) - iPhone 12/13/14/15 390px
+   ========================================================================== */
+@media (max-width: 420px) {
+  .view-viewport {
+    padding: var(--space-3);
+  }
+
+  .card {
+    padding: var(--space-4);
+  }
+
+  .metric-value {
+    font-size: var(--text-2xl);
+  }
+
+  .quick-prompts-bar {
+    display: none; /* Hide quick prompts chips to save vertical space on 390px */
+  }
+
+  .playground-controls {
+    padding: var(--space-3);
+    gap: var(--space-3);
+  }
+
+  .chat-thread {
+    padding: var(--space-3);
+    gap: var(--space-3);
+  }
+
+  .message-metrics-tag {
+    flex-wrap: wrap;
+    gap: var(--space-1);
+  }
+}
+
+/* ==========================================================================
+   Large Desktop Screens (min-width: 1440px)
+   ========================================================================== */
+@media (min-width: 1440px) {
+  :root {
+    --max-content-width: 1360px;
+  }
+
+  .playground-controls {
+    width: 360px;
+  }
+
+  .view-content-wrapper {
+    gap: var(--space-8);
+  }
+}

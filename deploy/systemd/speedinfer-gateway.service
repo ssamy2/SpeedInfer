@@ -1,0 +1,21 @@
+[Unit]
+Description=SpeedInfer OpenAI-Compatible API Gateway
+After=network.target postgresql.service redis.service
+Wants=redis.service postgresql.service
+
+[Service]
+Type=simple
+User=speedinfer
+Group=speedinfer
+WorkingDirectory=/opt/speedinfer
+EnvironmentFile=/opt/speedinfer/.env
+Environment="PATH=/opt/speedinfer/venv/bin:/usr/local/bin:/usr/bin"
+ExecStart=/opt/speedinfer/venv/bin/uvicorn speedinfer.gateway.app:app --host 0.0.0.0 --port 8000 --workers 4 --loop uvloop --http httptools
+Restart=always
+RestartSec=5s
+LimitNOFILE=65536
+KillMode=mixed
+TimeoutStopSec=30s
+
+[Install]
+WantedBy=multi-user.target

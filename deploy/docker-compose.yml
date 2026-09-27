@@ -1,0 +1,158 @@
+services:
+  gateway:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    container_name: speedinfer-gateway
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    env_file:
+      - ../.env
+    environment:
+      - DATABASE_URL=postgresql://speedinfer:speedinfer_pass@postgres:5432/speedinfer_db
+      - REDIS_URL=redis://redis:6379/0
+      - VLLM_BASE_URL=http://vllm:8000
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - speedinfer-network
+
+  vllm:
+    image: vllm/vllm-openai:v0.6.3.post1
+    container_name: speedinfer-vllm
+    restart: unless-stopped
+    runtime: nvidia
+    ports:
+      - "8001:8000"
+    environment:
+      - HUGGING_FACE_HUB_TOKEN=${HUGGING_FACE_HUB_TOKEN:-}
+    volumes:
+      - ~/.cache/huggingface:/root/.cache/huggingface
+      - ../models:/models
+    command: >
+      --model Qwen/Qwen2.5-7B-Instruct
+      --tensor-parallel-size 1
+      --gpu-memory-utilization 0.90
+      --max-model-len 32768
+      --trust-remote-code
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8000/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 60s
+    networks:
+      - speedinfer-network
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: speedinfer-postgres
+    restart: unless-stopped
+    environment:
+      - POSTGRES_USER=speedinfer
+      - POSTGRES_PASSWORD=speedinfer_pass
+      - POSTGRES_DB=speedinfer_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U speedinfer -d speedinfer_db"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    networks:
+      - speedinfer-network
+
+  redis:
+    image: redis:7-alpine
+    container_name: speedinfer-redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes --save 60 1000
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    networks:
+      - speedinfer-network
+
+  mlflow:
+    image: ghcr.io/mlflow/mlflow:v2.18.0
+    container_name: speedinfer-mlflow
+    restart: unless-stopped
+    ports:
+      - "5000:5000"
+    environment:
+      - BACKEND_STORE_URI=postgresql://speedinfer:speedinfer_pass@postgres:5432/speedinfer_db
+      - ARTIFACT_ROOT=/mlartifacts
+    volumes:
+      - mlflow_data:/mlartifacts
+    command: >
+      mlflow server
+      --backend-store-uri postgresql://speedinfer:speedinfer_pass@postgres:5432/speedinfer_db
+      --default-artifact-root /mlartifacts
+      --host 0.0.0.0
+      --port 5000
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - speedinfer-network
+
+  prometheus:
+    image: prom/prometheus:v2.54.1
+    container_name: speedinfer-prometheus
+    restart: unless-stopped
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"
+    networks:
+      - speedinfer-network
+
+  grafana:
+    image: grafana/grafana:11.2.0
+    container_name: speedinfer-grafana
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin_password
+    volumes:
+      - grafana_data:/var/lib/grafana
+    depends_on:
+      - prometheus
+    networks:
+      - speedinfer-network
+
+networks:
+  speedinfer-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  redis_data:
+  mlflow_data:
+  prometheus_data:
+  grafana_data:
