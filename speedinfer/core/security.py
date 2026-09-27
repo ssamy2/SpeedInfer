@@ -145,10 +145,12 @@ def create_access_token(
     else:
         expire = now + timedelta(minutes=settings.jwt_access_token_expire_minutes)
 
-    to_encode.update({
-        "exp": expire,
-        "iat": now,
-    })
+    to_encode.update(
+        {
+            "exp": expire,
+            "iat": now,
+        }
+    )
 
     # Ensure subject is converted to string for standard JWT compliance
     if "sub" in to_encode and not isinstance(to_encode["sub"], str):

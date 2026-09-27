@@ -216,9 +216,7 @@ def test_webhook_credits_to_primary_key_when_target_inactive(db_session: Session
     db_session.refresh(user)
 
     # Primary active key
-    key1 = ApiKey(
-        user_id=user.id, key_hash="c" * 64, prefix="sk-speedinfer-active", is_active=True
-    )
+    key1 = ApiKey(user_id=user.id, key_hash="c" * 64, prefix="sk-speedinfer-active", is_active=True)
     db_session.add(key1)
     db_session.commit()
     db_session.refresh(key1)
@@ -332,9 +330,7 @@ async def test_permanent_key_deletion_safeguard_with_payment_records(db_session:
     db_session.add(user)
     db_session.commit()
 
-    key = ApiKey(
-        id=99, user_id=user.id, key_hash="f" * 64, prefix="sk-audit-key", is_active=True
-    )
+    key = ApiKey(id=99, user_id=user.id, key_hash="f" * 64, prefix="sk-audit-key", is_active=True)
     db_session.add(key)
     db_session.commit()
 
@@ -681,6 +677,3 @@ async def test_permanent_key_deletion_safeguard_with_usage_ledger(db_session: Se
 
     assert exc_info.value.status_code == 409
     assert "This key has billing records. Revoke it instead." in exc_info.value.detail
-
-
-

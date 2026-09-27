@@ -22,7 +22,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlmodel import Session, select
 
 from speedinfer.config import get_settings
-from speedinfer.core.auth import generate_api_key
+from speedinfer.core.auth import DEFAULT_KEY_PERMISSIONS, generate_api_key
 from speedinfer.core.email import send_password_reset_email, send_verification_email
 from speedinfer.core.referrals import award_referee_bonus, hash_ip, process_registration_referral
 from speedinfer.core.security import (
@@ -223,7 +223,7 @@ async def register(
                 name="default",
                 key_hash=key_hash,
                 prefix=prefix,
-                permissions="chat:completions,completions,models:read,usage:read",
+                permissions=DEFAULT_KEY_PERMISSIONS,
                 trial_balance=api_key_balance,
                 paid_balance=0.0,
                 credit_balance=api_key_balance,
@@ -378,8 +378,7 @@ async def login(
     "/verify-email",
     summary="Verify user email address using 6-digit OTP code",
     description=(
-        "Validates OTP and upgrades account to verified status, "
-        "awarding referral trial bonuses."
+        "Validates OTP and upgrades account to verified status, awarding referral trial bonuses."
     ),
 )
 async def verify_email(
@@ -623,9 +622,7 @@ async def reset_password(
     session.commit()
 
     return {
-        "message": (
-            "Password has been reset successfully. Please sign in with your new password."
-        )
+        "message": ("Password has been reset successfully. Please sign in with your new password.")
     }
 
 
@@ -647,9 +644,7 @@ async def get_me(
     session: Annotated[Session, Depends(get_session)],
 ) -> UserResponse:
     """Retrieve authenticated user details and active credit balance."""
-    total_balance, paid_balance, trial_balance = _calculate_user_balances(
-        session, current_user.id
-    )
+    total_balance, paid_balance, trial_balance = _calculate_user_balances(session, current_user.id)
     return _build_user_response(current_user, total_balance, paid_balance, trial_balance)
 
 
@@ -666,9 +661,7 @@ async def get_profile(
     session: Annotated[Session, Depends(get_session)],
 ) -> UserResponse:
     """Retrieve authenticated user profile and account details."""
-    total_balance, paid_balance, trial_balance = _calculate_user_balances(
-        session, current_user.id
-    )
+    total_balance, paid_balance, trial_balance = _calculate_user_balances(session, current_user.id)
     return _build_user_response(current_user, total_balance, paid_balance, trial_balance)
 
 
@@ -701,7 +694,5 @@ async def update_profile(
     session.commit()
     session.refresh(current_user)
 
-    total_balance, paid_balance, trial_balance = _calculate_user_balances(
-        session, current_user.id
-    )
+    total_balance, paid_balance, trial_balance = _calculate_user_balances(session, current_user.id)
     return _build_user_response(current_user, total_balance, paid_balance, trial_balance)

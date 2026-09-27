@@ -13,8 +13,9 @@ import uuid
 from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 from pathlib import Path
+from typing import Annotated
 
-from fastapi import FastAPI, HTTPException, Request, status
+from fastapi import Depends, FastAPI, HTTPException, Request, status
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse
@@ -22,10 +23,10 @@ from sqlalchemy import inspect, text
 from sqlmodel import Session, SQLModel, select
 from starlette.staticfiles import StaticFiles
 
-from speedinfer.config import get_settings
+from speedinfer.config import Settings, get_settings
 from speedinfer.core.auth import hash_api_key
 from speedinfer.database.models import ApiKey, ModelVersion, User
-from speedinfer.database.session import engine
+from speedinfer.database.session import engine, get_session
 from speedinfer.engine.registry import BackendWorker, ModelRegistry
 from speedinfer.gateway.proxy import InferenceProxy
 from speedinfer.gateway.redis import close_redis
@@ -40,8 +41,12 @@ from speedinfer.gateway.routes import (
     usage_router,
 )
 from speedinfer.gateway.routes.contact import router as contact_router
+from speedinfer.gateway.routes.files import router as files_router
+from speedinfer.gateway.routes.fine_tuning import router as fine_tuning_router
+from speedinfer.gateway.routes.oauth import oauth_alias_router
 from speedinfer.gateway.routes.oauth import router as oauth_router
 from speedinfer.gateway.routes.referrals import router as referrals_router
+from speedinfer.gateway.routes.storage import router as storage_router
 from speedinfer.gateway.routes.workspace import router as workspace_router
 
 # Process-wide singletons
@@ -118,57 +123,55 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
             revision = conn.execute(text("SELECT version_num FROM alembic_version")).scalar()
             if revision != "0007_inference_reservations":
                 raise RuntimeError("Database migration 0007_inference_reservations is required.")
-    else:
-        # 1. Ensure database tables exist and schema compatibility
-        SQLModel.metadata.create_all(bind=engine)
-        with engine.connect() as conn:
-            insp = inspect(conn)
-            if "user" in insp.get_table_names():
-                cols = [c["name"] for c in insp.get_columns("user")]
-                for col_name, col_sql in [
-                    ("password_hash", 'ALTER TABLE "user" ADD COLUMN password_hash VARCHAR(255)'),
-                    ("referral_code", 'ALTER TABLE "user" ADD COLUMN referral_code VARCHAR(32)'),
-                    ("referred_by_id", 'ALTER TABLE "user" ADD COLUMN referred_by_id INTEGER'),
-                    ("signup_ip_hash", 'ALTER TABLE "user" ADD COLUMN signup_ip_hash VARCHAR(64)'),
-                    (
-                        "device_fingerprint",
-                        'ALTER TABLE "user" ADD COLUMN device_fingerprint VARCHAR(128)',
-                    ),
-                    (
-                        "referral_reward_claimed",
-                        'ALTER TABLE "user" ADD COLUMN referral_reward_claimed BOOLEAN DEFAULT 0',
-                    ),
-                    ("is_verified", 'ALTER TABLE "user" ADD COLUMN is_verified BOOLEAN DEFAULT 0'),
-                    (
-                        "email_verified_at",
-                        'ALTER TABLE "user" ADD COLUMN email_verified_at TIMESTAMP',
-                    ),
-                    ("avatar_url", 'ALTER TABLE "user" ADD COLUMN avatar_url TEXT'),
-                    ("location", 'ALTER TABLE "user" ADD COLUMN location VARCHAR(255)'),
-                    ("organization", 'ALTER TABLE "user" ADD COLUMN organization VARCHAR(255)'),
-                ]:
-                    if col_name not in cols:
-                        conn.execute(text(col_sql))
-                        conn.commit()
-            if "apikey" in insp.get_table_names():
-                api_cols = [c["name"] for c in insp.get_columns("apikey")]
-                if "trial_balance" not in api_cols:
-                    conn.execute(
-                        text('ALTER TABLE "apikey" ADD COLUMN trial_balance FLOAT DEFAULT 0.0')
-                    )
+
+    # Ensure all defined database tables exist and schema compatibility
+    SQLModel.metadata.create_all(bind=engine)
+    with engine.connect() as conn:
+        insp = inspect(conn)
+        if "user" in insp.get_table_names():
+            cols = [c["name"] for c in insp.get_columns("user")]
+            for col_name, col_sql in [
+                ("password_hash", 'ALTER TABLE "user" ADD COLUMN password_hash VARCHAR(255)'),
+                ("referral_code", 'ALTER TABLE "user" ADD COLUMN referral_code VARCHAR(32)'),
+                ("referred_by_id", 'ALTER TABLE "user" ADD COLUMN referred_by_id INTEGER'),
+                ("signup_ip_hash", 'ALTER TABLE "user" ADD COLUMN signup_ip_hash VARCHAR(64)'),
+                (
+                    "device_fingerprint",
+                    'ALTER TABLE "user" ADD COLUMN device_fingerprint VARCHAR(128)',
+                ),
+                (
+                    "referral_reward_claimed",
+                    'ALTER TABLE "user" ADD COLUMN referral_reward_claimed BOOLEAN DEFAULT 0',
+                ),
+                ("is_verified", 'ALTER TABLE "user" ADD COLUMN is_verified BOOLEAN DEFAULT 0'),
+                (
+                    "email_verified_at",
+                    'ALTER TABLE "user" ADD COLUMN email_verified_at TIMESTAMP',
+                ),
+                ("avatar_url", 'ALTER TABLE "user" ADD COLUMN avatar_url TEXT'),
+                ("location", 'ALTER TABLE "user" ADD COLUMN location VARCHAR(255)'),
+                ("organization", 'ALTER TABLE "user" ADD COLUMN organization VARCHAR(255)'),
+            ]:
+                if col_name not in cols:
+                    conn.execute(text(col_sql))
                     conn.commit()
-                if "paid_balance" not in api_cols:
-                    conn.execute(
-                        text('ALTER TABLE "apikey" ADD COLUMN paid_balance FLOAT DEFAULT 0.0')
-                    )
-                    conn.commit()
+        if "apikey" in insp.get_table_names():
+            api_cols = [c["name"] for c in insp.get_columns("apikey")]
+            if "trial_balance" not in api_cols:
                 conn.execute(
-                    text(
-                        'UPDATE "apikey" SET paid_balance = credit_balance '
-                        "WHERE (trial_balance + paid_balance) = 0.0 AND credit_balance > 0.0"
-                    )
+                    text('ALTER TABLE "apikey" ADD COLUMN trial_balance FLOAT DEFAULT 0.0')
                 )
                 conn.commit()
+            if "paid_balance" not in api_cols:
+                conn.execute(text('ALTER TABLE "apikey" ADD COLUMN paid_balance FLOAT DEFAULT 0.0'))
+                conn.commit()
+            conn.execute(
+                text(
+                    'UPDATE "apikey" SET paid_balance = credit_balance '
+                    "WHERE (trial_balance + paid_balance) = 0.0 AND credit_balance > 0.0"
+                )
+            )
+            conn.commit()
 
     # 2. Register default model in registry
     model_name = settings.default_model
@@ -219,10 +222,15 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
 def create_app() -> FastAPI:
     """Create and configure the FastAPI application instance."""
     fastapi_app = FastAPI(
-        title="SpeedInfer Gateway",
-        description="Ultra-low latency, OpenAI-compatible metered inference gateway.",
+        title="SpeedInfer Developer API",
+        description=(
+            "Ultra-low latency, OpenAI-compatible metered inference gateway "
+            "and AI developer platform."
+        ),
         version="0.1.0",
         lifespan=lifespan,
+        docs_url="/api/docs",
+        redoc_url="/api/redoc",
     )
 
     # Middleware: CORS
@@ -319,12 +327,16 @@ def create_app() -> FastAPI:
     fastapi_app.include_router(workspace_router)
     fastapi_app.include_router(auth_router)
     fastapi_app.include_router(oauth_router)
+    fastapi_app.include_router(oauth_alias_router)
     fastapi_app.include_router(referrals_router)
     fastapi_app.include_router(billing_router)
     fastapi_app.include_router(keys_router)
     fastapi_app.include_router(chat_router)
     fastapi_app.include_router(completions_router)
     fastapi_app.include_router(models_router)
+    fastapi_app.include_router(files_router)
+    fastapi_app.include_router(storage_router)
+    fastapi_app.include_router(fine_tuning_router)
     fastapi_app.include_router(usage_router)
     fastapi_app.include_router(health_router)
 
@@ -334,12 +346,68 @@ def create_app() -> FastAPI:
         fastapi_app.mount("/static", StaticFiles(directory=str(frontend_dir)), name="static")
 
         @fastapi_app.get("/guide", include_in_schema=False)
-        async def serve_guide() -> FileResponse:
+        @fastapi_app.get("/guide/{full_path:path}", include_in_schema=False)
+        async def serve_guide(full_path: str = "") -> FileResponse:
+            guide_file = frontend_dir / "guide.html"
+            if guide_file.exists():
+                return FileResponse(guide_file)
+            return FileResponse(frontend_dir / "docs.html")
+
+        @fastapi_app.get("/docs", include_in_schema=False)
+        @fastapi_app.get("/docs/{full_path:path}", include_in_schema=False)
+        @fastapi_app.get("/documentation", include_in_schema=False)
+        @fastapi_app.get("/documentation/{full_path:path}", include_in_schema=False)
+        async def serve_developer_docs(full_path: str = "") -> FileResponse:
+            docs_file = frontend_dir / "docs.html"
+            if docs_file.exists():
+                return FileResponse(docs_file)
             return FileResponse(frontend_dir / "guide.html")
+
+        @fastapi_app.get("/auth/callback", include_in_schema=False)
+        async def serve_auth_callback(
+            request: Request,
+            session: Annotated[Session, Depends(get_session)],
+            settings: Annotated[Settings, Depends(get_settings)],
+            code: str | None = None,
+            state: str | None = None,
+        ):
+            if code:
+                from speedinfer.gateway.routes.oauth import github_callback, google_callback
+
+                query_str = str(request.query_params)
+                if "accounts.google.com" in query_str or (state and "google" in state.lower()):
+                    return await google_callback(
+                        code=code, request=request, session=session, settings=settings, state=state
+                    )
+                elif "github" in query_str or (state and "github" in state.lower()):
+                    return await github_callback(
+                        code=code, request=request, session=session, settings=settings, state=state
+                    )
+                else:
+                    try:
+                        return await google_callback(
+                            code=code,
+                            request=request,
+                            session=session,
+                            settings=settings,
+                            state=state,
+                        )
+                    except Exception:
+                        return await github_callback(
+                            code=code,
+                            request=request,
+                            session=session,
+                            settings=settings,
+                            state=state,
+                        )
+            index_file = frontend_dir / "index.html"
+            return FileResponse(index_file)
 
         @fastapi_app.get("/", include_in_schema=False)
         @fastapi_app.get("/app", include_in_schema=False)
         @fastapi_app.get("/app/{full_path:path}", include_in_schema=False)
+        @fastapi_app.get("/auth", include_in_schema=False)
+        @fastapi_app.get("/auth/{full_path:path}", include_in_schema=False)
         @fastapi_app.get("/legal", include_in_schema=False)
         @fastapi_app.get("/legal/{full_path:path}", include_in_schema=False)
         async def serve_spa(full_path: str = "") -> FileResponse:

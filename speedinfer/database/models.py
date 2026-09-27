@@ -16,7 +16,7 @@ from enum import StrEnum
 from typing import Any
 
 from pydantic import ConfigDict, field_validator
-from sqlalchemy import CheckConstraint, Column, Index, Text
+from sqlalchemy import CheckConstraint, Column, Index, LargeBinary, Text, UniqueConstraint
 from sqlmodel import Field, Relationship, SQLModel
 
 from speedinfer.database.workspace import (  # noqa: F401
@@ -768,6 +768,7 @@ class ContactRequest(SQLModel, table=True):
 
 class TrialCreditGrant(SQLModel, table=True):
     """One durable entitlement marker per account, surviving key revocation/deletion."""
+
     __tablename__ = "trial_credit_grant"
     user_id: int = Field(foreign_key="user.id", primary_key=True)
     amount: float
@@ -779,9 +780,7 @@ class OAuthAccount(SQLModel, table=True):
 
     model_config = ConfigDict(validate_assignment=True)
     __tablename__ = "oauth_account"
-    __table_args__ = (
-        Index("ix_oauth_provider_uid", "provider", "provider_user_id", unique=True),
-    )
+    __table_args__ = (Index("ix_oauth_provider_uid", "provider", "provider_user_id", unique=True),)
 
     id: int | None = Field(
         default=None,
@@ -827,9 +826,7 @@ class EmailVerificationCode(SQLModel, table=True):
 
     model_config = ConfigDict(validate_assignment=True)
     __tablename__ = "email_verification_code"
-    __table_args__ = (
-        Index("ix_email_code_purpose", "email", "code", "purpose"),
-    )
+    __table_args__ = (Index("ix_email_code_purpose", "email", "code", "purpose"),)
 
     id: int | None = Field(
         default=None,
@@ -957,3 +954,120 @@ class Referral(SQLModel, table=True):
         description="Timestamp when referrer bonus was granted.",
     )
 
+
+class FileRecord(SQLModel, table=True):
+    """Developer API uploaded file entity (OpenAI compatible)."""
+
+    __tablename__ = "file_record"
+
+    id: str = Field(
+        default_factory=lambda: f"file-{secrets.token_hex(12)}",
+        primary_key=True,
+        description="Unique file identifier (file-...).",
+    )
+    user_id: int = Field(
+        foreign_key="user.id",
+        index=True,
+        nullable=False,
+        ondelete="CASCADE",
+        description="Owner user ID.",
+    )
+    filename: str = Field(max_length=255, nullable=False, description="Original filename.")
+    size_bytes: int = Field(default=0, nullable=False, description="File size in bytes.")
+    purpose: str = Field(default="fine-tune", max_length=64, index=True, nullable=False)
+    status: str = Field(default="uploaded", max_length=32, nullable=False)
+    content: bytes = Field(sa_column=Column(LargeBinary, nullable=False))
+    created_at: int = Field(
+        default_factory=lambda: int(datetime.now(UTC).timestamp()),
+        nullable=False,
+        index=True,
+    )
+
+
+class BucketRecord(SQLModel, table=True):
+    """Developer API storage bucket entity."""
+
+    __tablename__ = "bucket_record"
+    __table_args__ = (UniqueConstraint("user_id", "name"),)
+
+    id: str = Field(
+        default_factory=lambda: f"bkt-{secrets.token_hex(8)}",
+        primary_key=True,
+        description="Unique bucket identifier.",
+    )
+    user_id: int = Field(
+        foreign_key="user.id",
+        index=True,
+        nullable=False,
+        ondelete="CASCADE",
+        description="Owner user ID.",
+    )
+    name: str = Field(max_length=128, index=True, nullable=False)
+    description: str | None = Field(default=None, max_length=512, nullable=True)
+    created_at: datetime = Field(default_factory=utc_now, nullable=False)
+
+
+class BucketObjectRecord(SQLModel, table=True):
+    """Developer API storage object within a bucket."""
+
+    __tablename__ = "bucket_object_record"
+    __table_args__ = (UniqueConstraint("bucket_id", "name"),)
+
+    id: str = Field(
+        default_factory=lambda: f"obj-{secrets.token_hex(8)}",
+        primary_key=True,
+        description="Unique object identifier.",
+    )
+    user_id: int = Field(
+        foreign_key="user.id",
+        index=True,
+        nullable=False,
+        ondelete="CASCADE",
+        description="Owner user ID.",
+    )
+    bucket_id: str = Field(
+        foreign_key="bucket_record.id",
+        index=True,
+        nullable=False,
+        ondelete="CASCADE",
+    )
+    name: str = Field(max_length=255, index=True, nullable=False)
+    size: int = Field(default=0, nullable=False)
+    content_type: str = Field(default="application/octet-stream", max_length=128)
+    content: bytes = Field(sa_column=Column(LargeBinary, nullable=False))
+    created_at: datetime = Field(default_factory=utc_now, nullable=False)
+
+
+class FineTuningJobRecord(SQLModel, table=True):
+    """Developer API model fine-tuning job entity."""
+
+    __tablename__ = "fine_tuning_job_record"
+
+    id: str = Field(
+        default_factory=lambda: f"ftjob-{secrets.token_hex(12)}",
+        primary_key=True,
+        description="Unique fine-tuning job identifier.",
+    )
+    user_id: int = Field(
+        foreign_key="user.id",
+        index=True,
+        nullable=False,
+        ondelete="CASCADE",
+        description="Owner user ID.",
+    )
+    model: str = Field(max_length=200, nullable=False, description="Base model identifier.")
+    training_file_id: str = Field(max_length=64, nullable=False)
+    validation_file_id: str | None = Field(default=None, max_length=64, nullable=True)
+    status: str = Field(default="queued", max_length=32, index=True, nullable=False)
+    fine_tuned_model: str | None = Field(default=None, max_length=255, nullable=True)
+    hyperparameters_json: str = Field(default="{}", sa_column=Column(Text, nullable=False))
+    trained_tokens: int = Field(default=0, nullable=False)
+    checkpoints_json: str = Field(default="[]", sa_column=Column(Text, nullable=False))
+    events_json: str = Field(default="[]", sa_column=Column(Text, nullable=False))
+    error_json: str | None = Field(default=None, sa_column=Column(Text, nullable=True))
+    created_at: int = Field(
+        default_factory=lambda: int(datetime.now(UTC).timestamp()),
+        nullable=False,
+        index=True,
+    )
+    finished_at: int | None = Field(default=None, nullable=True)

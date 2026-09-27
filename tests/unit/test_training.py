@@ -206,4 +206,3 @@ def test_evaluate_model_and_promotion(tmp_path: Path):
         ).first()
         assert updated is not None
         assert updated.lifecycle_status == "active"
-

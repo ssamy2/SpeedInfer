@@ -120,9 +120,7 @@ def merge_and_export(
     with get_session_context() as session:
         from sqlmodel import select
 
-        existing = session.exec(
-            select(ModelVersion).where(ModelVersion.name == model_name)
-        ).first()
+        existing = session.exec(select(ModelVersion).where(ModelVersion.name == model_name)).first()
 
         if existing is not None:
             existing.base_model_path = str(out_path)

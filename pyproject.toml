@@ -18,6 +18,7 @@ dependencies = [
   "sqlmodel>=0.0.22,<1",
   "structlog>=24.4,<26",
   "redis>=5.2,<7",
+  "python-multipart>=0.0.18,<1",
   "uvicorn[standard]>=0.32,<1",
 ]
 

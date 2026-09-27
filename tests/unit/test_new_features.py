@@ -98,7 +98,9 @@ async def test_turnstile_api_siteverify_mocked() -> None:
         mock_resp = httpx.Response(
             status_code=200,
             json={"success": True, "action": "login", "hostname": "localhost"},
-            request=httpx.Request("POST", "https://challenges.cloudflare.com/turnstile/v0/siteverify"),
+            request=httpx.Request(
+                "POST", "https://challenges.cloudflare.com/turnstile/v0/siteverify"
+            ),
         )
         mock_post.return_value = mock_resp
 
@@ -114,7 +116,9 @@ async def test_turnstile_api_siteverify_mocked() -> None:
         mock_resp = httpx.Response(
             status_code=200,
             json={"success": True, "action": "contact", "hostname": "localhost"},
-            request=httpx.Request("POST", "https://challenges.cloudflare.com/turnstile/v0/siteverify"),
+            request=httpx.Request(
+                "POST", "https://challenges.cloudflare.com/turnstile/v0/siteverify"
+            ),
         )
         mock_post.return_value = mock_resp
 
@@ -129,7 +133,9 @@ async def test_turnstile_api_siteverify_mocked() -> None:
         mock_resp = httpx.Response(
             status_code=200,
             json={"success": True, "action": "login", "hostname": "attacker-domain.com"},
-            request=httpx.Request("POST", "https://challenges.cloudflare.com/turnstile/v0/siteverify"),
+            request=httpx.Request(
+                "POST", "https://challenges.cloudflare.com/turnstile/v0/siteverify"
+            ),
         )
         mock_post.return_value = mock_resp
 
@@ -535,9 +541,7 @@ async def test_user_profile_get_and_patch(db_session: Session) -> None:
         location="Cairo, Egypt",
         organization="SpeedInfer Research",
     )
-    updated = await update_profile(
-        payload=update_req, current_user=user, session=db_session
-    )
+    updated = await update_profile(payload=update_req, current_user=user, session=db_session)
     assert updated.name == "Dr. Alan Turing"
     assert updated.avatar_url == "https://speedinfer.com/avatars/alan.png"
     assert updated.location == "Cairo, Egypt"
@@ -673,9 +677,7 @@ async def test_referral_dashboard_endpoint(db_session: Session) -> None:
     db_session.add(ref2)
     db_session.commit()
 
-    stats = await get_my_referrals(
-        current_user=user, session=db_session, settings=settings
-    )
+    stats = await get_my_referrals(current_user=user, session=db_session, settings=settings)
     assert stats.referral_code == "STATS-101"
     assert stats.referral_link == "https://speedinfer.com/?ref=STATS-101"
     assert stats.total_referrals == 2
@@ -768,4 +770,3 @@ async def test_profile_patch_with_aliases(db_session: Session) -> None:
     assert resp.address == "San Francisco, CA"
     assert resp.organization == "Acme Innovations"
     assert resp.company == "Acme Innovations"
-

@@ -24,4 +24,3 @@ def configure_logging(level: str) -> None:
 
 
 get_logger = structlog.get_logger
-

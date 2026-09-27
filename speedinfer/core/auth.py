@@ -35,6 +35,13 @@ from speedinfer.database.session import get_session
 API_KEY_PREFIX = "sk-speedinfer-"
 SAFE_PREFIX_LENGTH = 22  # 'sk-speedinfer-' (14) + first 8 hex chars = 22 chars
 
+# Canonical default permissions for newly minted developer account keys
+DEFAULT_KEY_PERMISSIONS = (
+    "chat:completions,completions,models:read,usage:read,"
+    "files:read,files:write,storage:read,storage:write,"
+    "fine_tuning:read,fine_tuning:write,keys,keys:read,keys:write,admin"
+)
+
 
 class SpeedInferAuthError(Exception):
     """Base exception for authentication and authorization errors."""
@@ -174,8 +181,11 @@ def check_scopes(
     """Check if the required permission scope is granted.
 
     Grants access if:
-    - The 'admin' scope is granted (universal administrative bypass).
+    - The 'admin' or '*' scope is granted (universal administrative bypass).
     - The exact required_scope is contained in granted_scopes.
+    - A wildcard prefix such as 'files:*' or a category scope such as 'files' is granted.
+    - Group aliases (inference -> chat:completions, storage -> buckets,
+      fine-tuning -> training) match.
 
     Args:
         required_scope: Permission scope required by the protected operation.
@@ -194,9 +204,42 @@ def check_scopes(
     else:
         return False
 
-    if "admin" in scopes:
+    if "admin" in scopes or "*" in scopes:
         return True
-    return required_scope in scopes
+    if required_scope in scopes:
+        return True
+
+    # Check prefix wildcard e.g. "files:*" or category e.g. "files"
+    parts = required_scope.split(":")
+    if len(parts) == 2:
+        prefix, _action = parts
+        if f"{prefix}:*" in scopes or prefix in scopes:
+            return True
+    elif len(parts) == 1:
+        prefix = parts[0]
+        if any(s == f"{prefix}:*" or s.startswith(f"{prefix}:") for s in scopes):
+            return True
+
+    # Group aliases
+    group_mappings: dict[str, set[str]] = {
+        "chat:completions": {"inference"},
+        "completions": {"inference"},
+        "files:read": {"files", "storage"},
+        "files:write": {"files", "storage"},
+        "storage:read": {"storage", "buckets"},
+        "storage:write": {"storage", "buckets"},
+        "buckets:read": {"storage", "buckets"},
+        "buckets:write": {"storage", "buckets"},
+        "fine_tuning:read": {"fine-tuning", "fine_tuning", "training"},
+        "fine_tuning:write": {"fine-tuning", "fine_tuning", "training"},
+        "keys:read": {"keys"},
+        "keys:write": {"keys"},
+    }
+    if required_scope in group_mappings:
+        if bool(scopes & group_mappings[required_scope]):
+            return True
+
+    return False
 
 
 def check_scope_permission(api_key: ApiKey, required_scope: str) -> bool:
@@ -284,9 +327,13 @@ def authenticate_api_key(
         )
 
     if get_settings().environment != "test" and raw_key in {
-        "sk-speedinfer-validkey", "sk-speedinfer-validkey1234567890abcdef",
-        "sk-speedinfer-testkey", "sk-speedinfer-test-key", "sk-speedinfer-loadtest-key",
-        "sk-speedinfer-zero-credit-key", "sk-speedinfer-limited-balance-key",
+        "sk-speedinfer-validkey",
+        "sk-speedinfer-validkey1234567890abcdef",
+        "sk-speedinfer-testkey",
+        "sk-speedinfer-test-key",
+        "sk-speedinfer-loadtest-key",
+        "sk-speedinfer-zero-credit-key",
+        "sk-speedinfer-limited-balance-key",
     }:
         raise HTTPException(401, detail="Test harness keys are disabled outside tests.")
 

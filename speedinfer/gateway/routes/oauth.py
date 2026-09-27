@@ -18,7 +18,7 @@ from fastapi.responses import RedirectResponse
 from sqlmodel import Session, select
 
 from speedinfer.config import Settings, get_settings
-from speedinfer.core.auth import generate_api_key
+from speedinfer.core.auth import DEFAULT_KEY_PERMISSIONS, generate_api_key
 from speedinfer.core.referrals import award_referee_bonus, hash_ip, process_registration_referral
 from speedinfer.core.security import create_access_token
 from speedinfer.database.models import ApiKey, OAuthAccount, TrialCreditGrant, User
@@ -138,7 +138,7 @@ def _provision_oauth_user(
         name="default",
         key_hash=key_hash,
         prefix=prefix,
-        permissions="chat:completions,completions,models:read,usage:read",
+        permissions=DEFAULT_KEY_PERMISSIONS,
         trial_balance=trial_balance,
         paid_balance=0.0,
         credit_balance=trial_balance,
@@ -166,6 +166,7 @@ async def google_login(
     settings: Annotated[Settings, Depends(get_settings)],
     ref: str | None = None,
     fp: str | None = None,
+    redirect_to: str | None = None,
 ) -> RedirectResponse:
     """Redirect client to Google OAuth 2.0 authorization endpoint."""
     if not settings.google_client_id:
@@ -179,6 +180,8 @@ async def google_login(
         state_data["ref"] = ref.strip().upper()
     if fp:
         state_data["fp"] = fp.strip()
+    if redirect_to and redirect_to.startswith("/"):
+        state_data["redirect_to"] = redirect_to
     state = json.dumps(state_data)
 
     params = {
@@ -250,11 +253,14 @@ async def google_callback(
 
     referral_code = None
     device_fp = None
+    redirect_target = "/app"
     if state:
         try:
             parsed_state = json.loads(state)
             referral_code = parsed_state.get("ref")
             device_fp = parsed_state.get("fp")
+            if parsed_state.get("redirect_to") and str(parsed_state["redirect_to"]).startswith("/"):
+                redirect_target = str(parsed_state["redirect_to"])
         except (json.JSONDecodeError, TypeError):
             pass
 
@@ -276,7 +282,7 @@ async def google_callback(
     )
 
     jwt_token = create_access_token(data={"sub": str(user.id), "email": user.email})
-    target_url = f"{settings.public_base_url.rstrip('/')}/?token={jwt_token}"
+    target_url = f"{settings.public_base_url.rstrip('/')}{redirect_target}?token={jwt_token}"
     return RedirectResponse(url=target_url, status_code=status.HTTP_302_FOUND)
 
 
@@ -288,6 +294,7 @@ async def github_login(
     settings: Annotated[Settings, Depends(get_settings)],
     ref: str | None = None,
     fp: str | None = None,
+    redirect_to: str | None = None,
 ) -> RedirectResponse:
     """Redirect client to GitHub OAuth authorization endpoint."""
     if not settings.github_client_id:
@@ -301,6 +308,8 @@ async def github_login(
         state_data["ref"] = ref.strip().upper()
     if fp:
         state_data["fp"] = fp.strip()
+    if redirect_to and redirect_to.startswith("/"):
+        state_data["redirect_to"] = redirect_to
     state = json.dumps(state_data)
 
     params = {
@@ -392,11 +401,14 @@ async def github_callback(
 
     referral_code = None
     device_fp = None
+    redirect_target = "/app"
     if state:
         try:
             parsed_state = json.loads(state)
             referral_code = parsed_state.get("ref")
             device_fp = parsed_state.get("fp")
+            if parsed_state.get("redirect_to") and str(parsed_state["redirect_to"]).startswith("/"):
+                redirect_target = str(parsed_state["redirect_to"])
         except (json.JSONDecodeError, TypeError):
             pass
 
@@ -418,5 +430,38 @@ async def github_callback(
     )
 
     jwt_token = create_access_token(data={"sub": str(user.id), "email": user.email})
-    target_url = f"{settings.public_base_url.rstrip('/')}/?token={jwt_token}"
+    target_url = f"{settings.public_base_url.rstrip('/')}{redirect_target}?token={jwt_token}"
     return RedirectResponse(url=target_url, status_code=status.HTTP_302_FOUND)
+
+
+oauth_alias_router = APIRouter(tags=["OAuth"])
+
+
+@oauth_alias_router.get("/v1/auth/callback/google", include_in_schema=False)
+@oauth_alias_router.get("/v1/auth/google/callback", include_in_schema=False)
+@oauth_alias_router.get("/auth/callback/google", include_in_schema=False)
+async def google_callback_alias(
+    request: Request,
+    session: Annotated[Session, Depends(get_session)],
+    settings: Annotated[Settings, Depends(get_settings)],
+    code: str,
+    state: str | None = None,
+) -> RedirectResponse:
+    return await google_callback(
+        code=code, request=request, session=session, settings=settings, state=state
+    )
+
+
+@oauth_alias_router.get("/v1/auth/callback/github", include_in_schema=False)
+@oauth_alias_router.get("/v1/auth/github/callback", include_in_schema=False)
+@oauth_alias_router.get("/auth/callback/github", include_in_schema=False)
+async def github_callback_alias(
+    request: Request,
+    session: Annotated[Session, Depends(get_session)],
+    settings: Annotated[Settings, Depends(get_settings)],
+    code: str,
+    state: str | None = None,
+) -> RedirectResponse:
+    return await github_callback(
+        code=code, request=request, session=session, settings=settings, state=state
+    )

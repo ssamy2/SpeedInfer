@@ -667,9 +667,20 @@ for chunk in stream:
       const createdDate = k.created_at ? new Date(k.created_at).toLocaleDateString() : 'N/A';
       const lastUsed = k.last_used_at ? new Date(k.last_used_at).toLocaleDateString() : 'Never';
 
+      let scopeLabel = 'Custom Scopes';
+      const perms = k.permissions || '';
+      if (perms.includes('admin') || perms.includes('*')) scopeLabel = 'Full Access';
+      else if (perms.includes('chat') && !perms.includes('files') && !perms.includes('storage')) scopeLabel = 'Inference';
+      else if (perms.includes('storage') || perms.includes('buckets')) scopeLabel = 'Storage';
+      else if (perms.includes('fine_tuning') || perms.includes('training')) scopeLabel = 'Fine-Tuning';
+      else if (!perms.includes('write')) scopeLabel = 'Read-Only';
+
       return `
         <tr>
-          <td><strong style="color:var(--text-primary);">${escapeHtml(k.name || 'default')}</strong></td>
+          <td>
+            <strong style="color:var(--text-primary);">${escapeHtml(k.name || 'default')}</strong>
+            <div style="font-size:11px; color:#8cd867; font-weight:600; text-transform:uppercase; letter-spacing:0.5px; margin-top:2px;">${scopeLabel}</div>
+          </td>
           <td>
             <div class="masked-key-container">
               <span>${escapeHtml(k.prefix)}...</span>
@@ -1398,6 +1409,17 @@ for chunk in stream:
       });
     });
 
+    // Create Key Preset Change
+    const presetEl = document.getElementById('new-key-preset');
+    const customContainer = document.getElementById('custom-permissions-container');
+    presetEl?.addEventListener('change', () => {
+      if (presetEl.value === 'custom') {
+        if (customContainer) customContainer.style.display = 'block';
+      } else {
+        if (customContainer) customContainer.style.display = 'none';
+      }
+    });
+
     // Create Key Form Submit
     document.getElementById('create-key-form')?.addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -1406,6 +1428,21 @@ for chunk in stream:
       const tpm = parseInt(document.getElementById('new-key-tpm').value, 10) || 60000;
       const submitBtn = document.getElementById('create-key-submit-btn');
 
+      let permissions = 'admin,chat:completions,completions,models:read,usage:read,files:*,storage:*,fine_tuning:*,keys:*';
+      const preset = presetEl ? presetEl.value : 'all';
+      if (preset === 'inference') {
+        permissions = 'chat:completions,completions,models:read';
+      } else if (preset === 'training') {
+        permissions = 'fine_tuning:read,fine_tuning:write,files:read,files:write,models:read';
+      } else if (preset === 'storage') {
+        permissions = 'storage:read,storage:write,files:read,files:write';
+      } else if (preset === 'readonly') {
+        permissions = 'models:read,usage:read,files:read,storage:read,fine_tuning:read,keys:read';
+      } else if (preset === 'custom') {
+        const checked = Array.from(document.querySelectorAll('.scope-checkbox:checked')).map(cb => cb.value);
+        permissions = checked.join(',') || 'models:read';
+      }
+
       try {
         submitBtn.disabled = true;
         submitBtn.textContent = 'Generating...';
@@ -1413,6 +1450,7 @@ for chunk in stream:
           name,
           rpm_limit: rpm,
           tpm_limit: tpm,
+          permissions,
         });
 
         closeModal('modal-create-key');

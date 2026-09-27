@@ -191,4 +191,3 @@ async def test_streaming_done_sentinel_emitted_exactly_once(async_client, requir
 
     assert done_count == 1, f"Expected exactly 1 [DONE] sentinel, got {done_count}"
     assert total_lines[-1] == "data: [DONE]", "The very last message must be data: [DONE]"
-

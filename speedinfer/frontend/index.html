@@ -39,7 +39,7 @@
     <a class="skip-link" href="#platform">Skip to content</a>
     <div class="sales-topbar"><div><span>FOR ENTERPRISE TEAMS</span><p>Planning a private deployment or high-volume workload?</p><button data-contact="sales">Talk to sales <b>↗</b></button><a href="mailto:Sales@speedinfer.com" data-sales-email>Sales@speedinfer.com</a></div></div>
     <header class="site-header"><a href="#" class="wordmark" aria-label="SpeedInfer home"><span class="brand-symbol"> <svg viewBox="0 0 32 32" fill="none" aria-hidden="true"><path d="M7 8h20L17 16H5l10 8h10" stroke="currentColor" stroke-width="5" stroke-linejoin="round"/></svg></span>SpeedInfer<span class="wordmark-period">.</span></a>
-      <nav aria-label="Main navigation"><a href="#gateway">Gateway</a><a href="#pricing">Pricing</a><a href="#benchmarks" data-benchmarks-link>Benchmarks</a><a href="#platform">Platform</a><a href="#developers">Developers</a><a href="#contact">Contact</a><a href="/guide">Docs ↗</a></nav>
+      <nav aria-label="Main navigation"><a href="#gateway">Gateway</a><a href="#pricing">Pricing</a><a href="#benchmarks" data-benchmarks-link>Benchmarks</a><a href="#platform">Platform</a><a href="#developers">Developers</a><a href="#contact">Contact</a><a href="/docs">Docs ↗</a></nav>
       <div class="site-actions"><button class="text-button" data-auth="login">Log in</button><button class="btn ink-button" data-auth="register">Start building <span>↗</span></button></div>
     </header>
     <main>
@@ -50,7 +50,7 @@
           <div class="model-node node-a"><span class="node-icon">⌘</span> Open models</div><div class="model-node node-b"><span class="node-icon">{ }</span> Your application</div><div class="engine-core"><svg viewBox="0 0 32 32" fill="none"><path d="M7 8h20L17 16H5l10 8h10" stroke="currentColor" stroke-width="4" stroke-linejoin="round"/></svg><span>SpeedInfer</span><small>BUILT TO FLOW</small></div><div class="token-node">token → token → <span>token</span><i></i></div><div class="art-caption"><span class="signal-bars"><i></i><i></i><i></i><i></i><i></i></span><span>Less friction. More invention.</span><span>↗</span></div>
         </div>
       </section>
-      <div class="release-note site-width"><span class="release-dot"></span><strong>Platform preview</strong><span>Training &amp; deployment simulations · Live inference depends on connected workers</span><a href="/guide">Developer guide ↗</a></div><section class="foundation site-width" aria-label="Technology foundation"><span>OPEN BY DESIGN.<br>POWERED BY POSSIBILITY.</span><strong class="nvidia-text">NVIDIA TensorRT-LLM</strong><strong class="nvidia-text">NVIDIA Triton</strong><strong>CUDA 12+</strong><strong>FlashAttention-3</strong><strong>vLLM</strong><strong>PyTorch</strong><strong>OpenAI <small>compatible API</small></strong></section>
+      <div class="release-note site-width"><span class="release-dot"></span><strong>Platform preview</strong><span>Training &amp; deployment simulations · Live inference depends on connected workers</span><a href="/docs">Developer docs ↗</a></div><section class="foundation site-width" aria-label="Technology foundation"><span>OPEN BY DESIGN.<br>POWERED BY POSSIBILITY.</span><strong class="nvidia-text">NVIDIA TensorRT-LLM</strong><strong class="nvidia-text">NVIDIA Triton</strong><strong>CUDA 12+</strong><strong>FlashAttention-3</strong><strong>vLLM</strong><strong>PyTorch</strong><strong>OpenAI <small>compatible API</small></strong></section>
       <section class="gateway-section" id="gateway">
         <div class="site-width">
           <div class="gateway-heading"><div class="eyebrow">01 — ONE API. MANY POSSIBILITIES.</div><h2>A multi-model gateway,<br><em>built around your stack.</em></h2><p>Explore hosted open models alongside external API families from OpenAI and Anthropic. SpeedInfer keeps one catalog and a familiar request format while showing clearly how each model is accessed.</p></div>
@@ -794,6 +794,55 @@ for chunk in response:
             <div class="form-group">
               <label class="form-label" for="new-key-tpm">TPM Limit</label>
               <input id="new-key-tpm" class="form-input" type="number" min="1000" max="10000000" value="60000" required>
+            </div>
+          </div>
+          <div class="form-group" style="margin-top:var(--space-2);">
+            <label class="form-label" for="new-key-preset">Permissions &amp; Scopes (صلاحيات المفتاح)</label>
+            <select id="new-key-preset" class="form-input" style="cursor:pointer;">
+              <option value="all">Full Access (All Permissions &amp; Services)</option>
+              <option value="inference">Inference Only (Chat &amp; Completions)</option>
+              <option value="training">Fine-Tuning &amp; Datasets (Training + Files)</option>
+              <option value="storage">Storage &amp; Buckets (Buckets + Files)</option>
+              <option value="readonly">Read-Only (Models, Usage, Metadata)</option>
+              <option value="custom">Custom Permissions Selection...</option>
+            </select>
+            <div class="form-hint">Restrict key capability to minimize risk if leaked.</div>
+          </div>
+          <div id="custom-permissions-container" style="display:none; background:rgba(255,255,255,0.02); border:1px solid var(--border-color); border-radius:var(--radius-md); padding:var(--space-3); margin-top:var(--space-2);">
+            <div style="font-size:0.8rem; font-weight:600; color:var(--text-secondary); margin-bottom:var(--space-2);">Granular Permission Scopes:</div>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; font-size:0.85rem;">
+              <label style="display:flex; align-items:center; gap:6px; cursor:pointer;">
+                <input type="checkbox" class="scope-checkbox" value="chat:completions,completions" checked>
+                <span>Inference (Chat)</span>
+              </label>
+              <label style="display:flex; align-items:center; gap:6px; cursor:pointer;">
+                <input type="checkbox" class="scope-checkbox" value="models:read" checked>
+                <span>Models Catalog</span>
+              </label>
+              <label style="display:flex; align-items:center; gap:6px; cursor:pointer;">
+                <input type="checkbox" class="scope-checkbox" value="files:read,files:write" checked>
+                <span>Files &amp; Datasets</span>
+              </label>
+              <label style="display:flex; align-items:center; gap:6px; cursor:pointer;">
+                <input type="checkbox" class="scope-checkbox" value="storage:read,storage:write" checked>
+                <span>Storage Buckets</span>
+              </label>
+              <label style="display:flex; align-items:center; gap:6px; cursor:pointer;">
+                <input type="checkbox" class="scope-checkbox" value="fine_tuning:read,fine_tuning:write" checked>
+                <span>Fine-Tuning Jobs</span>
+              </label>
+              <label style="display:flex; align-items:center; gap:6px; cursor:pointer;">
+                <input type="checkbox" class="scope-checkbox" value="keys:read,keys:write" checked>
+                <span>Keys Management</span>
+              </label>
+              <label style="display:flex; align-items:center; gap:6px; cursor:pointer;">
+                <input type="checkbox" class="scope-checkbox" value="usage:read" checked>
+                <span>Usage &amp; Billing</span>
+              </label>
+              <label style="display:flex; align-items:center; gap:6px; cursor:pointer;">
+                <input type="checkbox" class="scope-checkbox" value="admin" checked>
+                <span>Admin Wildcard</span>
+              </label>
             </div>
           </div>
         </div>

@@ -175,7 +175,7 @@ def upgrade() -> None:
     else:
         op.execute(
             sa.text(
-                "UPDATE \"user\" SET referral_code = "
+                'UPDATE "user" SET referral_code = '
                 "'REF' || upper(substring(md5(random()::text), 1, 8)) "
                 "WHERE referral_code IS NULL"
             )

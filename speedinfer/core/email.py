@@ -190,8 +190,8 @@ def send_verification_email(to_email: str, code: str, settings: Settings | None 
     html_content = (
         f"<p>Welcome to <strong>SpeedInfer</strong>! Please verify your email address to complete "
         f"your account activation.</p>"
-        f"<div class=\"code-box\"><div class=\"code\">{code}</div></div>"
-        f"<p style=\"color:#94a3b8; font-size:13px;\">This security code will expire in "
+        f'<div class="code-box"><div class="code">{code}</div></div>'
+        f'<p style="color:#94a3b8; font-size:13px;">This security code will expire in '
         f"<strong>15 minutes</strong>. If you did not create a SpeedInfer account, you can "
         f"safely ignore this email.</p>"
     )
@@ -210,8 +210,8 @@ def send_password_reset_email(to_email: str, code: str, settings: Settings | Non
     )
     html_content = (
         f"<p>We received a request to reset your SpeedInfer account password.</p>"
-        f"<div class=\"code-box\"><div class=\"code\">{code}</div></div>"
-        f"<p style=\"color:#94a3b8; font-size:13px;\">This code is valid for "
+        f'<div class="code-box"><div class="code">{code}</div></div>'
+        f'<p style="color:#94a3b8; font-size:13px;">This code is valid for '
         f"<strong>15 minutes</strong>. If you did not initiate this request, you can safely "
         f"ignore this email; your existing password will remain secure.</p>"
     )
@@ -244,14 +244,14 @@ def send_payment_invoice_email(
     html_content = (
         f"<p>Thank you for your payment. Your inference credits have been credited to your "
         f"account and are available immediately.</p>"
-        f"<table class=\"meta-table\">"
+        f'<table class="meta-table">'
         f"<tr><td>Transaction Reference</td><td>{transaction_id}</td></tr>"
         f"<tr><td>Amount Paid</td><td>${amount_usd:.2f} USD</td></tr>"
         f"<tr><td>Credits Added</td><td>${credits_added:.2f}</td></tr>"
         f"<tr><td>Date (UTC)</td><td>{date_str}</td></tr>"
         f"</table>"
-        f"<p style=\"color:#94a3b8; font-size:13px;\">You can view your real-time usage and API "
-        f"keys anytime in the <a href=\"https://speedinfer.com\" style=\"color:#06b6d4;\">"
+        f'<p style="color:#94a3b8; font-size:13px;">You can view your real-time usage and API '
+        f'keys anytime in the <a href="https://speedinfer.com" style="color:#06b6d4;">'
         f"SpeedInfer Dashboard</a>.</p>"
     )
     html_body = _render_email_html("Payment Confirmation & Receipt", html_content)

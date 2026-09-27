@@ -9,13 +9,13 @@ Provides:
 from datetime import UTC, datetime, timedelta
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, Header, HTTPException, Query, status
 from sqlalchemy import func
 from sqlalchemy.exc import IntegrityError
 from sqlmodel import Session, select
 
 from speedinfer.config import get_settings
-from speedinfer.core.auth import generate_api_key
+from speedinfer.core.auth import authenticate_api_key, check_scope_permission, generate_api_key
 from speedinfer.core.security import get_current_user
 from speedinfer.database.models import ApiKey, PaymentTransaction, TrialCreditGrant, User
 from speedinfer.database.session import get_session
@@ -28,6 +28,43 @@ from speedinfer.gateway.schemas import (
 )
 
 router = APIRouter(prefix="/v1/keys", tags=["API Keys"])
+
+
+def get_key_manager_user(
+    authorization: Annotated[str | None, Header(alias="Authorization")] = None,
+    session: Annotated[Session, Depends(get_session)] = None,
+) -> User:
+    """Authenticate caller for API key management via JWT or API Key with keys/admin scope."""
+    if not authorization:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail={
+                "error": {
+                    "message": "Missing Authorization header.",
+                    "type": "authentication_error",
+                    "param": None,
+                    "code": "missing_authorization",
+                }
+            },
+        )
+    parts = authorization.strip().split()
+    if len(parts) == 2 and parts[0].lower() == "bearer" and parts[1].startswith("sk-speedinfer-"):
+        api_key = authenticate_api_key(authorization, session)
+        if not check_scope_permission(api_key, "keys") and not check_scope_permission(
+            api_key, "admin"
+        ):
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="API Key missing 'keys' or 'admin' permission to manage keys.",
+            )
+        user = session.get(User, api_key.user_id)
+        if not user or not user.is_active:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED, detail="User account is deactivated."
+            )
+        return user
+    # Otherwise fallback to standard JWT user authentication
+    return get_current_user(authorization=authorization, session=session)
 
 
 def _resolve_key_status(key: ApiKey) -> str:
@@ -56,7 +93,7 @@ def _resolve_key_status(key: ApiKey) -> str:
 )
 async def create_key(
     payload: ApiKeyCreateRequest,
-    current_user: Annotated[User, Depends(get_current_user)],
+    current_user: Annotated[User, Depends(get_key_manager_user)],
     session: Annotated[Session, Depends(get_session)],
 ) -> ApiKeyCreatedResponse:
     """Generate and persist a new API key for the authenticated user."""
@@ -155,7 +192,7 @@ async def create_key(
     include_in_schema=False,
 )
 async def list_keys(
-    current_user: Annotated[User, Depends(get_current_user)],
+    current_user: Annotated[User, Depends(get_key_manager_user)],
     session: Annotated[Session, Depends(get_session)],
     limit: Annotated[
         int,
@@ -204,6 +241,53 @@ async def list_keys(
     return ApiKeyListResponse(object="list", data=items, total=total_count)
 
 
+@router.get(
+    "/{key_id}",
+    response_model=ApiKeyItemResponse,
+    summary="Retrieve an API key",
+    description="Returns metadata about a specific API key.",
+)
+async def get_key(
+    key_id: int,
+    current_user: Annotated[User, Depends(get_key_manager_user)],
+    session: Annotated[Session, Depends(get_session)],
+) -> ApiKeyItemResponse:
+    """Retrieve details for a specific API key by ID."""
+    statement = select(ApiKey).where(ApiKey.id == key_id, ApiKey.user_id == current_user.id)
+    api_key = session.exec(statement).first()
+
+    if api_key is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail={
+                "error": {
+                    "message": f"API key with ID {key_id} not found.",
+                    "type": "invalid_request_error",
+                    "param": "key_id",
+                    "code": "key_not_found",
+                }
+            },
+        )
+
+    return ApiKeyItemResponse(
+        id=api_key.id,
+        name=api_key.name,
+        prefix=api_key.prefix,
+        masked_key=f"{api_key.prefix}...",
+        status=_resolve_key_status(api_key),
+        is_active=api_key.is_active,
+        credit_balance=api_key.credit_balance,
+        paid_balance=getattr(api_key, "paid_balance", 0.0),
+        trial_balance=getattr(api_key, "trial_balance", 0.0),
+        rpm_limit=api_key.rpm_limit,
+        tpm_limit=api_key.tpm_limit,
+        permissions=api_key.permissions,
+        created_at=api_key.created_at,
+        last_used_at=api_key.last_used_at,
+        expires_at=api_key.expires_at,
+    )
+
+
 @router.delete(
     "/{key_id}",
     response_model=ApiKeyDeleteResponse,
@@ -217,7 +301,7 @@ async def list_keys(
 )
 async def revoke_key(
     key_id: int,
-    current_user: Annotated[User, Depends(get_current_user)],
+    current_user: Annotated[User, Depends(get_key_manager_user)],
     session: Annotated[Session, Depends(get_session)],
     permanent: Annotated[
         bool,
@@ -263,9 +347,7 @@ async def revoke_key(
                 detail="This key has billing records. Revoke it instead.",
             )
 
-        ledger = session.exec(
-            select(UsageLedger).where(UsageLedger.api_key_id == key_id)
-        ).first()
+        ledger = session.exec(select(UsageLedger).where(UsageLedger.api_key_id == key_id)).first()
         if ledger is not None:
             raise HTTPException(
                 status_code=status.HTTP_409_CONFLICT,

@@ -1,0 +1,2224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SpeedInfer Developer Documentation &amp; API Reference</title>
+  <meta name="description" content="Comprehensive developer reference for SpeedInfer: Models catalog, Chat completions, File uploads, Buckets &amp; Storage, Fine-Tuning jobs, Scoped API keys, and Settings.">
+  <link rel="icon" href="/static/assets/speedinfer-icon.svg">
+  <link rel="stylesheet" href="/static/css/theme.css">
+  <style>
+    :root {
+      --sidebar-width: 280px;
+      --code-panel-width: 480px;
+      --nav-height: 64px;
+      --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: #0d1310;
+      color: #e2e8e0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+    a { color: #8cd867; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    /* Top Bar */
+    header.docs-nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      height: var(--nav-height);
+      background: rgba(13, 19, 16, 0.95);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid #1e2c24;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+      z-index: 100;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-weight: 700;
+      font-size: 1.15rem;
+      color: #ffffff;
+      text-decoration: none;
+    }
+    .brand img { width: 28px; height: 28px; }
+    .badge-dev {
+      background: rgba(140, 216, 103, 0.15);
+      color: #8cd867;
+      font-size: 0.75rem;
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      border: 1px solid rgba(140, 216, 103, 0.3);
+    }
+    .nav-search {
+      position: relative;
+      width: 320px;
+    }
+    .nav-search input {
+      width: 100%;
+      background: #15201a;
+      border: 1px solid #23362a;
+      border-radius: 8px;
+      padding: 8px 14px 8px 36px;
+      color: #fff;
+      font-size: 0.875rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .nav-search input:focus { border-color: #8cd867; }
+    .nav-search svg {
+      position: absolute;
+      left: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 16px;
+      height: 16px;
+      color: #6d8073;
+    }
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .btn-tab {
+      background: none;
+      border: 1px solid #23362a;
+      color: #a3b3a6;
+      padding: 6px 14px;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      cursor: pointer;
+      font-weight: 500;
+      transition: all 0.2s;
+    }
+    .btn-tab.active, .btn-tab:hover {
+      background: #1c2b22;
+      color: #ffffff;
+      border-color: #3b5a45;
+    }
+    .btn-app {
+      background: #8cd867;
+      color: #0b140e;
+      padding: 7px 16px;
+      border-radius: 6px;
+      font-weight: 600;
+      font-size: 0.875rem;
+      transition: opacity 0.2s;
+    }
+    .btn-app:hover { opacity: 0.9; text-decoration: none; }
+
+    /* Layout */
+    .docs-container {
+      display: flex;
+      margin-top: var(--nav-height);
+      min-height: calc(100vh - var(--nav-height));
+    }
+
+    /* Sidebar */
+    aside.docs-sidebar {
+      width: var(--sidebar-width);
+      position: fixed;
+      top: var(--nav-height);
+      bottom: 0;
+      left: 0;
+      overflow-y: auto;
+      background: #0f1712;
+      border-right: 1px solid #1e2c24;
+      padding: 24px 16px 40px;
+    }
+    .sidebar-section { margin-bottom: 24px; }
+    .sidebar-heading {
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #718576;
+      font-weight: 700;
+      margin-bottom: 8px;
+      padding-left: 10px;
+    }
+    .sidebar-links { list-style: none; }
+    .sidebar-link {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 10px;
+      color: #b5c4b8;
+      font-size: 0.85rem;
+      border-radius: 6px;
+      transition: all 0.15s;
+    }
+    .sidebar-link:hover, .sidebar-link.active {
+      background: #1c2b22;
+      color: #8cd867;
+      text-decoration: none;
+    }
+    .method-tag {
+      font-size: 0.65rem;
+      font-weight: 700;
+      padding: 1px 5px;
+      border-radius: 4px;
+      letter-spacing: 0.5px;
+    }
+    .method-tag.get { background: rgba(59, 130, 246, 0.2); color: #60a5fa; }
+    .method-tag.post { background: rgba(16, 185, 129, 0.2); color: #34d399; }
+    .method-tag.delete { background: rgba(239, 68, 68, 0.2); color: #f87171; }
+
+    /* Content Area */
+    main.docs-main {
+      margin-left: var(--sidebar-width);
+      flex: 1;
+      display: flex;
+      position: relative;
+    }
+    .content-column {
+      flex: 1;
+      padding: 40px 48px;
+      max-width: 780px;
+    }
+    .endpoint-block {
+      margin-bottom: 64px;
+      padding-bottom: 40px;
+      border-bottom: 1px solid #1a271f;
+    }
+    .endpoint-title {
+      font-size: 1.75rem;
+      color: #ffffff;
+      margin-bottom: 12px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+    }
+    .endpoint-meta {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+      font-family: var(--font-mono);
+      font-size: 0.9rem;
+    }
+    .endpoint-path {
+      background: #15221b;
+      padding: 4px 10px;
+      border-radius: 6px;
+      border: 1px solid #23372c;
+      color: #9eed7b;
+    }
+    .endpoint-desc {
+      color: #9cb0a1;
+      font-size: 0.975rem;
+      margin-bottom: 20px;
+    }
+    .param-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 14px;
+      margin-bottom: 20px;
+      font-size: 0.85rem;
+    }
+    .param-table th {
+      text-align: left;
+      padding: 8px 12px;
+      border-bottom: 1px solid #23372c;
+      color: #7d9483;
+      font-weight: 600;
+    }
+    .param-table td {
+      padding: 10px 12px;
+      border-bottom: 1px solid #1a271f;
+      vertical-align: top;
+    }
+    .param-name {
+      font-family: var(--font-mono);
+      color: #8cd867;
+      font-weight: 600;
+    }
+    .param-type {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      color: #fca5a5;
+    }
+    .param-req {
+      color: #fbbf24;
+      font-size: 0.75rem;
+      font-weight: 600;
+      margin-left: 4px;
+    }
+
+    /* Right Code Panel (Sticky) */
+    .code-column {
+      width: var(--code-panel-width);
+      position: sticky;
+      top: var(--nav-height);
+      height: calc(100vh - var(--nav-height));
+      overflow-y: auto;
+      background: #090e0b;
+      border-left: 1px solid #1a271f;
+      padding: 24px 20px;
+    }
+    .code-card {
+      background: #111a14;
+      border: 1px solid #203126;
+      border-radius: 10px;
+      overflow: hidden;
+      margin-bottom: 24px;
+    }
+    .code-card-header {
+      background: #15221a;
+      padding: 10px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid #203126;
+    }
+    .code-tabs {
+      display: flex;
+      gap: 8px;
+    }
+    .code-tab-btn {
+      background: none;
+      border: none;
+      color: #829687;
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      padding: 4px 8px;
+      border-radius: 4px;
+    }
+    .code-tab-btn.active, .code-tab-btn:hover {
+      background: #203126;
+      color: #8cd867;
+    }
+    .btn-copy {
+      background: none;
+      border: 1px solid #23372c;
+      color: #829687;
+      font-size: 0.75rem;
+      padding: 3px 8px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .btn-copy:hover { color: #fff; border-color: #3b5a45; }
+    .code-block {
+      padding: 14px 16px;
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      color: #d1fae5;
+      overflow-x: auto;
+      white-space: pre;
+      line-height: 1.5;
+    }
+    .resp-header {
+      background: #15221a;
+      padding: 6px 16px;
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: #718576;
+      font-weight: 700;
+      border-top: 1px solid #203126;
+      border-bottom: 1px solid #203126;
+    }
+
+    /* Interactive Live Tester */
+    .tester-box {
+      background: #121c16;
+      border: 1px solid #213527;
+      border-radius: 10px;
+      padding: 16px;
+    }
+    .tester-title {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .tester-select, .tester-input, .tester-textarea {
+      width: 100%;
+      background: #090e0b;
+      border: 1px solid #223729;
+      border-radius: 6px;
+      padding: 8px 12px;
+      color: #fff;
+      font-size: 0.82rem;
+      margin-bottom: 8px;
+      outline: none;
+      font-family: var(--font-mono);
+    }
+    .tester-select:focus, .tester-input:focus, .tester-textarea:focus { border-color: #8cd867; }
+    .btn-send-test {
+      background: #8cd867;
+      color: #0b140e;
+      border: none;
+      padding: 8px 14px;
+      border-radius: 6px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+      width: 100%;
+      transition: opacity 0.2s;
+    }
+    .btn-send-test:hover { opacity: 0.9; }
+    .test-result-output {
+      margin-top: 10px;
+      background: #080d0a;
+      border: 1px solid #1c2b20;
+      border-radius: 6px;
+      padding: 10px;
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      max-height: 220px;
+      overflow-y: auto;
+      color: #86efac;
+      display: none;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+
+    /* Articles Section */
+    .articles-container {
+      display: none;
+      max-width: 960px;
+      margin: 40px auto 80px;
+      padding: 0 24px;
+    }
+    .article-card {
+      background: #111a14;
+      border: 1px solid #1e2c22;
+      border-radius: 12px;
+      padding: 32px;
+      margin-bottom: 32px;
+      transition: transform 0.2s, border-color 0.2s;
+    }
+    .article-card:hover {
+      border-color: #3b5a45;
+    }
+    .article-tag {
+      display: inline-block;
+      background: rgba(140, 216, 103, 0.1);
+      color: #8cd867;
+      font-size: 0.72rem;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 4px;
+      margin-bottom: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .article-title {
+      font-size: 1.5rem;
+      color: #ffffff;
+      margin-bottom: 14px;
+      font-weight: 700;
+    }
+    .article-body {
+      color: #a7b8ab;
+      font-size: 0.95rem;
+      line-height: 1.7;
+    }
+    .article-body h3 {
+      color: #fff;
+      margin: 20px 0 10px;
+      font-size: 1.15rem;
+    }
+    .article-body pre {
+      background: #090e0b;
+      padding: 14px;
+      border-radius: 8px;
+      border: 1px solid #1e2c24;
+      overflow-x: auto;
+      margin: 14px 0;
+      font-family: var(--font-mono);
+      font-size: 0.82rem;
+      color: #8cd867;
+    }
+
+    @media (max-width: 1200px) {
+      .code-column { display: none; }
+      .content-column { max-width: 100%; }
+    }
+    @media (max-width: 768px) {
+      aside.docs-sidebar { display: none; }
+      main.docs-main { margin-left: 0; }
+      .content-column { padding: 24px 16px; }
+      .nav-search { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Navigation Bar -->
+  <header class="docs-nav">
+    <div style="display:flex; align-items:center; gap:20px;">
+      <a href="/" class="brand">
+        <img src="/static/assets/speedinfer-icon.svg" alt="SpeedInfer">
+        <span>SpeedInfer</span>
+        <span class="badge-dev">Developer Platform</span>
+      </a>
+      <div class="nav-search">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+        <input type="text" id="docs-search" placeholder="Search API endpoints &amp; guides..." onkeyup="filterDocs(this.value)">
+      </div>
+    </div>
+    <div class="nav-actions">
+      <button class="btn-tab active" id="tab-api" onclick="switchView('api')">API Reference</button>
+      <button class="btn-tab" id="tab-articles" onclick="switchView('articles')">Guides &amp; Articles (المقالات والدروس)</button>
+      <a href="/api/docs" target="_blank" class="btn-tab" title="OpenAPI Swagger UI">Swagger Spec ↗</a>
+      <a href="/app" class="btn-app">Open Console ↗</a>
+    </div>
+  </header>
+
+  <!-- Docs Container -->
+  <div class="docs-container" id="api-reference-view">
+    
+    <!-- Left Sidebar -->
+    <aside class="docs-sidebar">
+      <div class="sidebar-section">
+        <div class="sidebar-heading">Getting Started</div>
+        <ul class="sidebar-links">
+          <li><a href="#overview" class="sidebar-link active" onclick="selectEndpoint('overview')">Overview &amp; Authentication</a></li>
+          <li><a href="#base-urls" class="sidebar-link" onclick="selectEndpoint('base-urls')">Base URLs &amp; Protocols</a></li>
+          <li><a href="#scopes" class="sidebar-link" onclick="selectEndpoint('scopes')">Permission Scopes Matrix</a></li>
+        </ul>
+      </div>
+
+      <div class="sidebar-section">
+        <div class="sidebar-heading">Account &amp; Settings (الإعدادات)</div>
+        <ul class="sidebar-links">
+          <li><a href="#get-account-me" class="sidebar-link" onclick="selectEndpoint('get-account-me')"><span class="method-tag get">GET</span> /v1/auth/me</a></li>
+          <li><a href="#get-pricing" class="sidebar-link" onclick="selectEndpoint('get-pricing')"><span class="method-tag get">GET</span> /v1/workspace/pricing</a></li>
+          <li><a href="#get-usage" class="sidebar-link" onclick="selectEndpoint('get-usage')"><span class="method-tag get">GET</span> /v1/usage</a></li>
+        </ul>
+      </div>
+
+      <div class="sidebar-section">
+        <div class="sidebar-heading">Models API (نماذج الذكاء)</div>
+        <ul class="sidebar-links">
+          <li><a href="#get-models" class="sidebar-link" onclick="selectEndpoint('get-models')"><span class="method-tag get">GET</span> /v1/models</a></li>
+          <li><a href="#get-model" class="sidebar-link" onclick="selectEndpoint('get-model')"><span class="method-tag get">GET</span> /v1/models/{id}</a></li>
+          <li><a href="#get-weights" class="sidebar-link" onclick="selectEndpoint('get-weights')"><span class="method-tag get">GET</span> /v1/models/{id}/weights</a></li>
+        </ul>
+      </div>
+
+      <div class="sidebar-section">
+        <div class="sidebar-heading">Inference Calling (استدعاء النماذج)</div>
+        <ul class="sidebar-links">
+          <li><a href="#chat-completions" class="sidebar-link" onclick="selectEndpoint('chat-completions')"><span class="method-tag post">POST</span> /v1/chat/completions</a></li>
+          <li><a href="#chat-streaming" class="sidebar-link" onclick="selectEndpoint('chat-streaming')"><span class="method-tag post">POST</span> .../chat (SSE Stream)</a></li>
+          <li><a href="#legacy-completions" class="sidebar-link" onclick="selectEndpoint('legacy-completions')"><span class="method-tag post">POST</span> /v1/completions</a></li>
+        </ul>
+      </div>
+
+      <div class="sidebar-section">
+        <div class="sidebar-heading">Files &amp; Datasets (رفع وإدارة الملفات)</div>
+        <ul class="sidebar-links">
+          <li><a href="#post-files" class="sidebar-link" onclick="selectEndpoint('post-files')"><span class="method-tag post">POST</span> /v1/files</a></li>
+          <li><a href="#get-files" class="sidebar-link" onclick="selectEndpoint('get-files')"><span class="method-tag get">GET</span> /v1/files</a></li>
+          <li><a href="#get-file" class="sidebar-link" onclick="selectEndpoint('get-file')"><span class="method-tag get">GET</span> /v1/files/{id}</a></li>
+          <li><a href="#get-file-content" class="sidebar-link" onclick="selectEndpoint('get-file-content')"><span class="method-tag get">GET</span> .../files/{id}/content</a></li>
+          <li><a href="#delete-file" class="sidebar-link" onclick="selectEndpoint('delete-file')"><span class="method-tag delete">DEL</span> /v1/files/{id}</a></li>
+        </ul>
+      </div>
+
+      <div class="sidebar-section">
+        <div class="sidebar-heading">Buckets &amp; Storage (إنشاء بوكيت وتخزين)</div>
+        <ul class="sidebar-links">
+          <li><a href="#post-buckets" class="sidebar-link" onclick="selectEndpoint('post-buckets')"><span class="method-tag post">POST</span> /v1/buckets</a></li>
+          <li><a href="#get-buckets" class="sidebar-link" onclick="selectEndpoint('get-buckets')"><span class="method-tag get">GET</span> /v1/buckets</a></li>
+          <li><a href="#get-bucket" class="sidebar-link" onclick="selectEndpoint('get-bucket')"><span class="method-tag get">GET</span> /v1/buckets/{id}</a></li>
+          <li><a href="#delete-bucket" class="sidebar-link" onclick="selectEndpoint('delete-bucket')"><span class="method-tag delete">DEL</span> /v1/buckets/{id}</a></li>
+          <li><a href="#post-bucket-objects" class="sidebar-link" onclick="selectEndpoint('post-bucket-objects')"><span class="method-tag post">POST</span> .../{id}/objects</a></li>
+          <li><a href="#get-bucket-objects" class="sidebar-link" onclick="selectEndpoint('get-bucket-objects')"><span class="method-tag get">GET</span> .../{id}/objects</a></li>
+        </ul>
+      </div>
+
+      <div class="sidebar-section">
+        <div class="sidebar-heading">Model Fine-Tuning &amp; Training (تدريب النماذج)</div>
+        <ul class="sidebar-links">
+          <li><a href="#post-ft-jobs" class="sidebar-link" onclick="selectEndpoint('post-ft-jobs')"><span class="method-tag post">POST</span> /v1/fine_tuning/jobs</a></li>
+          <li><a href="#get-ft-jobs" class="sidebar-link" onclick="selectEndpoint('get-ft-jobs')"><span class="method-tag get">GET</span> /v1/fine_tuning/jobs</a></li>
+          <li><a href="#get-ft-job" class="sidebar-link" onclick="selectEndpoint('get-ft-job')"><span class="method-tag get">GET</span> .../jobs/{id}</a></li>
+          <li><a href="#cancel-ft-job" class="sidebar-link" onclick="selectEndpoint('cancel-ft-job')"><span class="method-tag post">POST</span> .../jobs/{id}/cancel</a></li>
+          <li><a href="#get-ft-checkpoints" class="sidebar-link" onclick="selectEndpoint('get-ft-checkpoints')"><span class="method-tag get">GET</span> .../checkpoints</a></li>
+          <li><a href="#get-ft-events" class="sidebar-link" onclick="selectEndpoint('get-ft-events')"><span class="method-tag get">GET</span> .../events</a></li>
+        </ul>
+      </div>
+
+      <div class="sidebar-section">
+        <div class="sidebar-heading">API Keys Management (إدارة المفاتيح والصلاحيات)</div>
+        <ul class="sidebar-links">
+          <li><a href="#post-keys" class="sidebar-link" onclick="selectEndpoint('post-keys')"><span class="method-tag post">POST</span> /v1/keys</a></li>
+          <li><a href="#get-keys" class="sidebar-link" onclick="selectEndpoint('get-keys')"><span class="method-tag get">GET</span> /v1/keys</a></li>
+          <li><a href="#get-key-id" class="sidebar-link" onclick="selectEndpoint('get-key-id')"><span class="method-tag get">GET</span> /v1/keys/{id}</a></li>
+          <li><a href="#delete-key" class="sidebar-link" onclick="selectEndpoint('delete-key')"><span class="method-tag delete">DEL</span> /v1/keys/{id}</a></li>
+        </ul>
+      </div>
+    </aside>
+
+    <!-- Center Content -->
+    <main class="docs-main">
+      <div class="content-column">
+        
+        <!-- Overview -->
+        <section id="overview" class="endpoint-block">
+          <h1 class="endpoint-title">SpeedInfer Developer API Reference</h1>
+          <p class="endpoint-desc">
+            SpeedInfer provides an ultra-low latency, OpenAI-compatible developer platform for high-throughput LLM inference, 
+            serverless fine-tuning (LoRA / QLoRA), object storage, dataset management, and scoped key governance.
+          </p>
+          <div style="background:#131f17; border-left:4px solid #8cd867; padding:16px; border-radius:4px; margin-bottom:24px;">
+            <strong>Authentication:</strong> All API requests require a Bearer token in the <code>Authorization</code> header.<br>
+            <code>Authorization: Bearer sk-speedinfer-xxxxxxxxxxxxxxxxxxxx</code>
+          </div>
+        </section>
+
+        <!-- Base URLs -->
+        <section id="base-urls" class="endpoint-block">
+          <h2 class="endpoint-title">Base URLs &amp; Environments</h2>
+          <p class="endpoint-desc">Production API requests are routed over TLS 1.3 with HTTP/2 and HTTP/3 support.</p>
+          <table class="param-table">
+            <thead><tr><th>Environment</th><th>Base URL</th><th>Description</th></tr></thead>
+            <tbody>
+              <tr><td>Production</td><td><code>https://speedinfer.com/v1</code></td><td>Primary global production gateway</td></tr>
+              <tr><td>Local Development</td><td><code>http://localhost:8000/v1</code></td><td>Self-hosted Docker / local instance</td></tr>
+            </tbody>
+          </table>
+        </section>
+
+        <!-- Permission Scopes -->
+        <section id="scopes" class="endpoint-block">
+          <h2 class="endpoint-title">Granular Permission Scopes</h2>
+          <p class="endpoint-desc">When creating API keys via <code>POST /v1/keys</code> or Console, you can restrict permissions to minimal privileges:</p>
+          <table class="param-table">
+            <thead><tr><th>Scope</th><th>Grants Access To</th></tr></thead>
+            <tbody>
+              <tr><td><code>inference</code> (or <code>chat:completions</code>)</td><td>Chat completions and legacy text completions</td></tr>
+              <tr><td><code>models:read</code></td><td>Model discovery, architectures, pricing, and weights manifest</td></tr>
+              <tr><td><code>files:write</code> / <code>files:read</code></td><td>Upload, read, and delete dataset files for fine-tuning</td></tr>
+              <tr><td><code>storage:write</code> / <code>storage:read</code></td><td>Create storage buckets and upload object artifacts</td></tr>
+              <tr><td><code>fine_tuning:write</code> / <code>fine_tuning:read</code></td><td>Launch, monitor, and cancel model fine-tuning jobs</td></tr>
+              <tr><td><code>keys:write</code> / <code>keys:read</code></td><td>Issue, list, and revoke sub-API keys</td></tr>
+              <tr><td><code>usage:read</code></td><td>Query consumption metrics and credit balance</td></tr>
+              <tr><td><code>admin</code></td><td>Universal administrative superuser bypass</td></tr>
+            </tbody>
+          </table>
+        </section>
+
+        <!-- Account Settings & Pricing -->
+        <section id="get-account-me" class="endpoint-block">
+          <h2 class="endpoint-title">Retrieve Current User &amp; Balance</h2>
+          <div class="endpoint-meta">
+            <span class="method-tag get">GET</span>
+            <span class="endpoint-path">/v1/auth/me</span>
+          </div>
+          <p class="endpoint-desc">Returns the authenticated user's profile, organization role, verified email status, and current USD credit balance.</p>
+        </section>
+
+        <section id="get-pricing" class="endpoint-block">
+          <h2 class="endpoint-title">Model Pricing &amp; Context Limits</h2>
+          <div class="endpoint-meta">
+            <span class="method-tag get">GET</span>
+            <span class="endpoint-path">/v1/workspace/pricing</span>
+          </div>
+          <p class="endpoint-desc">Returns current token pricing per 1M input/output tokens, context windows, and storage rates across all supported architectures.</p>
+        </section>
+
+        <section id="get-usage" class="endpoint-block">
+          <h2 class="endpoint-title">Usage &amp; Rate Limits</h2>
+          <div class="endpoint-meta">
+            <span class="method-tag get">GET</span>
+            <span class="endpoint-path">/v1/usage</span>
+          </div>
+          <p class="endpoint-desc">Retrieves aggregated token metrics, hourly request counts, and remaining rate limit quotas.</p>
+        </section>
+
+        <!-- GET /v1/models -->
+        <section id="get-models" class="endpoint-block">
+          <h2 class="endpoint-title">List Available Models</h2>
+          <div class="endpoint-meta">
+            <span class="method-tag get">GET</span>
+            <span class="endpoint-path">/v1/models</span>
+          </div>
+          <p class="endpoint-desc">Lists currently active and warm models available for instant inference, complete with context windows and token pricing.</p>
+        </section>
+
+        <!-- GET /v1/models/{id} -->
+        <section id="get-model" class="endpoint-block">
+          <h2 class="endpoint-title">Retrieve Model Details</h2>
+          <div class="endpoint-meta">
+            <span class="method-tag get">GET</span>
+            <span class="endpoint-path">/v1/models/{model_id}</span>
+          </div>
+          <p class="endpoint-desc">Retrieves detailed metadata for a specific base model or fine-tuned checkpoint.</p>
+        </section>
+
+        <!-- GET /v1/models/{id}/weights -->
+        <section id="get-weights" class="endpoint-block">
+          <h2 class="endpoint-title">Download &amp; Export Model Weights</h2>
+          <div class="endpoint-meta">
+            <span class="method-tag get">GET</span>
+            <span class="endpoint-path">/v1/models/{model_id}/weights</span>
+          </div>
+          <p class="endpoint-desc">Export model weights manifest with SHA-256 checksums or stream direct safetensors weights artifacts.</p>
+          <table class="param-table">
+            <thead><tr><th>Query Param</th><th>Type</th><th>Description</th></tr></thead>
+            <tbody>
+              <tr><td><span class="param-name">download</span></td><td><span class="param-type">boolean</span></td><td>Set <code>true</code> to initiate binary file download stream.</td></tr>
+              <tr><td><span class="param-name">format</span></td><td><span class="param-type">string</span></td><td>Target format (e.g. <code>safetensors</code>, <code>gguf</code>). Default: <code>safetensors</code>.</td></tr>
+            </tbody>
+          </table>
+        </section>
+
+        <!-- POST /v1/chat/completions -->
+        <section id="chat-completions" class="endpoint-block">
+          <h2 class="endpoint-title">Create Chat Completion</h2>
+          <div class="endpoint-meta">
+            <span class="method-tag post">POST</span>
+            <span class="endpoint-path">/v1/chat/completions</span>
+          </div>
+          <p class="endpoint-desc">Creates a model response for the given chat conversation. Fully OpenAI SDK drop-in compatible.</p>
+          <table class="param-table">
+            <thead><tr><th>Field</th><th>Type</th><th>Description</th></tr></thead>
+            <tbody>
+              <tr><td><span class="param-name">model</span><span class="param-req">required</span></td><td><span class="param-type">string</span></td><td>Model ID to query (e.g. <code>Qwen/Qwen2.5-7B-Instruct</code>).</td></tr>
+              <tr><td><span class="param-name">messages</span><span class="param-req">required</span></td><td><span class="param-type">array</span></td><td>List of conversation turns (role and content).</td></tr>
+              <tr><td><span class="param-name">temperature</span></td><td><span class="param-type">float</span></td><td>Sampling temperature between 0.0 and 2.0. Default 0.7.</td></tr>
+              <tr><td><span class="param-name">max_tokens</span></td><td><span class="param-type">integer</span></td><td>Max tokens to generate. Max: 32,768.</td></tr>
+              <tr><td><span class="param-name">stream</span></td><td><span class="param-type">boolean</span></td><td>Stream partial tokens via Server-Sent Events (SSE).</td></tr>
+            </tbody>
+          </table>
+        </section>
+
+        <section id="chat-streaming" class="endpoint-block">
+          <h2 class="endpoint-title">Chat Completion Streaming (SSE)</h2>
+          <div class="endpoint-meta">
+            <span class="method-tag post">POST</span>
+            <span class="endpoint-path">/v1/chat/completions (stream=true)</span>
+          </div>
+          <p class="endpoint-desc">Streams chunked token deltas via standard Server-Sent Events (SSE) protocol (<code>text/event-stream</code>).</p>
+        </section>
+
+        <section id="legacy-completions" class="endpoint-block">
+          <h2 class="endpoint-title">Legacy Text Completions</h2>
+          <div class="endpoint-meta">
+            <span class="method-tag post">POST</span>
+            <span class="endpoint-path">/v1/completions</span>
+          </div>
+          <p class="endpoint-desc">OpenAI-compatible raw prompt text generation endpoint.</p>
+        </section>
+
+        <!-- POST /v1/files -->
+        <section id="post-files" class="endpoint-block">
+          <h2 class="endpoint-title">Upload a File</h2>
+          <div class="endpoint-meta">
+            <span class="method-tag post">POST</span>
+            <span class="endpoint-path">/v1/files</span>
+          </div>
+          <p class="endpoint-desc">Upload a training dataset or object. Automatically validates JSONL schema when purpose is <code>fine-tune</code>.</p>
+          <table class="param-table">
+            <thead><tr><th>Form Field</th><th>Type</th><th>Description</th></tr></thead>
+            <tbody>
+              <tr><td><span class="param-name">file</span><span class="param-req">required</span></td><td><span class="param-type">file (binary)</span></td><td>The multipart file to upload.</td></tr>
+              <tr><td><span class="param-name">purpose</span></td><td><span class="param-type">string</span></td><td>Target purpose: <code>fine-tune</code>, <code>storage</code>. Default: <code>fine-tune</code>.</td></tr>
+            </tbody>
+          </table>
+        </section>
+
+        <section id="get-files" class="endpoint-block">
+          <h2 class="endpoint-title">List Files</h2>
+          <div class="endpoint-meta">
+            <span class="method-tag get">GET</span>
+            <span class="endpoint-path">/v1/files</span>
+          </div>
+          <p class="endpoint-desc">Returns a list of all files uploaded by the caller's organization.</p>
+        </section>
+
+        <section id="get-file" class="endpoint-block">
+          <h2 class="endpoint-title">Retrieve File Metadata</h2>
+          <div class="endpoint-meta">
+            <span class="method-tag get">GET</span>
+            <span class="endpoint-path">/v1/files/{file_id}</span>
+          </div>
+          <p class="endpoint-desc">Returns metadata about a specific file, including size, status, and creation date.</p>
+        </section>
+
+        <section id="get-file-content" class="endpoint-block">
+          <h2 class="endpoint-title">Download File Content</h2>
+          <div class="endpoint-meta">
+            <span class="method-tag get">GET</span>
+            <span class="endpoint-path">/v1/files/{file_id}/content</span>
+          </div>
+          <p class="endpoint-desc">Streams the raw binary or text contents of an uploaded file.</p>
+        </section>
+
+        <section id="delete-file" class="endpoint-block">
+          <h2 class="endpoint-title">Delete a File</h2>
+          <div class="endpoint-meta">
+            <span class="method-tag delete">DEL</span>
+            <span class="endpoint-path">/v1/files/{file_id}</span>
+          </div>
+          <p class="endpoint-desc">Permanently deletes a file and frees allocated storage space.</p>
+        </section>
+
+        <!-- Buckets & Storage -->
+        <section id="post-buckets" class="endpoint-block">
+          <h2 class="endpoint-title">Create Storage Bucket</h2>
+          <div class="endpoint-meta">
+            <span class="method-tag post">POST</span>
+            <span class="endpoint-path">/v1/buckets</span>
+          </div>
+          <p class="endpoint-desc">Creates an isolated storage bucket for holding model weights, datasets, RAG vector indexes, and checkpoint blobs.</p>
+        </section>
+
+        <section id="get-buckets" class="endpoint-block">
+          <h2 class="endpoint-title">List Storage Buckets</h2>
+          <div class="endpoint-meta">
+            <span class="method-tag get">GET</span>
+            <span class="endpoint-path">/v1/buckets</span>
+          </div>
+          <p class="endpoint-desc">Returns a list of all object storage buckets owned by the account.</p>
+        </section>
+
+        <section id="get-bucket" class="endpoint-block">
+          <h2 class="endpoint-title">Retrieve Bucket Details</h2>
+          <div class="endpoint-meta">
+            <span class="method-tag get">GET</span>
+            <span class="endpoint-path">/v1/buckets/{bucket_id}</span>
+          </div>
+          <p class="endpoint-desc">Retrieves metadata for a specific storage bucket, including total object count and cumulative byte size.</p>
+        </section>
+
+        <section id="delete-bucket" class="endpoint-block">
+          <h2 class="endpoint-title">Delete Storage Bucket</h2>
+          <div class="endpoint-meta">
+            <span class="method-tag delete">DEL</span>
+            <span class="endpoint-path">/v1/buckets/{bucket_id}</span>
+          </div>
+          <p class="endpoint-desc">Deletes a bucket along with all objects stored within it.</p>
+        </section>
+
+        <section id="post-bucket-objects" class="endpoint-block">
+          <h2 class="endpoint-title">Upload Object to Bucket</h2>
+          <div class="endpoint-meta">
+            <span class="method-tag post">POST</span>
+            <span class="endpoint-path">/v1/buckets/{bucket_id}/objects</span>
+          </div>
+          <p class="endpoint-desc">Uploads an arbitrary binary blob or dataset file into the specified bucket.</p>
+        </section>
+
+        <section id="get-bucket-objects" class="endpoint-block">
+          <h2 class="endpoint-title">List Objects in Bucket</h2>
+          <div class="endpoint-meta">
+            <span class="method-tag get">GET</span>
+            <span class="endpoint-path">/v1/buckets/{bucket_id}/objects</span>
+          </div>
+          <p class="endpoint-desc">Lists all objects stored inside the designated bucket.</p>
+        </section>
+
+        <!-- POST /v1/fine_tuning/jobs -->
+        <section id="post-ft-jobs" class="endpoint-block">
+          <h2 class="endpoint-title">Create Fine-Tuning Job</h2>
+          <div class="endpoint-meta">
+            <span class="method-tag post">POST</span>
+            <span class="endpoint-path">/v1/fine_tuning/jobs</span>
+          </div>
+          <p class="endpoint-desc">Launch a parameter-efficient fine-tuning (LoRA / QLoRA) run on a specified base model using an uploaded dataset.</p>
+          <table class="param-table">
+            <thead><tr><th>Field</th><th>Type</th><th>Description</th></tr></thead>
+            <tbody>
+              <tr><td><span class="param-name">model</span><span class="param-req">required</span></td><td><span class="param-type">string</span></td><td>Base model name (e.g. <code>Qwen/Qwen2.5-7B-Instruct</code>).</td></tr>
+              <tr><td><span class="param-name">training_file</span><span class="param-req">required</span></td><td><span class="param-type">string</span></td><td>ID of the uploaded JSONL dataset file (<code>file-...</code>).</td></tr>
+              <tr><td><span class="param-name">method</span></td><td><span class="param-type">string</span></td><td>Training strategy: <code>lora</code>, <code>qlora</code>, or <code>full</code>. Default: <code>lora</code>.</td></tr>
+              <tr><td><span class="param-name">hyperparameters</span></td><td><span class="param-type">object</span></td><td>Config for <code>n_epochs</code>, <code>batch_size</code>, <code>lora_rank</code>, <code>lora_alpha</code>.</td></tr>
+            </tbody>
+          </table>
+        </section>
+
+        <section id="get-ft-jobs" class="endpoint-block">
+          <h2 class="endpoint-title">List Fine-Tuning Jobs</h2>
+          <div class="endpoint-meta">
+            <span class="method-tag get">GET</span>
+            <span class="endpoint-path">/v1/fine_tuning/jobs</span>
+          </div>
+          <p class="endpoint-desc">Lists all training and fine-tuning runs created under the caller's account.</p>
+        </section>
+
+        <section id="get-ft-job" class="endpoint-block">
+          <h2 class="endpoint-title">Retrieve Fine-Tuning Job</h2>
+          <div class="endpoint-meta">
+            <span class="method-tag get">GET</span>
+            <span class="endpoint-path">/v1/fine_tuning/jobs/{job_id}</span>
+          </div>
+          <p class="endpoint-desc">Get current execution status, trained token counts, and resulting model identifier.</p>
+        </section>
+
+        <section id="cancel-ft-job" class="endpoint-block">
+          <h2 class="endpoint-title">Cancel Fine-Tuning Job</h2>
+          <div class="endpoint-meta">
+            <span class="method-tag post">POST</span>
+            <span class="endpoint-path">/v1/fine_tuning/jobs/{job_id}/cancel</span>
+          </div>
+          <p class="endpoint-desc">Gracefully halts execution of a running fine-tuning job.</p>
+        </section>
+
+        <section id="get-ft-checkpoints" class="endpoint-block">
+          <h2 class="endpoint-title">List Job Checkpoints</h2>
+          <div class="endpoint-meta">
+            <span class="method-tag get">GET</span>
+            <span class="endpoint-path">/v1/fine_tuning/jobs/{job_id}/checkpoints</span>
+          </div>
+          <p class="endpoint-desc">Retrieves checkpoint checkpoints saved during training steps with loss metrics.</p>
+        </section>
+
+        <section id="get-ft-events" class="endpoint-block">
+          <h2 class="endpoint-title">List Job Events &amp; Logs</h2>
+          <div class="endpoint-meta">
+            <span class="method-tag get">GET</span>
+            <span class="endpoint-path">/v1/fine_tuning/jobs/{job_id}/events</span>
+          </div>
+          <p class="endpoint-desc">Real-time log stream and milestones emitted during model optimization.</p>
+        </section>
+
+        <!-- POST /v1/keys -->
+        <section id="post-keys" class="endpoint-block">
+          <h2 class="endpoint-title">Create Scoped API Key</h2>
+          <div class="endpoint-meta">
+            <span class="method-tag post">POST</span>
+            <span class="endpoint-path">/v1/keys</span>
+          </div>
+          <p class="endpoint-desc">Programmatically issue API keys with custom permission scopes and rate limits for different microservices or applications.</p>
+        </section>
+
+        <section id="get-keys" class="endpoint-block">
+          <h2 class="endpoint-title">List API Keys</h2>
+          <div class="endpoint-meta">
+            <span class="method-tag get">GET</span>
+            <span class="endpoint-path">/v1/keys</span>
+          </div>
+          <p class="endpoint-desc">Lists all API keys associated with the account along with their scopes and usage status.</p>
+        </section>
+
+        <section id="get-key-id" class="endpoint-block">
+          <h2 class="endpoint-title">Retrieve API Key Details</h2>
+          <div class="endpoint-meta">
+            <span class="method-tag get">GET</span>
+            <span class="endpoint-path">/v1/keys/{key_id}</span>
+          </div>
+          <p class="endpoint-desc">Returns configuration and granted scopes for a designated API key ID.</p>
+        </section>
+
+        <section id="delete-key" class="endpoint-block">
+          <h2 class="endpoint-title">Revoke API Key</h2>
+          <div class="endpoint-meta">
+            <span class="method-tag delete">DEL</span>
+            <span class="endpoint-path">/v1/keys/{key_id}</span>
+          </div>
+          <p class="endpoint-desc">Immediately invalidates and deactivates an API key.</p>
+        </section>
+
+      </div>
+
+      <!-- Right Code Column (Interactive & Dynamic) -->
+      <div class="code-column">
+        
+        <!-- Live API Tester -->
+        <div class="tester-box">
+          <div class="tester-title">
+            <span>⚡ Interactive API Playground</span>
+            <span id="test-status-badge" style="font-size:0.7rem; color:#8cd867;">Ready</span>
+          </div>
+          <input type="text" id="live-api-key" class="tester-input" placeholder="Enter API Key (sk-speedinfer-...) or leave empty for session">
+          
+          <select id="tester-endpoint-select" class="tester-select" onchange="onTesterEndpointChange()">
+            <option value="models_list">GET /v1/models (List Models)</option>
+            <option value="models_get">GET /v1/models/Qwen/Qwen2.5-7B-Instruct</option>
+            <option value="models_weights">GET /v1/models/Qwen/Qwen2.5-7B-Instruct/weights</option>
+            <option value="chat_completions">POST /v1/chat/completions (Chat Completion)</option>
+            <option value="files_list">GET /v1/files (List Files)</option>
+            <option value="buckets_list">GET /v1/buckets (List Buckets)</option>
+            <option value="ft_jobs_list">GET /v1/fine_tuning/jobs (List Training Jobs)</option>
+            <option value="keys_list">GET /v1/keys (List API Keys)</option>
+            <option value="auth_me">GET /v1/auth/me (Account &amp; Balance)</option>
+            <option value="pricing">GET /v1/workspace/pricing (Pricing Catalog)</option>
+          </select>
+
+          <textarea id="tester-payload-input" class="tester-textarea" rows="4" style="display:none;" placeholder="Request JSON body"></textarea>
+
+          <button class="btn-send-test" id="tester-exec-btn" onclick="executeSelectedApiTest()">Send Request</button>
+          
+          <div id="test-result-output" class="test-result-output"></div>
+        </div>
+
+        <!-- Code Snippet Box -->
+        <div class="code-card" style="margin-top:20px;">
+          <div class="code-card-header">
+            <div class="code-tabs">
+              <button class="code-tab-btn active" onclick="setLang('curl')">cURL</button>
+              <button class="code-tab-btn" onclick="setLang('python')">Python</button>
+              <button class="code-tab-btn" onclick="setLang('typescript')">TypeScript</button>
+            </div>
+            <button class="btn-copy" onclick="copyActiveCode()">Copy</button>
+          </div>
+          <pre class="code-block" id="active-code-snippet"></pre>
+          <div class="resp-header" id="active-resp-title">Example 200 Response</div>
+          <pre class="code-block" id="active-response-snippet" style="color:#93c5fd; max-height:240px;"></pre>
+        </div>
+
+      </div>
+    </main>
+  </div>
+
+  <!-- Articles & Guides View Mode -->
+  <div id="articles-view" class="articles-container">
+    
+    <div style="margin-bottom:40px; text-align:center;">
+      <h1 style="font-size:2.5rem; color:#fff; font-weight:800; margin-bottom:12px;">المقالات والدروس التقنية (Engineering Guides)</h1>
+      <p style="color:#8da292; font-size:1.1rem; max-width:650px; margin:0 auto;">
+        Production-ready architectures, benchmarks, and step-by-step guides for developers building AI products on SpeedInfer.
+      </p>
+    </div>
+
+    <!-- Article 1: Quickstart -->
+    <article class="article-card">
+      <span class="article-tag">Quickstart</span>
+      <h2 class="article-title">From Zero to First Inference in 60 Seconds (التشغيل السريع)</h2>
+      <div class="article-body">
+        <p>
+          SpeedInfer provides 100% drop-in API compatibility with the official OpenAI SDKs in Python and Node.js. 
+          You only need to change your <code>base_url</code> to <code>https://speedinfer.com/v1</code>.
+        </p>
+        <h3>Python Example</h3>
+        <pre><code>from openai import OpenAI
+
+client = OpenAI(
+    base_url="https://speedinfer.com/v1",
+    api_key="sk-speedinfer-your-api-key-here"
+)
+
+response = client.chat.completions.create(
+    model="Qwen/Qwen2.5-7B-Instruct",
+    messages=[{"role": "user", "content": "Explain KV-cache optimization in 2 sentences."}]
+)
+print(response.choices[0].message.content)</code></pre>
+      </div>
+    </article>
+
+    <!-- Article 2: Fine-Tuning LoRA & QLoRA -->
+    <article class="article-card">
+      <span class="article-tag">Model Training</span>
+      <h2 class="article-title">Fine-Tuning Qwen 2.5 with LoRA and QLoRA on SpeedInfer (تدريب النماذج)</h2>
+      <div class="article-body">
+        <p>
+          SpeedInfer allows training custom adapters without managing GPU infrastructure or Docker containers. 
+          Upload your JSONL dataset, specify rank dimension (e.g. <code>r=16, alpha=32</code>), and receive a served model.
+        </p>
+        <h3>1. Prepare your dataset (train.jsonl)</h3>
+        <pre><code>{"messages": [{"role": "system", "content": "You are a customer support agent."}, {"role": "user", "content": "Where is my order?"}, {"role": "assistant", "content": "Please provide your order ID."}]}
+{"messages": [{"role": "system", "content": "You are a customer support agent."}, {"role": "user", "content": "Can I return a damaged item?"}, {"role": "assistant", "content": "Yes, within 30 days."}]}</code></pre>
+        <h3>2. Upload and Launch Training</h3>
+        <pre><code># 1. Upload dataset
+curl -X POST https://speedinfer.com/v1/files \
+  -H "Authorization: Bearer $SPEEDINFER_KEY" \
+  -F "file=@train.jsonl" \
+  -F "purpose=fine-tune"
+
+# 2. Launch Job with LoRA Hyperparameters
+curl -X POST https://speedinfer.com/v1/fine_tuning/jobs \
+  -H "Authorization: Bearer $SPEEDINFER_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "Qwen/Qwen2.5-7B-Instruct",
+    "training_file": "file-xxxxxxxxxxxx",
+    "method": "qlora",
+    "suffix": "support-v1",
+    "hyperparameters": { "n_epochs": 3, "batch_size": 4, "lora_rank": 16, "lora_alpha": 32 }
+  }'</code></pre>
+      </div>
+    </article>
+
+    <!-- Article 3: High-Throughput Streaming SSE -->
+    <article class="article-card">
+      <span class="article-tag">Low Latency</span>
+      <h2 class="article-title">Ultra-Low Latency Streaming with Server-Sent Events (SSE) (البث الفوري)</h2>
+      <div class="article-body">
+        <p>
+          To deliver instant real-time typing experiences, SpeedInfer gateway disables internal buffering and streams raw token chunks directly 
+          via chunked HTTP/2 streaming. TTFT (Time To First Token) is minimized through continuous batching.
+        </p>
+        <pre><code>import { OpenAI } from "openai";
+
+const client = new OpenAI({
+  baseURL: "https://speedinfer.com/v1",
+  apiKey: process.env.SPEEDINFER_API_KEY
+});
+
+const stream = await client.chat.completions.create({
+  model: "Qwen/Qwen2.5-7B-Instruct",
+  messages: [{ role: "user", content: "Tell me a story about high-speed GPUs." }],
+  stream: true
+});
+
+for await (const chunk of stream) {
+  process.stdout.write(chunk.choices[0]?.delta?.content || "");
+}</code></pre>
+      </div>
+    </article>
+
+    <!-- Article 4: Granular RBAC & Security -->
+    <article class="article-card">
+      <span class="article-tag">Security &amp; Keys</span>
+      <h2 class="article-title">Zero-Trust Scoped API Keys for Microservices (صلاحيات المفاتيح)</h2>
+      <div class="article-body">
+        <p>
+          Never share master account credentials across environments. SpeedInfer allows creating scoped keys restricted to 
+          specific tasks, such as <code>inference</code>-only for production frontend proxies or <code>storage</code>-only for ETL pipelines.
+        </p>
+        <pre><code>curl -X POST https://speedinfer.com/v1/keys \
+  -H "Authorization: Bearer $SPEEDINFER_MASTER_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "production-inference-bot",
+    "permissions": "chat:completions,models:read",
+    "rpm_limit": 300,
+    "tpm_limit": 200000
+  }'</code></pre>
+      </div>
+    </article>
+
+    <!-- Article 5: Object Storage -->
+    <article class="article-card">
+      <span class="article-tag">Storage &amp; Buckets</span>
+      <h2 class="article-title">Scalable Object Storage for Checkpoints and RAG Datasets (التخزين السحابي)</h2>
+      <div class="article-body">
+        <p>
+          SpeedInfer Buckets provide high-speed S3-compatible storage co-located with GPU compute clusters.
+          Eliminate data egress costs and latency when feeding datasets to fine-tuning pipelines.
+        </p>
+        <pre><code># Create bucket
+curl -X POST https://speedinfer.com/v1/buckets \
+  -H "Authorization: Bearer $SPEEDINFER_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"name": "rag-embeddings", "description": "Vector indices for search"}'
+
+# Upload binary artifact
+curl -X POST https://speedinfer.com/v1/buckets/bkt-xxxxxxxx/objects \
+  -H "Authorization: Bearer $SPEEDINFER_API_KEY" \
+  -F "file=@index.bin"</code></pre>
+      </div>
+    </article>
+
+  </div>
+
+  <script>
+    // Comprehensive Code Snippets by Endpoint
+    const endpointSnippets = {
+      "overview": {
+        curl: {
+          request: `curl -H "Authorization: Bearer $SPEEDINFER_API_KEY" \\
+  https://speedinfer.com/v1/models`,
+          response: `{
+  "object": "list",
+  "data": [
+    {
+      "id": "Qwen/Qwen2.5-7B-Instruct",
+      "object": "model",
+      "context_length": 32768,
+      "prompt_price_per_million": 0.20,
+      "completion_price_per_million": 0.60
+    }
+  ]
+}`
+        },
+        python: {
+          request: `from openai import OpenAI
+import os
+
+client = OpenAI(
+    base_url="https://speedinfer.com/v1",
+    api_key=os.environ["SPEEDINFER_API_KEY"]
+)
+models = client.models.list()
+for m in models.data:
+    print(m.id)`,
+          response: `ModelList(data=[Model(id='Qwen/Qwen2.5-7B-Instruct', object='model')])`
+        },
+        typescript: {
+          request: `import { OpenAI } from "openai";
+
+const client = new OpenAI({
+  baseURL: "https://speedinfer.com/v1",
+  apiKey: process.env.SPEEDINFER_API_KEY,
+});
+
+const models = await client.models.list();
+console.log(models.data);`,
+          response: `[ { id: 'Qwen/Qwen2.5-7B-Instruct', object: 'model' } ]`
+        }
+      },
+      "get-account-me": {
+        curl: {
+          request: `curl -H "Authorization: Bearer $SPEEDINFER_API_KEY" \\
+  https://speedinfer.com/v1/auth/me`,
+          response: `{
+  "id": 1,
+  "email": "developer@example.com",
+  "name": "Lead Developer",
+  "credit_balance": 50.0000,
+  "paid_balance": 50.0000,
+  "trial_balance": 0.0000,
+  "is_active": true,
+  "role": "developer"
+}`
+        },
+        python: {
+          request: `import httpx, os
+
+res = httpx.get(
+    "https://speedinfer.com/v1/auth/me",
+    headers={"Authorization": f"Bearer {os.environ['SPEEDINFER_API_KEY']}"}
+)
+print(res.json())`,
+          response: `{'id': 1, 'email': 'developer@example.com', 'credit_balance': 50.0}`
+        },
+        typescript: {
+          request: `const res = await fetch("https://speedinfer.com/v1/auth/me", {
+  headers: { "Authorization": \`Bearer \${process.env.SPEEDINFER_API_KEY}\` }
+});
+console.log(await res.json());`,
+          response: `{ id: 1, email: 'developer@example.com', credit_balance: 50.0 }`
+        }
+      },
+      "get-pricing": {
+        curl: {
+          request: `curl https://speedinfer.com/v1/workspace/pricing`,
+          response: `{
+  "models": [
+    {
+      "model": "Qwen/Qwen2.5-7B-Instruct",
+      "prompt_price_per_million": 0.20,
+      "completion_price_per_million": 0.60,
+      "context_window": 32768
+    }
+  ],
+  "storage_price_per_gb_month": 0.05
+}`
+        },
+        python: {
+          request: `import httpx
+
+res = httpx.get("https://speedinfer.com/v1/workspace/pricing")
+print(res.json())`,
+          response: `{'models': [{'model': 'Qwen/Qwen2.5-7B-Instruct', 'context_window': 32768}]}`
+        },
+        typescript: {
+          request: `const res = await fetch("https://speedinfer.com/v1/workspace/pricing");
+console.log(await res.json());`,
+          response: `{ models: [ { model: 'Qwen/Qwen2.5-7B-Instruct', context_window: 32768 } ] }`
+        }
+      },
+      "get-usage": {
+        curl: {
+          request: `curl -H "Authorization: Bearer $SPEEDINFER_API_KEY" \\
+  https://speedinfer.com/v1/usage`,
+          response: `{
+  "total_prompt_tokens": 142000,
+  "total_completion_tokens": 58900,
+  "total_cost_usd": 0.0637,
+  "rpm_limit": 60,
+  "tpm_limit": 60000
+}`
+        },
+        python: {
+          request: `import httpx, os
+
+res = httpx.get("https://speedinfer.com/v1/usage", headers={"Authorization": f"Bearer {os.environ['SPEEDINFER_API_KEY']}"})
+print(res.json())`,
+          response: `{'total_prompt_tokens': 142000, 'total_cost_usd': 0.0637}`
+        },
+        typescript: {
+          request: `const res = await fetch("https://speedinfer.com/v1/usage", {
+  headers: { "Authorization": \`Bearer \${process.env.SPEEDINFER_API_KEY}\` }
+});
+console.log(await res.json());`,
+          response: `{ total_prompt_tokens: 142000, total_cost_usd: 0.0637 }`
+        }
+      },
+      "get-models": {
+        curl: {
+          request: `curl -H "Authorization: Bearer $SPEEDINFER_API_KEY" \\
+  https://speedinfer.com/v1/models`,
+          response: `{
+  "object": "list",
+  "data": [
+    {
+      "id": "Qwen/Qwen2.5-7B-Instruct",
+      "object": "model",
+      "owned_by": "speedinfer",
+      "context_length": 32768,
+      "prompt_price_per_million": 0.20,
+      "completion_price_per_million": 0.60
+    }
+  ]
+}`
+        },
+        python: {
+          request: `from openai import OpenAI
+client = OpenAI(base_url="https://speedinfer.com/v1", api_key="sk-speedinfer-...")
+print(client.models.list())`,
+          response: `SyncPage[Model](data=[Model(id='Qwen/Qwen2.5-7B-Instruct')])`
+        },
+        typescript: {
+          request: `import { OpenAI } from "openai";
+const client = new OpenAI({ baseURL: "https://speedinfer.com/v1", apiKey: "sk-speedinfer-..." });
+console.log(await client.models.list());`,
+          response: `[ { id: 'Qwen/Qwen2.5-7B-Instruct', object: 'model' } ]`
+        }
+      },
+      "get-model": {
+        curl: {
+          request: `curl -H "Authorization: Bearer $SPEEDINFER_API_KEY" \\
+  https://speedinfer.com/v1/models/Qwen/Qwen2.5-7B-Instruct`,
+          response: `{
+  "id": "Qwen/Qwen2.5-7B-Instruct",
+  "object": "model",
+  "created": 1790520000,
+  "owned_by": "speedinfer",
+  "context_length": 32768,
+  "prompt_price_per_million": 0.20,
+  "completion_price_per_million": 0.60
+}`
+        },
+        python: {
+          request: `from openai import OpenAI
+client = OpenAI(base_url="https://speedinfer.com/v1", api_key="sk-speedinfer-...")
+model = client.models.retrieve("Qwen/Qwen2.5-7B-Instruct")
+print(model)`,
+          response: `Model(id='Qwen/Qwen2.5-7B-Instruct', context_length=32768)`
+        },
+        typescript: {
+          request: `import { OpenAI } from "openai";
+const client = new OpenAI({ baseURL: "https://speedinfer.com/v1", apiKey: "sk-speedinfer-..." });
+const model = await client.models.retrieve("Qwen/Qwen2.5-7B-Instruct");
+console.log(model);`,
+          response: `{ id: 'Qwen/Qwen2.5-7B-Instruct', context_length: 32768 }`
+        }
+      },
+      "get-weights": {
+        curl: {
+          request: `# 1. Fetch manifest
+curl -H "Authorization: Bearer $SPEEDINFER_API_KEY" \\
+  https://speedinfer.com/v1/models/Qwen/Qwen2.5-7B-Instruct/weights
+
+# 2. Download safetensors binary
+curl -L -O -H "Authorization: Bearer $SPEEDINFER_API_KEY" \\
+  "https://speedinfer.com/v1/models/Qwen/Qwen2.5-7B-Instruct/weights?download=true"`,
+          response: `{
+  "model": "Qwen/Qwen2.5-7B-Instruct",
+  "format": "safetensors",
+  "architecture": "CausalLM",
+  "parameters": "7B",
+  "size_bytes": 14800000000,
+  "download_url": "/v1/models/Qwen/Qwen2.5-7B-Instruct/weights?download=true&format=safetensors",
+  "checksum_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "quantization": "fp16"
+}`
+        },
+        python: {
+          request: `import httpx, os
+
+url = "https://speedinfer.com/v1/models/Qwen/Qwen2.5-7B-Instruct/weights"
+headers = {"Authorization": f"Bearer {os.environ['SPEEDINFER_API_KEY']}"}
+manifest = httpx.get(url, headers=headers).json()
+print("Weights download link:", manifest["download_url"])`,
+          response: `Weights download link: /v1/models/Qwen/Qwen2.5-7B-Instruct/weights?download=true`
+        },
+        typescript: {
+          request: `const res = await fetch("https://speedinfer.com/v1/models/Qwen/Qwen2.5-7B-Instruct/weights", {
+  headers: { "Authorization": \`Bearer \${process.env.SPEEDINFER_API_KEY}\` }
+});
+console.log(await res.json());`,
+          response: `{ model: 'Qwen/Qwen2.5-7B-Instruct', format: 'safetensors', size_bytes: 14800000000 }`
+        }
+      },
+      "chat-completions": {
+        curl: {
+          request: `curl -X POST https://speedinfer.com/v1/chat/completions \\
+  -H "Authorization: Bearer $SPEEDINFER_API_KEY" \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "model": "Qwen/Qwen2.5-7B-Instruct",
+    "messages": [
+      {"role": "system", "content": "You are SpeedInfer AI."},
+      {"role": "user", "content": "Explain continuous batching in 1 sentence."}
+    ],
+    "temperature": 0.7,
+    "max_tokens": 128
+  }'`,
+          response: `{
+  "id": "chatcmpl-9f8a3c2e1b",
+  "object": "chat.completion",
+  "created": 1790520000,
+  "model": "Qwen/Qwen2.5-7B-Instruct",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "Continuous batching schedules new tokens dynamically at iteration-level."
+      },
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 18,
+    "completion_tokens": 21,
+    "total_tokens": 39
+  }
+}`
+        },
+        python: {
+          request: `from openai import OpenAI
+client = OpenAI(base_url="https://speedinfer.com/v1", api_key="sk-speedinfer-...")
+
+resp = client.chat.completions.create(
+    model="Qwen/Qwen2.5-7B-Instruct",
+    messages=[{"role": "user", "content": "Explain continuous batching."}],
+    max_tokens=128
+)
+print(resp.choices[0].message.content)`,
+          response: `Continuous batching schedules new tokens dynamically at iteration-level.`
+        },
+        typescript: {
+          request: `import { OpenAI } from "openai";
+const client = new OpenAI({ baseURL: "https://speedinfer.com/v1", apiKey: "sk-speedinfer-..." });
+
+const resp = await client.chat.completions.create({
+  model: "Qwen/Qwen2.5-7B-Instruct",
+  messages: [{ role: "user", content: "Explain continuous batching." }],
+  max_tokens: 128
+});
+console.log(resp.choices[0].message.content);`,
+          response: `Continuous batching schedules new tokens dynamically at iteration-level.`
+        }
+      },
+      "chat-streaming": {
+        curl: {
+          request: `curl -N -X POST https://speedinfer.com/v1/chat/completions \\
+  -H "Authorization: Bearer $SPEEDINFER_API_KEY" \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "model": "Qwen/Qwen2.5-7B-Instruct",
+    "messages": [{"role": "user", "content": "Stream numbers 1 to 5."}],
+    "stream": true
+  }'`,
+          response: `data: {"id":"chatcmpl-stream","object":"chat.completion.chunk","choices":[{"delta":{"content":"1"}}]}
+
+data: {"id":"chatcmpl-stream","object":"chat.completion.chunk","choices":[{"delta":{"content":", 2"}}]}
+
+data: [DONE]`
+        },
+        python: {
+          request: `from openai import OpenAI
+client = OpenAI(base_url="https://speedinfer.com/v1", api_key="sk-speedinfer-...")
+
+stream = client.chat.completions.create(
+    model="Qwen/Qwen2.5-7B-Instruct",
+    messages=[{"role": "user", "content": "Count to 5."}],
+    stream=True
+)
+for chunk in stream:
+    print(chunk.choices[0].delta.content or "", end="", flush=True)`,
+          response: `1, 2, 3, 4, 5`
+        },
+        typescript: {
+          request: `import { OpenAI } from "openai";
+const client = new OpenAI({ baseURL: "https://speedinfer.com/v1", apiKey: "sk-speedinfer-..." });
+
+const stream = await client.chat.completions.create({
+  model: "Qwen/Qwen2.5-7B-Instruct",
+  messages: [{ role: "user", content: "Count to 5." }],
+  stream: true
+});
+for await (const chunk of stream) {
+  process.stdout.write(chunk.choices[0]?.delta?.content || "");
+}`,
+          response: `1, 2, 3, 4, 5`
+        }
+      },
+      "legacy-completions": {
+        curl: {
+          request: `curl -X POST https://speedinfer.com/v1/completions \\
+  -H "Authorization: Bearer $SPEEDINFER_API_KEY" \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "model": "Qwen/Qwen2.5-7B-Instruct",
+    "prompt": "Fast LLM serving requires",
+    "max_tokens": 64
+  }'`,
+          response: `{
+  "id": "cmpl-872f9a",
+  "object": "text_completion",
+  "choices": [{"text": " optimized KV cache management and PagedAttention."}],
+  "usage": {"prompt_tokens": 5, "completion_tokens": 10, "total_tokens": 15}
+}`
+        },
+        python: {
+          request: `from openai import OpenAI
+client = OpenAI(base_url="https://speedinfer.com/v1", api_key="sk-speedinfer-...")
+resp = client.completions.create(model="Qwen/Qwen2.5-7B-Instruct", prompt="SpeedInfer is")
+print(resp.choices[0].text)`,
+          response: ` an ultra-low latency inference engine.`
+        },
+        typescript: {
+          request: `import { OpenAI } from "openai";
+const client = new OpenAI({ baseURL: "https://speedinfer.com/v1", apiKey: "sk-speedinfer-..." });
+const resp = await client.completions.create({ model: "Qwen/Qwen2.5-7B-Instruct", prompt: "SpeedInfer is" });
+console.log(resp.choices[0].text);`,
+          response: ` an ultra-low latency inference engine.`
+        }
+      },
+      "post-files": {
+        curl: {
+          request: `curl -X POST https://speedinfer.com/v1/files \\
+  -H "Authorization: Bearer $SPEEDINFER_API_KEY" \\
+  -F "file=@training_dataset.jsonl" \\
+  -F "purpose=fine-tune"`,
+          response: `{
+  "id": "file-68192a8b3e41",
+  "bytes": 482910,
+  "created_at": 1790520000,
+  "filename": "training_dataset.jsonl",
+  "object": "file",
+  "purpose": "fine-tune",
+  "status": "uploaded"
+}`
+        },
+        python: {
+          request: `from openai import OpenAI
+client = OpenAI(base_url="https://speedinfer.com/v1", api_key="sk-speedinfer-...")
+
+file_obj = client.files.create(
+    file=open("training_dataset.jsonl", "rb"),
+    purpose="fine-tune"
+)
+print("File ID:", file_obj.id)`,
+          response: `File ID: file-68192a8b3e41`
+        },
+        typescript: {
+          request: `import { OpenAI } from "openai";
+import fs from "fs";
+const client = new OpenAI({ baseURL: "https://speedinfer.com/v1", apiKey: "sk-speedinfer-..." });
+
+const file = await client.files.create({
+  file: fs.createReadStream("training_dataset.jsonl"),
+  purpose: "fine-tune"
+});
+console.log("Uploaded:", file.id);`,
+          response: `Uploaded: file-68192a8b3e41`
+        }
+      },
+      "get-files": {
+        curl: {
+          request: `curl -H "Authorization: Bearer $SPEEDINFER_API_KEY" \\
+  https://speedinfer.com/v1/files`,
+          response: `{
+  "object": "list",
+  "data": [
+    {
+      "id": "file-68192a8b3e41",
+      "bytes": 482910,
+      "created_at": 1790520000,
+      "filename": "training_dataset.jsonl",
+      "purpose": "fine-tune",
+      "status": "uploaded"
+    }
+  ]
+}`
+        },
+        python: {
+          request: `from openai import OpenAI
+client = OpenAI(base_url="https://speedinfer.com/v1", api_key="sk-speedinfer-...")
+print(client.files.list())`,
+          response: `SyncPage[FileObject](data=[FileObject(id='file-68192a8b3e41')])`
+        },
+        typescript: {
+          request: `import { OpenAI } from "openai";
+const client = new OpenAI({ baseURL: "https://speedinfer.com/v1", apiKey: "sk-speedinfer-..." });
+console.log(await client.files.list());`,
+          response: `[ { id: 'file-68192a8b3e41', filename: 'training_dataset.jsonl' } ]`
+        }
+      },
+      "get-file": {
+        curl: {
+          request: `curl -H "Authorization: Bearer $SPEEDINFER_API_KEY" \\
+  https://speedinfer.com/v1/files/file-68192a8b3e41`,
+          response: `{
+  "id": "file-68192a8b3e41",
+  "bytes": 482910,
+  "created_at": 1790520000,
+  "filename": "training_dataset.jsonl",
+  "purpose": "fine-tune",
+  "status": "uploaded"
+}`
+        },
+        python: {
+          request: `from openai import OpenAI
+client = OpenAI(base_url="https://speedinfer.com/v1", api_key="sk-speedinfer-...")
+print(client.files.retrieve("file-68192a8b3e41"))`,
+          response: `FileObject(id='file-68192a8b3e41', filename='training_dataset.jsonl')`
+        },
+        typescript: {
+          request: `import { OpenAI } from "openai";
+const client = new OpenAI({ baseURL: "https://speedinfer.com/v1", apiKey: "sk-speedinfer-..." });
+console.log(await client.files.retrieve("file-68192a8b3e41"));`,
+          response: `{ id: 'file-68192a8b3e41', bytes: 482910 }`
+        }
+      },
+      "get-file-content": {
+        curl: {
+          request: `curl -H "Authorization: Bearer $SPEEDINFER_API_KEY" \\
+  https://speedinfer.com/v1/files/file-68192a8b3e41/content`,
+          response: `{"messages": [{"role": "user", "content": "Hi"}, {"role": "assistant", "content": "Hello"}]}`
+        },
+        python: {
+          request: `from openai import OpenAI
+client = OpenAI(base_url="https://speedinfer.com/v1", api_key="sk-speedinfer-...")
+content = client.files.content("file-68192a8b3e41")
+print(content.text[:100])`,
+          response: `{"messages": [{"role": "user", "content": "Hi"}]}`
+        },
+        typescript: {
+          request: `import { OpenAI } from "openai";
+const client = new OpenAI({ baseURL: "https://speedinfer.com/v1", apiKey: "sk-speedinfer-..." });
+const content = await client.files.content("file-68192a8b3e41");
+console.log(await content.text());`,
+          response: `{"messages": [{"role": "user", "content": "Hi"}]}`
+        }
+      },
+      "delete-file": {
+        curl: {
+          request: `curl -X DELETE -H "Authorization: Bearer $SPEEDINFER_API_KEY" \\
+  https://speedinfer.com/v1/files/file-68192a8b3e41`,
+          response: `{
+  "id": "file-68192a8b3e41",
+  "object": "file",
+  "deleted": true
+}`
+        },
+        python: {
+          request: `from openai import OpenAI
+client = OpenAI(base_url="https://speedinfer.com/v1", api_key="sk-speedinfer-...")
+print(client.files.delete("file-68192a8b3e41"))`,
+          response: `FileDeleted(id='file-68192a8b3e41', deleted=True)`
+        },
+        typescript: {
+          request: `import { OpenAI } from "openai";
+const client = new OpenAI({ baseURL: "https://speedinfer.com/v1", apiKey: "sk-speedinfer-..." });
+console.log(await client.files.delete("file-68192a8b3e41"));`,
+          response: `{ id: 'file-68192a8b3e41', deleted: true }`
+        }
+      },
+      "post-buckets": {
+        curl: {
+          request: `curl -X POST https://speedinfer.com/v1/buckets \\
+  -H "Authorization: Bearer $SPEEDINFER_API_KEY" \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "name": "model-checkpoints",
+    "description": "LoRA weight checkpoints store"
+  }'`,
+          response: `{
+  "id": "bkt-9a8dc592a3dd4327",
+  "name": "model-checkpoints",
+  "description": "LoRA weight checkpoints store",
+  "created_at": "2026-09-27T16:00:00Z",
+  "object_count": 0,
+  "total_bytes": 0
+}`
+        },
+        python: {
+          request: `import httpx, os
+
+res = httpx.post(
+    "https://speedinfer.com/v1/buckets",
+    headers={"Authorization": f"Bearer {os.environ['SPEEDINFER_API_KEY']}"},
+    json={"name": "model-checkpoints", "description": "LoRA weight checkpoints"}
+)
+print("Created Bucket:", res.json()["id"])`,
+          response: `Created Bucket: bkt-9a8dc592a3dd4327`
+        },
+        typescript: {
+          request: `const res = await fetch("https://speedinfer.com/v1/buckets", {
+  method: "POST",
+  headers: {
+    "Authorization": \`Bearer \${process.env.SPEEDINFER_API_KEY}\`,
+    "Content-Type": "application/json"
+  },
+  body: JSON.stringify({ name: "model-checkpoints" })
+});
+console.log(await res.json());`,
+          response: `{ id: 'bkt-9a8dc592a3dd4327', name: 'model-checkpoints' }`
+        }
+      },
+      "get-buckets": {
+        curl: {
+          request: `curl -H "Authorization: Bearer $SPEEDINFER_API_KEY" \\
+  https://speedinfer.com/v1/buckets`,
+          response: `{
+  "object": "list",
+  "data": [
+    {
+      "id": "bkt-9a8dc592a3dd4327",
+      "name": "model-checkpoints",
+      "object_count": 4,
+      "total_bytes": 284000000
+    }
+  ]
+}`
+        },
+        python: {
+          request: `import httpx, os
+res = httpx.get("https://speedinfer.com/v1/buckets", headers={"Authorization": f"Bearer {os.environ['SPEEDINFER_API_KEY']}"})
+print(res.json()["data"])`,
+          response: `[{'id': 'bkt-9a8dc592a3dd4327', 'name': 'model-checkpoints'}]`
+        },
+        typescript: {
+          request: `const res = await fetch("https://speedinfer.com/v1/buckets", {
+  headers: { "Authorization": \`Bearer \${process.env.SPEEDINFER_API_KEY}\` }
+});
+console.log(await res.json());`,
+          response: `{ data: [ { id: 'bkt-9a8dc592a3dd4327' } ] }`
+        }
+      },
+      "post-bucket-objects": {
+        curl: {
+          request: `curl -X POST https://speedinfer.com/v1/buckets/bkt-9a8dc592a3dd4327/objects \\
+  -H "Authorization: Bearer $SPEEDINFER_API_KEY" \\
+  -F "file=@adapter_model.safetensors"`,
+          response: `{
+  "id": "obj-38f1a8e9",
+  "bucket_id": "bkt-9a8dc592a3dd4327",
+  "name": "adapter_model.safetensors",
+  "size": 68400000,
+  "content_type": "application/octet-stream",
+  "created_at": "2026-09-27T16:05:00Z"
+}`
+        },
+        python: {
+          request: `import httpx, os
+with open("adapter_model.safetensors", "rb") as f:
+    res = httpx.post(
+        "https://speedinfer.com/v1/buckets/bkt-9a8dc592a3dd4327/objects",
+        headers={"Authorization": f"Bearer {os.environ['SPEEDINFER_API_KEY']}"},
+        files={"file": f}
+    )
+print(res.json())`,
+          response: `{'name': 'adapter_model.safetensors', 'size': 68400000}`
+        },
+        typescript: {
+          request: `const form = new FormData();
+form.append("file", new Blob(["tensor-data"]), "weights.bin");
+const res = await fetch("https://speedinfer.com/v1/buckets/bkt-9a8dc592a3dd4327/objects", {
+  method: "POST",
+  headers: { "Authorization": \`Bearer \${process.env.SPEEDINFER_API_KEY}\` },
+  body: form
+});
+console.log(await res.json());`,
+          response: `{ name: 'weights.bin', size: 11 }`
+        }
+      },
+      "post-ft-jobs": {
+        curl: {
+          request: `curl -X POST https://speedinfer.com/v1/fine_tuning/jobs \\
+  -H "Authorization: Bearer $SPEEDINFER_API_KEY" \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "model": "Qwen/Qwen2.5-7B-Instruct",
+    "training_file": "file-68192a8b3e41",
+    "method": "qlora",
+    "suffix": "support-v1",
+    "hyperparameters": {
+      "n_epochs": 3,
+      "batch_size": 4,
+      "learning_rate_multiplier": 1.0,
+      "lora_rank": 16,
+      "lora_alpha": 32
+    }
+  }'`,
+          response: `{
+  "object": "fine_tuning.job",
+  "id": "ftjob-4f6acaf950b0d5d7",
+  "model": "Qwen/Qwen2.5-7B-Instruct",
+  "status": "running",
+  "training_file": "file-68192a8b3e41",
+  "fine_tuned_model": "ft:qwen-qwen2.5-7b-instruct-support-v1",
+  "trained_tokens": 150000,
+  "hyperparameters": {
+    "n_epochs": 3,
+    "batch_size": 4,
+    "lora_rank": 16,
+    "lora_alpha": 32,
+    "method": "qlora"
+  }
+}`
+        },
+        python: {
+          request: `from openai import OpenAI
+client = OpenAI(base_url="https://speedinfer.com/v1", api_key="sk-speedinfer-...")
+
+job = client.fine_tuning.jobs.create(
+    model="Qwen/Qwen2.5-7B-Instruct",
+    training_file="file-68192a8b3e41",
+    suffix="support-v1"
+)
+print("Launched Job:", job.id)`,
+          response: `Launched Job: ftjob-4f6acaf950b0d5d7`
+        },
+        typescript: {
+          request: `import { OpenAI } from "openai";
+const client = new OpenAI({ baseURL: "https://speedinfer.com/v1", apiKey: "sk-speedinfer-..." });
+
+const job = await client.fine_tuning.jobs.create({
+  model: "Qwen/Qwen2.5-7B-Instruct",
+  training_file: "file-68192a8b3e41",
+  suffix: "support-v1"
+});
+console.log(job.id);`,
+          response: `ftjob-4f6acaf950b0d5d7`
+        }
+      },
+      "get-ft-jobs": {
+        curl: {
+          request: `curl -H "Authorization: Bearer $SPEEDINFER_API_KEY" \\
+  https://speedinfer.com/v1/fine_tuning/jobs`,
+          response: `{
+  "object": "list",
+  "data": [
+    {
+      "id": "ftjob-4f6acaf950b0d5d7",
+      "model": "Qwen/Qwen2.5-7B-Instruct",
+      "status": "running",
+      "fine_tuned_model": "ft:qwen-qwen2.5-7b-instruct-support-v1"
+    }
+  ]
+}`
+        },
+        python: {
+          request: `from openai import OpenAI
+client = OpenAI(base_url="https://speedinfer.com/v1", api_key="sk-speedinfer-...")
+print(client.fine_tuning.jobs.list())`,
+          response: `SyncPage[FineTuningJob](data=[FineTuningJob(id='ftjob-4f6acaf950b0d5d7')])`
+        },
+        typescript: {
+          request: `import { OpenAI } from "openai";
+const client = new OpenAI({ baseURL: "https://speedinfer.com/v1", apiKey: "sk-speedinfer-..." });
+console.log(await client.fine_tuning.jobs.list());`,
+          response: `{ data: [ { id: 'ftjob-4f6acaf950b0d5d7', status: 'running' } ] }`
+        }
+      },
+      "get-ft-job": {
+        curl: {
+          request: `curl -H "Authorization: Bearer $SPEEDINFER_API_KEY" \\
+  https://speedinfer.com/v1/fine_tuning/jobs/ftjob-4f6acaf950b0d5d7`,
+          response: `{
+  "id": "ftjob-4f6acaf950b0d5d7",
+  "model": "Qwen/Qwen2.5-7B-Instruct",
+  "status": "running",
+  "trained_tokens": 150000,
+  "fine_tuned_model": "ft:qwen-qwen2.5-7b-instruct-support-v1"
+}`
+        },
+        python: {
+          request: `from openai import OpenAI
+client = OpenAI(base_url="https://speedinfer.com/v1", api_key="sk-speedinfer-...")
+print(client.fine_tuning.jobs.retrieve("ftjob-4f6acaf950b0d5d7"))`,
+          response: `FineTuningJob(id='ftjob-4f6acaf950b0d5d7', status='running')`
+        },
+        typescript: {
+          request: `import { OpenAI } from "openai";
+const client = new OpenAI({ baseURL: "https://speedinfer.com/v1", apiKey: "sk-speedinfer-..." });
+console.log(await client.fine_tuning.jobs.retrieve("ftjob-4f6acaf950b0d5d7"));`,
+          response: `{ id: 'ftjob-4f6acaf950b0d5d7', status: 'running' }`
+        }
+      },
+      "cancel-ft-job": {
+        curl: {
+          request: `curl -X POST -H "Authorization: Bearer $SPEEDINFER_API_KEY" \\
+  https://speedinfer.com/v1/fine_tuning/jobs/ftjob-4f6acaf950b0d5d7/cancel`,
+          response: `{
+  "id": "ftjob-4f6acaf950b0d5d7",
+  "status": "cancelled"
+}`
+        },
+        python: {
+          request: `from openai import OpenAI
+client = OpenAI(base_url="https://speedinfer.com/v1", api_key="sk-speedinfer-...")
+print(client.fine_tuning.jobs.cancel("ftjob-4f6acaf950b0d5d7"))`,
+          response: `FineTuningJob(id='ftjob-4f6acaf950b0d5d7', status='cancelled')`
+        },
+        typescript: {
+          request: `import { OpenAI } from "openai";
+const client = new OpenAI({ baseURL: "https://speedinfer.com/v1", apiKey: "sk-speedinfer-..." });
+console.log(await client.fine_tuning.jobs.cancel("ftjob-4f6acaf950b0d5d7"));`,
+          response: `{ id: 'ftjob-4f6acaf950b0d5d7', status: 'cancelled' }`
+        }
+      },
+      "get-ft-checkpoints": {
+        curl: {
+          request: `curl -H "Authorization: Bearer $SPEEDINFER_API_KEY" \\
+  https://speedinfer.com/v1/fine_tuning/jobs/ftjob-4f6acaf950b0d5d7/checkpoints`,
+          response: `{
+  "object": "list",
+  "data": [
+    {
+      "id": "ftckpt-8f9a2b1c",
+      "step_number": 100,
+      "metrics": {
+        "train_loss": 0.428,
+        "eval_loss": 0.445,
+        "train_accuracy": 0.885
+      },
+      "fine_tuned_model_checkpoint": "ft:qwen-qwen2.5-7b-instruct-support-v1:ckpt-100"
+    }
+  ]
+}`
+        },
+        python: {
+          request: `from openai import OpenAI
+client = OpenAI(base_url="https://speedinfer.com/v1", api_key="sk-speedinfer-...")
+print(client.fine_tuning.jobs.checkpoints.list("ftjob-4f6acaf950b0d5d7"))`,
+          response: `SyncPage[FineTuningJobCheckpoint](data=[...])`
+        },
+        typescript: {
+          request: `import { OpenAI } from "openai";
+const client = new OpenAI({ baseURL: "https://speedinfer.com/v1", apiKey: "sk-speedinfer-..." });
+console.log(await client.fine_tuning.jobs.checkpoints.list("ftjob-4f6acaf950b0d5d7"));`,
+          response: `{ data: [ { id: 'ftckpt-8f9a2b1c', step_number: 100 } ] }`
+        }
+      },
+      "get-ft-events": {
+        curl: {
+          request: `curl -H "Authorization: Bearer $SPEEDINFER_API_KEY" \\
+  https://speedinfer.com/v1/fine_tuning/jobs/ftjob-4f6acaf950b0d5d7/events`,
+          response: `{
+  "object": "list",
+  "data": [
+    {
+      "id": "ftevent-1",
+      "level": "info",
+      "message": "Initialized PEFT LoRA adapter matrices and optimizer schedule."
+    }
+  ]
+}`
+        },
+        python: {
+          request: `from openai import OpenAI
+client = OpenAI(base_url="https://speedinfer.com/v1", api_key="sk-speedinfer-...")
+print(client.fine_tuning.jobs.list_events("ftjob-4f6acaf950b0d5d7"))`,
+          response: `SyncPage[FineTuningJobEvent](data=[...])`
+        },
+        typescript: {
+          request: `import { OpenAI } from "openai";
+const client = new OpenAI({ baseURL: "https://speedinfer.com/v1", apiKey: "sk-speedinfer-..." });
+console.log(await client.fine_tuning.jobs.listEvents("ftjob-4f6acaf950b0d5d7"));`,
+          response: `{ data: [ { level: 'info', message: 'Initialized PEFT LoRA...' } ] }`
+        }
+      },
+      "post-keys": {
+        curl: {
+          request: `curl -X POST https://speedinfer.com/v1/keys \\
+  -H "Authorization: Bearer $SPEEDINFER_MASTER_KEY" \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "name": "microservice-inference",
+    "permissions": "chat:completions,models:read",
+    "rpm_limit": 120,
+    "tpm_limit": 100000
+  }'`,
+          response: `{
+  "id": 18,
+  "name": "microservice-inference",
+  "key": "sk-speedinfer-ea3c1804b92c4f8103...",
+  "prefix": "sk-speedinfer-ea3c1804",
+  "permissions": "chat:completions,models:read",
+  "rpm_limit": 120,
+  "tpm_limit": 100000
+}`
+        },
+        python: {
+          request: `import httpx, os
+
+res = httpx.post(
+    "https://speedinfer.com/v1/keys",
+    headers={"Authorization": f"Bearer {os.environ['SPEEDINFER_MASTER_KEY']}"},
+    json={"name": "microservice-inference", "permissions": "chat:completions,models:read"}
+)
+print("New Plaintext Key:", res.json()["key"])`,
+          response: `New Plaintext Key: sk-speedinfer-ea3c1804b92c4f8103...`
+        },
+        typescript: {
+          request: `const res = await fetch("https://speedinfer.com/v1/keys", {
+  method: "POST",
+  headers: {
+    "Authorization": \`Bearer \${process.env.SPEEDINFER_MASTER_KEY}\`,
+    "Content-Type": "application/json"
+  },
+  body: JSON.stringify({ name: "microservice-inference", permissions: "chat:completions,models:read" })
+});
+console.log(await res.json());`,
+          response: `{ id: 18, key: 'sk-speedinfer-ea3c1804...' }`
+        }
+      },
+      "get-keys": {
+        curl: {
+          request: `curl -H "Authorization: Bearer $SPEEDINFER_MASTER_KEY" \\
+  https://speedinfer.com/v1/keys`,
+          response: `{
+  "object": "list",
+  "data": [
+    {
+      "id": 18,
+      "name": "microservice-inference",
+      "prefix": "sk-speedinfer-ea3c1804",
+      "status": "active",
+      "permissions": "chat:completions,models:read",
+      "rpm_limit": 120
+    }
+  ]
+}`
+        },
+        python: {
+          request: `import httpx, os
+res = httpx.get("https://speedinfer.com/v1/keys", headers={"Authorization": f"Bearer {os.environ['SPEEDINFER_MASTER_KEY']}"})
+print(res.json()["data"])`,
+          response: `[{'id': 18, 'name': 'microservice-inference', 'status': 'active'}]`
+        },
+        typescript: {
+          request: `const res = await fetch("https://speedinfer.com/v1/keys", {
+  headers: { "Authorization": \`Bearer \${process.env.SPEEDINFER_MASTER_KEY}\` }
+});
+console.log(await res.json());`,
+          response: `{ data: [ { id: 18, name: 'microservice-inference' } ] }`
+        }
+      },
+      "get-key-id": {
+        curl: {
+          request: `curl -H "Authorization: Bearer $SPEEDINFER_MASTER_KEY" \\
+  https://speedinfer.com/v1/keys/18`,
+          response: `{
+  "id": 18,
+  "name": "microservice-inference",
+  "prefix": "sk-speedinfer-ea3c1804",
+  "status": "active",
+  "permissions": "chat:completions,models:read",
+  "rpm_limit": 120,
+  "tpm_limit": 100000
+}`
+        },
+        python: {
+          request: `import httpx, os
+res = httpx.get("https://speedinfer.com/v1/keys/18", headers={"Authorization": f"Bearer {os.environ['SPEEDINFER_MASTER_KEY']}"})
+print(res.json())`,
+          response: `{'id': 18, 'name': 'microservice-inference'}`
+        },
+        typescript: {
+          request: `const res = await fetch("https://speedinfer.com/v1/keys/18", {
+  headers: { "Authorization": \`Bearer \${process.env.SPEEDINFER_MASTER_KEY}\` }
+});
+console.log(await res.json());`,
+          response: `{ id: 18, name: 'microservice-inference' }`
+        }
+      },
+      "delete-key": {
+        curl: {
+          request: `curl -X DELETE -H "Authorization: Bearer $SPEEDINFER_MASTER_KEY" \\
+  https://speedinfer.com/v1/keys/18`,
+          response: `{
+  "id": 18,
+  "status": "revoked",
+  "is_active": false
+}`
+        },
+        python: {
+          request: `import httpx, os
+res = httpx.delete("https://speedinfer.com/v1/keys/18", headers={"Authorization": f"Bearer {os.environ['SPEEDINFER_MASTER_KEY']}"})
+print(res.json())`,
+          response: `{'id': 18, 'status': 'revoked'}`
+        },
+        typescript: {
+          request: `const res = await fetch("https://speedinfer.com/v1/keys/18", {
+  method: "DELETE",
+  headers: { "Authorization": \`Bearer \${process.env.SPEEDINFER_MASTER_KEY}\` }
+});
+console.log(await res.json());`,
+          response: `{ id: 18, status: 'revoked' }`
+        }
+      }
+    };
+
+    let currentEndpoint = 'chat-completions';
+    let currentLang = 'curl';
+
+    function setLang(lang) {
+      currentLang = lang;
+      document.querySelectorAll('.code-tab-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.textContent.toLowerCase().includes(lang));
+      });
+      renderActiveCode();
+    }
+
+    function selectEndpoint(id) {
+      currentEndpoint = id;
+      document.querySelectorAll('.sidebar-link').forEach(link => {
+        link.classList.toggle('active', link.getAttribute('href') === `#${id}`);
+      });
+      renderActiveCode();
+    }
+
+    function renderActiveCode() {
+      const data = endpointSnippets[currentEndpoint] || endpointSnippets['overview'];
+      const snippet = data[currentLang] || data['curl'];
+      document.getElementById('active-code-snippet').textContent = snippet.request;
+      document.getElementById('active-response-snippet').textContent = snippet.response;
+    }
+
+    function copyActiveCode() {
+      const code = document.getElementById('active-code-snippet').textContent;
+      navigator.clipboard.writeText(code).then(() => {
+        const copyBtn = document.querySelector('.btn-copy');
+        copyBtn.textContent = 'Copied!';
+        setTimeout(() => copyBtn.textContent = 'Copy', 2000);
+      });
+    }
+
+    function switchView(mode) {
+      const apiView = document.getElementById('api-reference-view');
+      const articlesView = document.getElementById('articles-view');
+      const tabApi = document.getElementById('tab-api');
+      const tabArticles = document.getElementById('tab-articles');
+
+      if (mode === 'articles') {
+        apiView.style.display = 'none';
+        articlesView.style.display = 'block';
+        tabArticles.classList.add('active');
+        tabApi.classList.remove('active');
+      } else {
+        apiView.style.display = 'flex';
+        articlesView.style.display = 'none';
+        tabApi.classList.add('active');
+        tabArticles.classList.remove('active');
+      }
+    }
+
+    // Tester Endpoint Change
+    function onTesterEndpointChange() {
+      const sel = document.getElementById('tester-endpoint-select').value;
+      const payloadArea = document.getElementById('tester-payload-input');
+      if (sel === 'chat_completions') {
+        payloadArea.style.display = 'block';
+        payloadArea.value = JSON.stringify({
+          model: "Qwen/Qwen2.5-7B-Instruct",
+          messages: [{ role: "user", content: "Say hello in 3 words." }],
+          max_tokens: 32
+        }, null, 2);
+      } else {
+        payloadArea.style.display = 'none';
+      }
+    }
+
+    async function executeSelectedApiTest() {
+      const out = document.getElementById('test-result-output');
+      const badge = document.getElementById('test-status-badge');
+      const apiKey = document.getElementById('live-api-key').value.trim() || localStorage.getItem('speedinfer_token') || '';
+      const endpoint = document.getElementById('tester-endpoint-select').value;
+      const payloadText = document.getElementById('tester-payload-input').value.trim();
+
+      badge.textContent = 'Executing...';
+      badge.style.color = '#fbbf24';
+      out.style.display = 'block';
+
+      const headers = { 'Accept': 'application/json' };
+      if (apiKey) headers['Authorization'] = `Bearer ${apiKey}`;
+
+      let url = '/v1/models';
+      let method = 'GET';
+      let body = undefined;
+
+      switch (endpoint) {
+        case 'models_list': url = '/v1/models'; break;
+        case 'models_get': url = '/v1/models/Qwen/Qwen2.5-7B-Instruct'; break;
+        case 'models_weights': url = '/v1/models/Qwen/Qwen2.5-7B-Instruct/weights'; break;
+        case 'chat_completions':
+          url = '/v1/chat/completions';
+          method = 'POST';
+          headers['Content-Type'] = 'application/json';
+          body = payloadText || JSON.stringify({ model: 'Qwen/Qwen2.5-7B-Instruct', messages: [{role: 'user', content: 'Hello'}] });
+          break;
+        case 'files_list': url = '/v1/files'; break;
+        case 'buckets_list': url = '/v1/buckets'; break;
+        case 'ft_jobs_list': url = '/v1/fine_tuning/jobs'; break;
+        case 'keys_list': url = '/v1/keys'; break;
+        case 'auth_me': url = '/v1/auth/me'; break;
+        case 'pricing': url = '/v1/workspace/pricing'; break;
+      }
+
+      out.textContent = `${method} ${url}\nConnecting...`;
+
+      try {
+        const res = await fetch(url, { method, headers, body });
+        badge.textContent = `${res.status} ${res.statusText}`;
+        badge.style.color = res.ok ? '#34d399' : '#f87171';
+        const contentType = res.headers.get('content-type') || '';
+        if (contentType.includes('json')) {
+          const json = await res.json();
+          out.textContent = JSON.stringify(json, null, 2);
+        } else {
+          out.textContent = await res.text();
+        }
+      } catch (err) {
+        badge.textContent = 'Fetch Error';
+        badge.style.color = '#f87171';
+        out.textContent = `Network error: ${err.message}`;
+      }
+    }
+
+    function filterDocs(query) {
+      const q = query.toLowerCase().trim();
+      document.querySelectorAll('.endpoint-block').forEach(block => {
+        const text = block.textContent.toLowerCase();
+        block.style.display = text.includes(q) ? 'block' : 'none';
+      });
+      document.querySelectorAll('.sidebar-link').forEach(link => {
+        const text = link.textContent.toLowerCase();
+        link.parentElement.style.display = text.includes(q) ? 'block' : 'none';
+      });
+    }
+
+    // Scroll spy for automatic code snippet synchronization
+    window.addEventListener('DOMContentLoaded', () => {
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            selectEndpoint(entry.target.id);
+          }
+        });
+      }, { rootMargin: '-20% 0px -70% 0px' });
+
+      document.querySelectorAll('.endpoint-block').forEach(sec => observer.observe(sec));
+      selectEndpoint('overview');
+      setLang('curl');
+    });
+  </script>
+</body>
+</html>

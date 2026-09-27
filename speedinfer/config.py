@@ -98,9 +98,7 @@ class Settings(BaseSettings):
         """Return the configured, safe-to-sell prepaid USD credit packages."""
         try:
             package_values = self.whop_credit_packages.split(",")
-            values = tuple(
-                sorted({round(float(item.strip()), 2) for item in package_values})
-            )
+            values = tuple(sorted({round(float(item.strip()), 2) for item in package_values}))
         except ValueError as exc:
             raise ValueError("WHOP_CREDIT_PACKAGES must be comma-separated USD amounts.") from exc
         if not values or any(value <= 0 or value > 10_000 for value in values):
