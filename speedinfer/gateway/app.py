@@ -131,6 +131,13 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
                     text('ALTER TABLE "apikey" ADD COLUMN paid_balance FLOAT DEFAULT 0.0')
                 )
                 conn.commit()
+            conn.execute(
+                text(
+                    'UPDATE "apikey" SET paid_balance = credit_balance '
+                    'WHERE (trial_balance + paid_balance) = 0.0 AND credit_balance > 0.0'
+                )
+            )
+            conn.commit()
 
     # 2. Register default model in registry
     model_name = settings.default_model
