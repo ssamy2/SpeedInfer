@@ -317,7 +317,7 @@ async def test_public_preview_metadata_and_guide(live_contract):
     assert 'property="og:image"' in response.text
     assert "speedinfer-social-v1.png" in response.text
     assert "Sub-100ms" not in response.text
-    assert "Zero Data Retention" in response.text
+    assert "does not retain prompt or completion content by default" in response.text
     image = await client.get("/static/assets/speedinfer-social-v1.png")
     assert image.status_code == 200 and image.headers["content-type"] == "image/png"
     guide = await client.get("/guide")
@@ -350,7 +350,7 @@ async def test_public_preview_metadata_and_guide(live_contract):
     assert "Model Registry" in product_resp.text
     assert "Continuous iteration-level batching" in product_resp.text
     assert "PagedAttention" in product_resp.text
-    assert "Zero Data Retention" in product_resp.text
+    assert "deployment-aware data handling" in product_resp.text
 
     platform_resp = await client.get("/platform")
     assert platform_resp.status_code == 200

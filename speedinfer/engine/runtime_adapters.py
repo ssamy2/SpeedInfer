@@ -74,11 +74,30 @@ class TritonRuntimeAdapter:
             self.worker.record_success()
         else:
             self.worker.record_failure()
+        discovered_models = await self.discover_models() if healthy else []
         return {
             "healthy": healthy,
             "server_ready": server.status_code == 200,
             "model_ready": model.status_code == 200,
+            "discovered_models": discovered_models,
         }
+
+    async def discover_models(self) -> list[str]:
+        """Discover ready models through Triton's model-repository index extension."""
+        try:
+            response = await self.client.post(
+                f"{self.base_url}/v2/repository/index",
+                json={"ready": True},
+                headers=self._headers(),
+            )
+            response.raise_for_status()
+            return [
+                str(item["name"])
+                for item in response.json()
+                if isinstance(item, dict) and item.get("name")
+            ]
+        except (httpx.HTTPError, ValueError, TypeError):
+            return []
 
     def _prompt(self, messages: list[Any]) -> str:
         template = self.config.get("chat_template", "{messages_json}")

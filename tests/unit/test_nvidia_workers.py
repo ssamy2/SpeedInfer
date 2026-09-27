@@ -60,6 +60,9 @@ async def test_triton_health_model_readiness_and_inference_contract():
         seen_paths.append(request.url.path)
         if request.method == "GET":
             return httpx.Response(200)
+        if request.url.path == "/v2/repository/index":
+            assert json.loads(request.content) == {"ready": True}
+            return httpx.Response(200, json=[{"name": "ensemble", "state": "READY"}])
         payload = json.loads(request.content)
         assert payload["inputs"][0]["name"] == "text_input"
         return httpx.Response(
@@ -83,9 +86,15 @@ async def test_triton_health_model_readiness_and_inference_contract():
             ),
             "acme/model-1",
         )
-    assert health == {"healthy": True, "server_ready": True, "model_ready": True}
+    assert health == {
+        "healthy": True,
+        "server_ready": True,
+        "model_ready": True,
+        "discovered_models": ["ensemble"],
+    }
     assert "/v2/health/ready" in seen_paths
     assert "/v2/models/ensemble/ready" in seen_paths
+    assert "/v2/repository/index" in seen_paths
     assert "/v2/models/ensemble/infer" in seen_paths
     assert result["choices"][0]["message"]["content"] == "worker response"
     assert result["usage"] == {"prompt_tokens": 4, "completion_tokens": 2, "total_tokens": 6}

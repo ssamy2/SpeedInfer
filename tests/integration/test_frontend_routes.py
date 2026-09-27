@@ -54,6 +54,11 @@ async def test_frontend_spa_serving():
             ("/docs/inference-workers/nvidia", "NVIDIA GPU workers"),
             ("/docs/inference-workers/triton", "Triton HTTP v2"),
             ("/docs/inference-workers/tensorrt-llm", "TensorRT-LLM workers"),
+            ("/nvidia", "Built for NVIDIA-accelerated inference"),
+            ("/docs/nvidia", "Connect NVIDIA-backed workers"),
+            ("/docs/nvidia/cuda", "Prepare an NVIDIA worker host"),
+            ("/docs/nvidia/triton", "Connect Triton Inference Server"),
+            ("/docs/nvidia/tensorrt-llm", "Serve TensorRT-LLM models"),
         ):
             response = await client.get(route)
             assert response.status_code == 200

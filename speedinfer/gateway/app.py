@@ -392,12 +392,35 @@ def create_app() -> FastAPI:
         async def serve_architecture() -> FileResponse:
             return FileResponse(frontend_dir / "architecture.html")
 
+        @fastapi_app.api_route("/nvidia", methods=["GET", "HEAD"], include_in_schema=False)
+        async def serve_nvidia() -> FileResponse:
+            return FileResponse(frontend_dir / "nvidia.html")
+
         worker_doc_files = {
             "inference-workers": "inference-workers.html",
             "inference-workers/nvidia": "inference-workers-nvidia.html",
             "inference-workers/triton": "inference-workers-triton.html",
             "inference-workers/tensorrt-llm": "inference-workers-tensorrt-llm.html",
         }
+
+        nvidia_doc_files = {
+            "": "nvidia-docs.html",
+            "cuda": "nvidia-cuda-docs.html",
+            "triton": "nvidia-triton-docs.html",
+            "tensorrt-llm": "nvidia-tensorrt-llm-docs.html",
+        }
+
+        @fastapi_app.api_route(
+            "/docs/nvidia", methods=["GET", "HEAD"], include_in_schema=False
+        )
+        @fastapi_app.api_route(
+            "/docs/nvidia/{runtime}", methods=["GET", "HEAD"], include_in_schema=False
+        )
+        async def serve_nvidia_docs(runtime: str = "") -> FileResponse:
+            filename = nvidia_doc_files.get(runtime)
+            if filename is None:
+                raise HTTPException(status_code=404, detail="NVIDIA documentation page not found.")
+            return FileResponse(frontend_dir / filename)
 
         @fastapi_app.api_route(
             "/docs/inference-workers", methods=["GET", "HEAD"], include_in_schema=False
