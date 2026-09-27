@@ -64,6 +64,65 @@ function escapeHtml(str) {
     .replace(/'/g, '&#039;');
 }
 
+function fallbackDeterministicHash(str) {
+  let h1 = 0xdeadbeef, h2 = 0x41c6ce57;
+  for (let i = 0; i < str.length; i++) {
+    const ch = str.charCodeAt(i);
+    h1 = Math.imul(h1 ^ ch, 2654435761);
+    h2 = Math.imul(h2 ^ ch, 1597334677);
+  }
+  h1 = ((h1 ^ (h1 >>> 16)) >>> 0).toString(16).padStart(8, '0');
+  h2 = ((h2 ^ (h2 >>> 16)) >>> 0).toString(16).padStart(8, '0');
+  return `fp_${h1}${h2}`;
+}
+
+// Client-side Device Fingerprinting
+export async function generateDeviceFingerprint() {
+  try {
+    const parts = [
+      navigator.userAgent || '',
+      navigator.language || '',
+      screen.colorDepth || '',
+      `${screen.width}x${screen.height}`,
+      new Date().getTimezoneOffset(),
+      navigator.hardwareConcurrency || '',
+      navigator.deviceMemory || '',
+    ];
+
+    try {
+      const canvas = document.createElement('canvas');
+      canvas.width = 240;
+      canvas.height = 60;
+      const ctx = canvas.getContext('2d');
+      if (ctx) {
+        ctx.textBaseline = 'top';
+        ctx.font = "14px 'Arial'";
+        ctx.fillStyle = '#f60';
+        ctx.fillRect(125, 1, 62, 20);
+        ctx.fillStyle = '#069';
+        ctx.fillText('SpeedInfer AntiFraud <canvas> 1.0', 2, 15);
+        ctx.fillStyle = 'rgba(102, 204, 0, 0.7)';
+        ctx.fillText('SpeedInfer AntiFraud <canvas> 1.0', 4, 17);
+        parts.push(canvas.toDataURL());
+      }
+    } catch {
+      // Ignore if canvas fingerprinting is disabled or restricted
+    }
+
+    const rawString = parts.join('~~~');
+    if (window.crypto?.subtle?.digest) {
+      const encoder = new TextEncoder();
+      const data = encoder.encode(rawString);
+      const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+      const hashArray = Array.from(new Uint8Array(hashBuffer));
+      return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    }
+    return fallbackDeterministicHash(rawString);
+  } catch {
+    return fallbackDeterministicHash(navigator.userAgent || 'unknown_device');
+  }
+}
+
 // =========================================================================
 // Modal Helpers
 // =========================================================================
@@ -232,6 +291,36 @@ for chunk in stream:
       this.showAuthView('login');
     });
 
+    // Handle URL parameters for Referrals and OAuth Callbacks
+    const urlParams = new URLSearchParams(window.location.search);
+    const urlRef = urlParams.get('ref') || urlParams.get('r');
+    const oauthToken = urlParams.get('token');
+
+    if (urlRef) {
+      const cleanRef = urlRef.trim().toUpperCase();
+      sessionStorage.setItem('speedinfer_referral_code', cleanRef);
+      const refInput = document.getElementById('register-referral');
+      if (refInput) refInput.value = cleanRef;
+    }
+
+    generateDeviceFingerprint().then(fp => {
+      const storedRef = sessionStorage.getItem('speedinfer_referral_code') || (urlRef ? urlRef.trim().toUpperCase() : '');
+      const googleBtn = document.getElementById('oauth-google-btn');
+      const githubBtn = document.getElementById('oauth-github-btn');
+      const params = new URLSearchParams();
+      if (storedRef) params.set('ref', storedRef);
+      if (fp) params.set('fp', fp);
+      const query = params.toString() ? `?${params.toString()}` : '';
+      if (googleBtn) googleBtn.href = `/v1/auth/oauth/google${query}`;
+      if (githubBtn) githubBtn.href = `/v1/auth/oauth/github${query}`;
+    }).catch(() => {});
+
+    if (oauthToken) {
+      api.setToken(oauthToken);
+      window.history.replaceState({}, document.title, window.location.pathname);
+      showToast('Successfully signed in!', 'success');
+    }
+
     // Check existing auth
     if (api.isAuthenticated()) {
       try {
@@ -375,7 +464,21 @@ for chunk in stream:
   renderHeader() {
     const { user, balance, health } = store.state;
     document.getElementById('inbox-nav').hidden = !user?.is_admin;
-    document.getElementById('profile-avatar').textContent = (user?.name || user?.email || 'S').slice(0,1).toUpperCase();
+
+    const avatarEl = document.getElementById('profile-avatar');
+    if (avatarEl) {
+      if (user?.avatar_url) {
+        avatarEl.innerHTML = `<img src="${escapeHtml(user.avatar_url)}" alt="Avatar" style="width:100%; height:100%; border-radius:50%; object-fit:cover;">`;
+      } else {
+        avatarEl.textContent = (user?.name || user?.email || 'S').slice(0, 1).toUpperCase();
+      }
+    }
+
+    const verifyBadge = document.getElementById('header-verify-badge');
+    if (verifyBadge) {
+      verifyBadge.style.display = (user && !user.is_verified) ? 'inline-flex' : 'none';
+    }
+
     const balanceElem = document.getElementById('header-balance-val');
     if (balanceElem) {
       balanceElem.textContent = `$${parseFloat(balance || 0).toFixed(4)} USD`;
@@ -383,7 +486,7 @@ for chunk in stream:
 
     const emailElem = document.getElementById('header-user-email');
     if (emailElem && user) {
-      emailElem.textContent = user.email;
+      emailElem.textContent = user.name || user.email;
     }
 
     const statusDot = document.getElementById('cluster-status-dot');
@@ -471,6 +574,9 @@ for chunk in stream:
     const dashStatus = document.getElementById('dash-status-val');
     if (dashStatus) { dashStatus.textContent = health.status === 'healthy' ? 'Responding' : 'Unavailable'; dashStatus.style.color = health.status === 'healthy' ? 'var(--success)' : 'var(--text-muted)'; }
 
+    // Referral Metrics Card
+    this.renderReferralCard();
+
     // System Health details card
     const workersContainer = document.getElementById('dash-workers-list');
     if (workersContainer) {
@@ -495,6 +601,32 @@ for chunk in stream:
           </div>
         `;
       }
+    }
+  }
+
+  async renderReferralCard() {
+    const { user } = store.state;
+    if (!user) return;
+    try {
+      const stats = await api.getReferrals();
+      const earningsEl = document.getElementById('dash-ref-earnings');
+      if (earningsEl) earningsEl.textContent = `$${parseFloat(stats.total_earnings_usd || 0).toFixed(2)} USD`;
+      const totalEl = document.getElementById('dash-ref-total');
+      if (totalEl) totalEl.textContent = stats.total_referrals || 0;
+      const pendingEl = document.getElementById('dash-ref-pending');
+      if (pendingEl) pendingEl.textContent = stats.pending_referrals || 0;
+      const convertedEl = document.getElementById('dash-ref-converted');
+      if (convertedEl) convertedEl.textContent = stats.converted_referrals || 0;
+      const linkInput = document.getElementById('dash-ref-link-input');
+      const shareUrl = stats.referral_link || `${window.location.origin}/?ref=${stats.referral_code}`;
+      if (linkInput) linkInput.value = shareUrl;
+
+      const copyBtn = document.getElementById('dash-copy-ref-btn');
+      if (copyBtn) {
+        copyBtn.onclick = () => copyToClipboard(shareUrl, 'Referral link copied to clipboard!');
+      }
+    } catch {
+      // In case referral stats fail or not loaded yet
     }
   }
 
@@ -904,6 +1036,11 @@ for chunk in stream:
     document.getElementById('tab-btn-login')?.addEventListener('click', () => this.switchAuthTab('login'));
     document.getElementById('tab-btn-register')?.addEventListener('click', () => this.switchAuthTab('register'));
 
+    // Forgot password link in login form
+    document.getElementById('btn-forgot-password')?.addEventListener('click', () => {
+      openModal('modal-forgot-password');
+    });
+
     // Login Form Submit
     document.getElementById('login-form')?.addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -911,18 +1048,30 @@ for chunk in stream:
       const password = document.getElementById('login-password').value;
       const submitBtn = document.getElementById('login-submit-btn');
 
+      const formData = new FormData(document.getElementById('login-form'));
+      const turnstileToken = formData.get('cf-turnstile-response') || (window.turnstile?.getResponse ? window.turnstile.getResponse('#turnstile-login') : null);
+
       try {
         submitBtn.disabled = true;
         submitBtn.textContent = 'Signing in...';
-        await api.login(email, password);
+        await api.login(email, password, turnstileToken);
         await this.loadInitialData();
         showToast('Login successful!', 'success');
         this.showAppView('dashboard');
+
+        if (store.state.user && !store.state.user.is_verified) {
+          const targetEmail = document.getElementById('verify-email-target');
+          if (targetEmail) targetEmail.textContent = email;
+          openModal('modal-verify-email');
+        }
       } catch (err) {
         showToast(err.message, 'error');
       } finally {
         submitBtn.disabled = false;
         submitBtn.textContent = 'Sign In';
+        if (window.turnstile) {
+          try { window.turnstile.reset('#turnstile-login'); } catch {}
+        }
       }
     });
 
@@ -932,11 +1081,17 @@ for chunk in stream:
       const name = document.getElementById('register-name').value.trim();
       const email = document.getElementById('register-email').value.trim();
       const password = document.getElementById('register-password').value;
+      const referralCode = document.getElementById('register-referral')?.value.trim() || sessionStorage.getItem('speedinfer_referral_code') || null;
       const submitBtn = document.getElementById('register-submit-btn');
+
+      const formData = new FormData(document.getElementById('register-form'));
+      const turnstileToken = formData.get('cf-turnstile-response') || (window.turnstile?.getResponse ? window.turnstile.getResponse('#turnstile-register') : null);
 
       try {
         submitBtn.disabled = true;
         submitBtn.textContent = 'Creating Account...';
+        const deviceFp = await generateDeviceFingerprint();
+
         await api.register({
           name,
           email,
@@ -944,18 +1099,67 @@ for chunk in stream:
           initial_balance: 0.0,
           create_api_key: false,
           accepted_policy_version: '2026-09-27',
+          referral_code: referralCode,
+          device_fingerprint: deviceFp,
+          turnstile_token: turnstileToken,
         });
 
         await this.loadInitialData();
-        showToast('Your workspace is ready. Create an API key when you need one.', 'success');
+        showToast('Account created! Please enter the 6-digit code sent to your email to verify.', 'success');
         this.showAppView('dashboard');
+
+        const targetEmail = document.getElementById('verify-email-target');
+        if (targetEmail) targetEmail.textContent = email;
+        openModal('modal-verify-email');
       } catch (err) {
         showToast(err.message, 'error');
       } finally {
         submitBtn.disabled = false;
-        submitBtn.textContent = 'Create Account';
+        submitBtn.textContent = 'Create workspace';
+        if (window.turnstile) {
+          try { window.turnstile.reset('#turnstile-register'); } catch {}
+        }
       }
     });
+  }
+
+  openProfileModal() {
+    const { user } = store.state;
+    if (!user) return;
+
+    document.getElementById('profile-modal-display-name').textContent = user.name || 'Developer';
+    document.getElementById('profile-modal-display-email').textContent = user.email;
+    document.getElementById('profile-name-input').value = user.name || '';
+    document.getElementById('profile-avatar-input').value = user.avatar_url || '';
+    document.getElementById('profile-location-input').value = user.location || '';
+    document.getElementById('profile-org-input').value = user.organization || '';
+    document.getElementById('profile-referral-code').value = user.referral_code || '';
+
+    const badgeEl = document.getElementById('profile-modal-badge');
+    if (badgeEl) {
+      if (user.is_verified) {
+        badgeEl.textContent = 'Verified ✓';
+        badgeEl.style.background = 'rgba(16,185,129,0.1)';
+        badgeEl.style.color = 'var(--success)';
+      } else {
+        badgeEl.textContent = 'Unverified ⚠️';
+        badgeEl.style.background = '#fff3cd';
+        badgeEl.style.color = '#856404';
+      }
+    }
+
+    this.updateAvatarPreview(user.avatar_url, user.name || user.email);
+    openModal('modal-profile');
+  }
+
+  updateAvatarPreview(url, fallbackText) {
+    const previewEl = document.getElementById('profile-modal-avatar-preview');
+    if (!previewEl) return;
+    if (url && url.trim()) {
+      previewEl.innerHTML = `<img src="${escapeHtml(url.trim())}" alt="Avatar" style="width:100%; height:100%; border-radius:50%; object-fit:cover;">`;
+    } else {
+      previewEl.textContent = (fallbackText || 'S').slice(0, 1).toUpperCase();
+    }
   }
 
   bindModalEvents() {
@@ -969,6 +1173,205 @@ for chunk in stream:
       if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last?.focus(); }
       else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first?.focus(); }
     });
+
+    // Header Profile & Verify Badge Click Handlers
+    document.getElementById('header-profile-btn')?.addEventListener('click', () => {
+      this.openProfileModal();
+    });
+    document.getElementById('nav-profile-btn')?.addEventListener('click', () => {
+      this.openProfileModal();
+    });
+    document.addEventListener('click', (e) => {
+      if (e.target.closest('#ws-edit-profile-btn')) {
+        this.openProfileModal();
+      }
+    });
+    document.getElementById('header-verify-badge')?.addEventListener('click', () => {
+      const { user } = store.state;
+      if (user) {
+        const targetEmail = document.getElementById('verify-email-target');
+        if (targetEmail) targetEmail.textContent = user.email;
+        openModal('modal-verify-email');
+      }
+    });
+
+    // Email Verification Form Submit
+    document.getElementById('verify-email-form')?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const code = document.getElementById('verify-code-input').value.trim();
+      const submitBtn = document.getElementById('btn-submit-verify');
+      const { user } = store.state;
+      if (!user) return;
+
+      try {
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Verifying...';
+        const res = await api.verifyEmail({ email: user.email, code });
+
+        if (res.referee_bonus_granted) {
+          showToast('Email verified! +$5.00 extra trial credit added to your balance!', 'success');
+        } else {
+          showToast('Email verified successfully!', 'success');
+        }
+
+        closeModal('modal-verify-email');
+        const updatedUser = await api.getMe();
+        store.setUser(updatedUser);
+        this.renderHeader();
+      } catch (err) {
+        showToast(err.message, 'error');
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Verify & Claim $5 Bonus';
+      }
+    });
+
+    // Resend Verification Code Button
+    document.getElementById('btn-resend-verification')?.addEventListener('click', async () => {
+      const resendBtn = document.getElementById('btn-resend-verification');
+      const { user } = store.state;
+      if (!user) return;
+
+      try {
+        resendBtn.disabled = true;
+        await api.resendCode({ email: user.email, purpose: 'registration' });
+        showToast('A new 6-digit verification code has been sent to your email.', 'info');
+
+        let cooldown = 60;
+        resendBtn.textContent = `Resend in ${cooldown}s`;
+        const interval = setInterval(() => {
+          cooldown -= 1;
+          if (cooldown <= 0) {
+            clearInterval(interval);
+            resendBtn.disabled = false;
+            resendBtn.textContent = 'Resend code';
+          } else {
+            resendBtn.textContent = `Resend in ${cooldown}s`;
+          }
+        }, 1000);
+      } catch (err) {
+        resendBtn.disabled = false;
+        showToast(err.message, 'error');
+      }
+    });
+
+    // Forgot Password Form Submit
+    document.getElementById('forgot-password-form')?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = document.getElementById('forgot-email-input').value.trim();
+      const submitBtn = document.getElementById('btn-submit-forgot');
+      const formData = new FormData(document.getElementById('forgot-password-form'));
+      const turnstileToken = formData.get('cf-turnstile-response') || (window.turnstile?.getResponse ? window.turnstile.getResponse('#turnstile-forgot') : null);
+
+      try {
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Sending...';
+        await api.forgotPassword({ email, turnstile_token: turnstileToken });
+        showToast('If your email is registered, a 6-digit reset code has been sent.', 'info');
+        closeModal('modal-forgot-password');
+
+        // Pre-fill email in reset password modal and open it
+        document.getElementById('reset-email-input').value = email;
+        document.getElementById('reset-code-input').value = '';
+        document.getElementById('reset-new-password').value = '';
+        openModal('modal-reset-password');
+      } catch (err) {
+        showToast(err.message, 'error');
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Send Reset Code';
+        if (window.turnstile) {
+          try { window.turnstile.reset('#turnstile-forgot'); } catch {}
+        }
+      }
+    });
+
+    // Reset Password Form Submit
+    document.getElementById('reset-password-form')?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = document.getElementById('reset-email-input').value.trim();
+      const code = document.getElementById('reset-code-input').value.trim();
+      const newPassword = document.getElementById('reset-new-password').value;
+      const submitBtn = document.getElementById('btn-submit-reset');
+
+      try {
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Updating...';
+        await api.resetPassword({ email, code, new_password: newPassword });
+        showToast('Password reset successfully! Please sign in with your new password.', 'success');
+        closeModal('modal-reset-password');
+        this.showAuthView('login');
+      } catch (err) {
+        showToast(err.message, 'error');
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Update Password';
+      }
+    });
+
+    // Profile Avatar live preview listener
+    document.getElementById('profile-avatar-input')?.addEventListener('input', (e) => {
+      const { user } = store.state;
+      this.updateAvatarPreview(e.target.value, user?.name || user?.email);
+    });
+
+    // Profile Avatar file upload
+    document.getElementById('profile-upload-file-btn')?.addEventListener('click', () => {
+      document.getElementById('profile-avatar-file')?.click();
+    });
+
+    document.getElementById('profile-avatar-file')?.addEventListener('change', (e) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+      if (file.size > 2 * 1024 * 1024) {
+        showToast('Avatar file size must be less than 2MB', 'error');
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const base64Data = event.target.result;
+        const avatarInput = document.getElementById('profile-avatar-input');
+        if (avatarInput) avatarInput.value = base64Data;
+        const { user } = store.state;
+        this.updateAvatarPreview(base64Data, user?.name || user?.email);
+      };
+      reader.readAsDataURL(file);
+    });
+
+    // Copy referral link in profile modal
+    document.getElementById('profile-copy-ref-btn')?.addEventListener('click', () => {
+      const code = document.getElementById('profile-referral-code').value;
+      if (code) {
+        const url = `${window.location.origin}/?ref=${code}`;
+        copyToClipboard(url, 'Referral link copied to clipboard!');
+      }
+    });
+
+    // Profile Form Submit
+    document.getElementById('profile-form')?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const name = document.getElementById('profile-name-input').value.trim();
+      const avatar_url = document.getElementById('profile-avatar-input').value.trim();
+      const location = document.getElementById('profile-location-input').value.trim();
+      const organization = document.getElementById('profile-org-input').value.trim();
+      const submitBtn = document.getElementById('profile-save-btn');
+
+      try {
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Saving...';
+        const updated = await api.updateProfile({ name, avatar_url, location, organization });
+        store.setUser(updated);
+        this.renderHeader();
+        showToast('Profile updated successfully!', 'success');
+        closeModal('modal-profile');
+      } catch (err) {
+        showToast(err.message, 'error');
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Save Changes';
+      }
+    });
+
     // Open Create Key Modal
     document.getElementById('open-create-key-modal-btn')?.addEventListener('click', () => {
       openModal('modal-create-key');

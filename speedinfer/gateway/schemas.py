@@ -14,7 +14,7 @@ import time
 from datetime import datetime
 from typing import Any, Literal
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import AliasChoices, BaseModel, ConfigDict, Field, field_validator
 
 
 class ChatMessage(BaseModel):
@@ -258,6 +258,15 @@ class UserRegisterRequest(BaseModel):
     create_api_key: bool = Field(
         default=False, description="Explicit opt-in to create a default API key."
     )
+    referral_code: str | None = Field(
+        default=None, max_length=32, description="Optional referral code of inviter."
+    )
+    device_fingerprint: str | None = Field(
+        default=None, max_length=128, description="Client device fingerprint hash for anti-fraud."
+    )
+    turnstile_token: str | None = Field(
+        default=None, description="Cloudflare Turnstile verification token."
+    )
 
     @field_validator("email")
     @classmethod
@@ -268,6 +277,24 @@ class UserRegisterRequest(BaseModel):
             raise ValueError(f"Invalid email address format: '{value}'")
         return normalized
 
+    @field_validator("referral_code")
+    @classmethod
+    def validate_referral_code_format(cls, value: str | None) -> str | None:
+        """Normalize referral code to uppercase string."""
+        if value is None:
+            return None
+        clean = value.strip().upper()
+        return clean if clean else None
+
+    @field_validator("device_fingerprint")
+    @classmethod
+    def validate_device_fp_format(cls, value: str | None) -> str | None:
+        """Clean whitespace from device fingerprint."""
+        if value is None:
+            return None
+        clean = value.strip()
+        return clean if clean else None
+
 
 class UserLoginRequest(BaseModel):
     """Payload for POST /v1/auth/login."""
@@ -276,6 +303,9 @@ class UserLoginRequest(BaseModel):
 
     email: str = Field(description="User email address.")
     password: str = Field(max_length=256, description="User password.")
+    turnstile_token: str | None = Field(
+        default=None, description="Cloudflare Turnstile verification token."
+    )
 
     @field_validator("email")
     @classmethod
@@ -292,9 +322,133 @@ class UserResponse(BaseModel):
     name: str | None = Field(default=None, description="User display name.")
     is_active: bool = Field(default=True, description="Account active status.")
     is_admin: bool = Field(default=False, description="Admin status flag.")
+    is_verified: bool = Field(default=False, description="Whether email has been verified.")
+    referral_code: str | None = Field(
+        default=None, description="User's unique referral invite code."
+    )
+    avatar_url: str | None = Field(default=None, description="User avatar image URL.")
+    location: str | None = Field(default=None, description="User location or physical address.")
+    address: str | None = Field(default=None, description="Alias for location.")
+    organization: str | None = Field(default=None, description="User company or organization.")
+    company: str | None = Field(default=None, description="Alias for organization.")
     created_at: datetime = Field(description="Account creation timestamp in UTC.")
     balance: float = Field(default=0.0, description="Available credit balance across keys in USD.")
     credit_balance: float = Field(default=0.0, description="Alias for balance in USD.")
+
+
+class VerifyEmailRequest(BaseModel):
+    """Payload for POST /v1/auth/verify-email."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    email: str = Field(description="User email address.")
+    code: str = Field(min_length=6, max_length=6, description="6-digit verification OTP code.")
+
+    @field_validator("email")
+    @classmethod
+    def validate_email_format(cls, value: str) -> str:
+        return value.strip().lower()
+
+    @field_validator("code")
+    @classmethod
+    def validate_code_format(cls, value: str) -> str:
+        clean = value.strip()
+        if not clean.isdigit() or len(clean) != 6:
+            raise ValueError("Verification code must be 6 digits.")
+        return clean
+
+
+class ResendCodeRequest(BaseModel):
+    """Payload for POST /v1/auth/resend-code."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    email: str = Field(description="User email address.")
+    purpose: Literal["registration", "password_reset"] = Field(
+        default="registration", description="Purpose of verification code."
+    )
+
+    @field_validator("email")
+    @classmethod
+    def validate_email_format(cls, value: str) -> str:
+        return value.strip().lower()
+
+
+class ForgotPasswordRequest(BaseModel):
+    """Payload for POST /v1/auth/forgot-password."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    email: str = Field(description="Registered account email address.")
+    turnstile_token: str | None = Field(default=None, description="Turnstile verification token.")
+
+    @field_validator("email")
+    @classmethod
+    def validate_email_format(cls, value: str) -> str:
+        return value.strip().lower()
+
+
+class ResetPasswordRequest(BaseModel):
+    """Payload for POST /v1/auth/reset-password."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    email: str = Field(description="Target account email address.")
+    code: str = Field(min_length=6, max_length=6, description="6-digit password reset OTP.")
+    new_password: str = Field(
+        min_length=8, max_length=256, description="New password (min 8 chars)."
+    )
+
+    @field_validator("email")
+    @classmethod
+    def validate_email_format(cls, value: str) -> str:
+        return value.strip().lower()
+
+    @field_validator("code")
+    @classmethod
+    def validate_code_format(cls, value: str) -> str:
+        clean = value.strip()
+        if not clean.isdigit() or len(clean) != 6:
+            raise ValueError("Reset code must be 6 digits.")
+        return clean
+
+
+class ProfileUpdateRequest(BaseModel):
+    """Payload for PATCH /v1/auth/profile."""
+
+    model_config = ConfigDict(extra="forbid", populate_by_name=True)
+
+    name: str | None = Field(default=None, max_length=255, description="Updated display name.")
+    avatar_url: str | None = Field(
+        default=None, max_length=2_000_000, description="Updated avatar URL or base64 data URI."
+    )
+    location: str | None = Field(
+        default=None,
+        max_length=255,
+        description="Updated address or location.",
+        validation_alias=AliasChoices("location", "address"),
+    )
+    organization: str | None = Field(
+        default=None,
+        max_length=255,
+        description="Updated company or organization.",
+        validation_alias=AliasChoices("organization", "company"),
+    )
+
+
+class ReferralStatsResponse(BaseModel):
+    """Referral dashboard metrics for current user."""
+
+    referral_code: str = Field(description="User's unique referral code.")
+    referral_link: str = Field(description="One-click sharable referral URL.")
+    total_referrals: int = Field(description="Total registered users using this code.")
+    pending_referrals: int = Field(description="Referrals awaiting qualification.")
+    converted_referrals: int = Field(description="Converted referrals with bonus awarded.")
+    total_earnings_usd: float = Field(description="Cumulative USD bonus credited to user.")
+    reward_per_referral_usd: float = Field(
+        default=5.0, description="Bonus paid per converted referral."
+    )
+    referee_bonus_usd: float = Field(default=5.0, description="Bonus awarded to invited referee.")
 
 
 class ApiKeyCreatedResponse(BaseModel):

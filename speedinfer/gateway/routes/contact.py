@@ -18,6 +18,7 @@ from sqlmodel import Session, select
 
 from speedinfer.config import Settings, get_settings
 from speedinfer.core.security import get_current_user
+from speedinfer.core.turnstile import verify_turnstile_token
 from speedinfer.database.models import ContactRequest, User
 from speedinfer.database.session import get_session
 
@@ -36,6 +37,7 @@ class ContactPayload(BaseModel):
     message: str = Field(min_length=20, max_length=3000)
     consent: Literal[True]
     website: str = Field(default="", max_length=200)  # Honeypot, not a real field.
+    turnstile_token: str | None = Field(default=None)
 
     @field_validator("email")
     @classmethod
@@ -114,7 +116,7 @@ def contact_options(settings: Annotated[Settings, Depends(get_settings)]) -> dic
 
 
 @router.post("/requests", status_code=201)
-def submit_request(
+async def submit_request(
     payload: ContactPayload,
     request: Request,
     session: Annotated[Session, Depends(get_session)],
@@ -122,6 +124,15 @@ def submit_request(
 ) -> dict:
     if payload.website:
         raise HTTPException(422, "Unable to accept this request. Please email our team.")
+
+    client = request.client.host if request.client else None
+    await verify_turnstile_token(
+        payload.turnstile_token,
+        remote_ip=client,
+        expected_action="contact",
+        settings=settings,
+    )
+
     # A UUID retained by the form makes network retries safe, without leaking contents.
     reference = str(payload.request_id)
     if session.get(ContactRequest, reference):

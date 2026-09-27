@@ -396,6 +396,17 @@ def sync_usage_to_db(
 
     session.commit()
     session.refresh(ledger_record)
+
+    # Option A: Qualify referrer if referee has consumed 1,000+ active tokens
+    if api_key is not None:
+        try:
+            from speedinfer.core.referrals import check_and_award_referrer_bonus
+
+            if check_and_award_referrer_bonus(session, api_key.user_id):
+                session.commit()
+        except Exception:
+            pass
+
     return ledger_record
 
 

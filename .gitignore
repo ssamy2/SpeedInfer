@@ -21,3 +21,4 @@ logs/
 .agents/
 .codex/
 
+client_secret*.json

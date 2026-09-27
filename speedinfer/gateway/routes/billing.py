@@ -6,6 +6,7 @@ import hmac
 import json
 import time
 import uuid
+from datetime import UTC, datetime
 from typing import Annotated, Any
 
 import httpx
@@ -15,6 +16,8 @@ from sqlalchemy.exc import IntegrityError
 from sqlmodel import Session, select
 
 from speedinfer.config import Settings, get_settings
+from speedinfer.core.email import send_payment_invoice_email
+from speedinfer.core.referrals import check_and_award_referrer_bonus
 from speedinfer.core.security import get_current_user
 from speedinfer.database.models import ApiKey, PaymentTransaction, User
 from speedinfer.database.session import get_session
@@ -198,6 +201,23 @@ def _credit_payment(
     except IntegrityError:
         session.rollback()
         return
+
+    # Deliver payment receipt / invoice confirmation email
+    user = session.get(User, user_id)
+    if user is not None and user.email:
+        send_payment_invoice_email(
+            to_email=user.email,
+            transaction_id=payment_id,
+            amount_usd=paid,
+            credits_added=credits,
+            date_str=str(datetime.now(UTC).strftime("%Y-%m-%d %H:%M:%S UTC")),
+            settings=settings,
+        )
+
+    # Option A: Qualify referrer if this is the referee's first payment
+    if check_and_award_referrer_bonus(session, user_id, settings=settings):
+        session.commit()
+
     try:
         redis_client = get_sync_redis()
         redis_key = f"speedinfer:balance:{api_key_id}"

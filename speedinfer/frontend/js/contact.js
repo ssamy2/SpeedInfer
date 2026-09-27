@@ -51,6 +51,7 @@ export function initContact() {
     const payload = Object.fromEntries(new FormData(form));
     payload.request_id = requestId;
     payload.consent = form.elements.consent.checked;
+    payload.turnstile_token = payload['cf-turnstile-response'] || (window.turnstile?.getResponse ? window.turnstile.getResponse('#turnstile-contact') : undefined);
     sending = true;
     submit.disabled = true;
     submit.textContent = 'Sending…';
@@ -72,6 +73,9 @@ export function initContact() {
     } finally {
       sending = false;
       submit.disabled = completed;
+      if (window.turnstile) {
+        try { window.turnstile.reset('#turnstile-contact'); } catch {}
+      }
     }
   });
   api.request('/v1/contact/options').then(options => {

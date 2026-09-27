@@ -45,6 +45,21 @@ class Settings(BaseSettings):
     whop_api_version_date: str = "2026-09-25"
     whop_credit_packages: str = "10,25,50,100"
     trial_credit_balance: float = Field(default=10.0, ge=0.0, le=1000.0)
+    # OAuth Providers
+    github_client_id: str = ""
+    github_client_secret: SecretStr | None = None
+    github_redirect_uri: str = "https://speedinfer.com/v1/auth/oauth/github/callback"
+    google_client_id: str = ""
+    google_client_secret: SecretStr | None = None
+    google_redirect_uri: str = "https://speedinfer.com/v1/auth/oauth/google/callback"
+    # Cloudflare Turnstile
+    turnstile_site_key: str = "0x4AAAAAAFFIh2opZ2El7AU9"
+    turnstile_secret_key: SecretStr | None = None
+    turnstile_enabled: bool = False
+    turnstile_hostnames: str = "speedinfer.com,localhost,127.0.0.1"
+    # Referral Program
+    referral_reward_amount: float = Field(default=5.0, ge=0.0)
+    referee_bonus_amount: float = Field(default=5.0, ge=0.0)
 
     @field_validator("sales_email", "support_email", "smtp_from_email")
     @classmethod

@@ -110,10 +110,12 @@ class SpeedInferApiClient {
   // =========================================================================
   // Authentication & User Profile
   // =========================================================================
-  async login(email, password) {
+  async login(email, password, turnstile_token = null) {
+    const payload = { email, password };
+    if (turnstile_token) payload.turnstile_token = turnstile_token;
     const data = await this.request('/v1/auth/login', {
       method: 'POST',
-      body: JSON.stringify({ email, password }),
+      body: JSON.stringify(payload),
     });
     if (data.access_token) {
       this.setToken(data.access_token);
@@ -122,29 +124,102 @@ class SpeedInferApiClient {
     return data;
   }
 
-  async register({ email, password, name = '', initial_balance = 0.0, create_api_key = false, accepted_policy_version = null }) {
+  async register({
+    email,
+    password,
+    name = '',
+    initial_balance = 0.0,
+    create_api_key = false,
+    accepted_policy_version = null,
+    referral_code = null,
+    device_fingerprint = null,
+    turnstile_token = null,
+  }) {
+    const payload = {
+      email,
+      password,
+      name: name || undefined,
+      initial_balance: parseFloat(initial_balance),
+      create_api_key: Boolean(create_api_key),
+      accepted_policy_version,
+    };
+    if (referral_code) payload.referral_code = referral_code;
+    if (device_fingerprint) payload.device_fingerprint = device_fingerprint;
+    if (turnstile_token) payload.turnstile_token = turnstile_token;
+
     const data = await this.request('/v1/auth/register', {
       method: 'POST',
-      body: JSON.stringify({
-        email,
-        password,
-        name: name || undefined,
-        initial_balance: parseFloat(initial_balance),
-        create_api_key: Boolean(create_api_key),
-        accepted_policy_version,
-      }),
+      body: JSON.stringify(payload),
     });
     if (data.access_token) {
       this.setToken(data.access_token);
       this.setUser(data.user);
     }
     return data;
+  }
+
+  async verifyEmail({ email, code }) {
+    return await this.request('/v1/auth/verify-email', {
+      method: 'POST',
+      body: JSON.stringify({ email, code }),
+    });
+  }
+
+  async resendCode({ email, purpose = 'registration' }) {
+    return await this.request('/v1/auth/resend-code', {
+      method: 'POST',
+      body: JSON.stringify({ email, purpose }),
+    });
+  }
+
+  async forgotPassword({ email, turnstile_token = null }) {
+    const payload = { email };
+    if (turnstile_token) payload.turnstile_token = turnstile_token;
+    return await this.request('/v1/auth/forgot-password', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
+  }
+
+  async resetPassword({ email, code, new_password }) {
+    return await this.request('/v1/auth/reset-password', {
+      method: 'POST',
+      body: JSON.stringify({ email, code, new_password }),
+    });
   }
 
   async getMe() {
     const data = await this.request('/v1/auth/me');
     this.setUser(data);
     return data;
+  }
+
+  async getProfile() {
+    const data = await this.request('/v1/auth/profile');
+    this.setUser(data);
+    return data;
+  }
+
+  async updateProfile({ name = null, avatar_url = null, location = null, organization = null }) {
+    const payload = {};
+    if (name !== null) payload.name = name;
+    if (avatar_url !== null) payload.avatar_url = avatar_url;
+    if (location !== null) payload.location = location;
+    if (organization !== null) payload.organization = organization;
+
+    const data = await this.request('/v1/auth/profile', {
+      method: 'PATCH',
+      body: JSON.stringify(payload),
+    });
+    this.setUser(data);
+    return data;
+  }
+
+  // =========================================================================
+  // Referral Program
+  // =========================================================================
+  async getReferrals() {
+    return await this.request('/v1/referrals/me');
   }
 
   // =========================================================================

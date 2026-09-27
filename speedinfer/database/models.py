@@ -10,12 +10,13 @@ of truth across all SpeedInfer components:
 
 import json
 import re
+import secrets
 from datetime import UTC, datetime
 from enum import StrEnum
 from typing import Any
 
 from pydantic import ConfigDict, field_validator
-from sqlalchemy import CheckConstraint, Index
+from sqlalchemy import CheckConstraint, Column, Index, Text
 from sqlmodel import Field, Relationship, SQLModel
 
 from speedinfer.database.workspace import (  # noqa: F401
@@ -32,6 +33,12 @@ def utc_now() -> datetime:
     consistent, timezone-aware datetime representations without deprecation warnings.
     """
     return datetime.now(UTC)
+
+
+def generate_referral_code() -> str:
+    """Generate a secure, unambiguous 8-character referral code."""
+    alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"
+    return "".join(secrets.choice(alphabet) for _ in range(8))
 
 
 class LifecycleStatus(StrEnum):
@@ -88,6 +95,69 @@ class User(SQLModel, table=True):
         max_length=255,
         description="Hashed password for user authentication.",
     )
+    referral_code: str | None = Field(
+        default_factory=generate_referral_code,
+        unique=True,
+        index=True,
+        max_length=32,
+        nullable=True,
+        description="Unique referral code for user invite links.",
+    )
+    referred_by_id: int | None = Field(
+        default=None,
+        foreign_key="user.id",
+        nullable=True,
+        index=True,
+        description="Optional ID of referring user.",
+    )
+    signup_ip_hash: str | None = Field(
+        default=None,
+        max_length=64,
+        nullable=True,
+        index=True,
+        description="Hashed signup IP for anti-fraud.",
+    )
+    device_fingerprint: str | None = Field(
+        default=None,
+        max_length=128,
+        nullable=True,
+        index=True,
+        description="Client device fingerprint hash for anti-fraud.",
+    )
+    referral_reward_claimed: bool = Field(
+        default=False,
+        nullable=False,
+        sa_column_kwargs={"server_default": "0"},
+        description="Whether referral conversion bonus was credited.",
+    )
+    is_verified: bool = Field(
+        default=False,
+        nullable=False,
+        sa_column_kwargs={"server_default": "0"},
+        description="Whether user email has been verified.",
+    )
+    email_verified_at: datetime | None = Field(
+        default=None,
+        nullable=True,
+        description="Timestamp of email verification.",
+    )
+    avatar_url: str | None = Field(
+        default=None,
+        sa_column=Column(Text, nullable=True),
+        description="Avatar image URL or base64 data URI.",
+    )
+    location: str | None = Field(
+        default=None,
+        max_length=255,
+        nullable=True,
+        description="User address or location.",
+    )
+    organization: str | None = Field(
+        default=None,
+        max_length=255,
+        nullable=True,
+        description="User organization or company name.",
+    )
     created_at: datetime = Field(
         default_factory=utc_now,
         nullable=False,
@@ -100,6 +170,11 @@ class User(SQLModel, table=True):
     )
 
     api_keys: list["ApiKey"] = Relationship(
+        back_populates="user",
+        cascade_delete=True,
+        sa_relationship_kwargs={"cascade": "all, delete-orphan"},
+    )
+    oauth_accounts: list["OAuthAccount"] = Relationship(
         back_populates="user",
         cascade_delete=True,
         sa_relationship_kwargs={"cascade": "all, delete-orphan"},
@@ -671,3 +746,188 @@ class TrialCreditGrant(SQLModel, table=True):
     user_id: int = Field(foreign_key="user.id", primary_key=True)
     amount: float
     created_at: datetime = Field(default_factory=utc_now)
+
+
+class OAuthAccount(SQLModel, table=True):
+    """Linked external OAuth credentials (Google, GitHub) for social login."""
+
+    model_config = ConfigDict(validate_assignment=True)
+    __tablename__ = "oauth_account"
+    __table_args__ = (
+        Index("ix_oauth_provider_uid", "provider", "provider_user_id", unique=True),
+    )
+
+    id: int | None = Field(
+        default=None,
+        primary_key=True,
+        description="Internal OAuth link identifier.",
+    )
+    user_id: int = Field(
+        foreign_key="user.id",
+        index=True,
+        nullable=False,
+        ondelete="CASCADE",
+        description="ID of the SpeedInfer user account.",
+    )
+    provider: str = Field(
+        index=True,
+        nullable=False,
+        max_length=32,
+        description="Identity provider name (e.g., 'google', 'github').",
+    )
+    provider_user_id: str = Field(
+        index=True,
+        nullable=False,
+        max_length=128,
+        description="Unique user ID from identity provider.",
+    )
+    provider_email: str | None = Field(
+        default=None,
+        max_length=255,
+        nullable=True,
+        description="Email reported by identity provider.",
+    )
+    created_at: datetime = Field(
+        default_factory=utc_now,
+        nullable=False,
+        description="Timestamp when OAuth link was established in UTC.",
+    )
+
+    user: User | None = Relationship(back_populates="oauth_accounts")
+
+
+class EmailVerificationCode(SQLModel, table=True):
+    """Time-limited 6-digit OTP codes for email verification and password resets."""
+
+    model_config = ConfigDict(validate_assignment=True)
+    __tablename__ = "email_verification_code"
+    __table_args__ = (
+        Index("ix_email_code_purpose", "email", "code", "purpose"),
+    )
+
+    id: int | None = Field(
+        default=None,
+        primary_key=True,
+        description="Unique code record identifier.",
+    )
+    email: str = Field(
+        index=True,
+        nullable=False,
+        max_length=255,
+        description="Target email address.",
+    )
+    code: str = Field(
+        index=True,
+        nullable=False,
+        max_length=8,
+        description="6-digit verification OTP code.",
+    )
+    purpose: str = Field(
+        default="registration",
+        max_length=32,
+        description="Purpose of OTP code: 'registration' or 'password_reset'.",
+    )
+    attempts: int = Field(
+        default=0,
+        nullable=False,
+        description="Number of failed verification attempts.",
+    )
+    is_used: bool = Field(
+        default=False,
+        nullable=False,
+        description="Whether this code has been successfully consumed.",
+    )
+    created_at: datetime = Field(
+        default_factory=utc_now,
+        nullable=False,
+        description="Timestamp when code was issued.",
+    )
+    expires_at: datetime = Field(
+        nullable=False,
+        description="Timestamp when code expires in UTC.",
+    )
+
+
+class Referral(SQLModel, table=True):
+    """Referral attribution, anti-fraud evaluation, and reward tracking."""
+
+    model_config = ConfigDict(validate_assignment=True)
+    __tablename__ = "referral"
+
+    id: int | None = Field(
+        default=None,
+        primary_key=True,
+        description="Internal referral record identifier.",
+    )
+    referrer_id: int = Field(
+        foreign_key="user.id",
+        index=True,
+        nullable=False,
+        ondelete="CASCADE",
+        description="User ID of the inviter.",
+    )
+    referred_id: int = Field(
+        foreign_key="user.id",
+        index=True,
+        nullable=False,
+        unique=True,
+        ondelete="CASCADE",
+        description="User ID of the invited referee.",
+    )
+    status: str = Field(
+        default="pending",
+        max_length=32,
+        description="Status: 'pending', 'rewarded', or 'rejected_fraud'.",
+    )
+    referee_bonus_awarded: bool = Field(
+        default=False,
+        nullable=False,
+        description="Whether referee received the signup bonus (+ $5.00).",
+    )
+    referrer_reward_awarded: bool = Field(
+        default=False,
+        nullable=False,
+        description="Whether referrer received the conversion reward (+ $5.00).",
+    )
+    reward_amount: float = Field(
+        default=5.0,
+        nullable=False,
+        description="USD bonus amount for referrer upon qualification.",
+    )
+    device_fingerprint: str | None = Field(
+        default=None,
+        max_length=128,
+        nullable=True,
+        index=True,
+        description="Client device fingerprint hash of referee.",
+    )
+    signup_ip_hash: str | None = Field(
+        default=None,
+        max_length=64,
+        nullable=True,
+        index=True,
+        description="Hashed client IP of referee.",
+    )
+    fraud_flag: bool = Field(
+        default=False,
+        nullable=False,
+        description="True if flagged by anti-fraud heuristics.",
+    )
+    fraud_reason: str | None = Field(
+        default=None,
+        max_length=255,
+        nullable=True,
+        description="Reason for fraud classification if flagged.",
+    )
+    created_at: datetime = Field(
+        default_factory=utc_now,
+        nullable=False,
+        index=True,
+        description="Timestamp when referral was registered.",
+    )
+    rewarded_at: datetime | None = Field(
+        default=None,
+        nullable=True,
+        description="Timestamp when referrer bonus was granted.",
+    )
+

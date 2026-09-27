@@ -21,3 +21,7 @@ def configure_logging(level: str) -> None:
         wrapper_class=structlog.stdlib.BoundLogger,
         cache_logger_on_first_use=True,
     )
+
+
+get_logger = structlog.get_logger
+

@@ -40,6 +40,8 @@ from speedinfer.gateway.routes import (
     usage_router,
 )
 from speedinfer.gateway.routes.contact import router as contact_router
+from speedinfer.gateway.routes.oauth import router as oauth_router
+from speedinfer.gateway.routes.referrals import router as referrals_router
 from speedinfer.gateway.routes.workspace import router as workspace_router
 
 # Process-wide singletons
@@ -263,6 +265,8 @@ def create_app() -> FastAPI:
     fastapi_app.include_router(contact_router)
     fastapi_app.include_router(workspace_router)
     fastapi_app.include_router(auth_router)
+    fastapi_app.include_router(oauth_router)
+    fastapi_app.include_router(referrals_router)
     fastapi_app.include_router(billing_router)
     fastapi_app.include_router(keys_router)
     fastapi_app.include_router(chat_router)
