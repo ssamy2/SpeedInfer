@@ -163,6 +163,9 @@ async def async_client(tmp_path, async_mock_redis) -> AsyncGenerator[httpx.Async
     app.dependency_overrides.setdefault(get_session, isolated_session)
     app.dependency_overrides.setdefault(get_async_redis, lambda: async_mock_redis)
     registry = get_registry()
+    from speedinfer.engine.models_catalog import register_catalog_models
+
+    register_catalog_models(registry, "http://mock-vllm")
     registry.register_model(
         name=TEST_MODEL_NAME,
         base_model_path=TEST_MODEL_NAME,

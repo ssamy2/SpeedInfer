@@ -196,3 +196,20 @@ async def test_chat_completions_no_double_settle(async_client, require_gateway, 
     # Exactly one call to settle, with success=True (no redundant call in finally)
     assert len(settle_calls) == 1
     assert settle_calls[0][1].get("success") is True
+
+
+@pytest.mark.asyncio
+async def test_chat_completions_catalog_open_source_model(async_client, require_gateway):
+    """Verify chat completions work for models in open-source catalog (e.g. Llama 3.2 1B)."""
+    headers = {"Authorization": "Bearer sk-speedinfer-validkey"}
+    payload = {
+        "model": "meta-llama/llama-3.2-1b-instruct",
+        "messages": [{"role": "user", "content": "hi"}],
+        "max_tokens": 10,
+    }
+    response = await async_client.post("/v1/chat/completions", json=payload, headers=headers)
+    assert response.status_code == 200
+    data = response.json()
+    assert data["model"] == "meta-llama/llama-3.2-1b-instruct"
+    assert len(data["choices"]) > 0
+    assert data["usage"]["total_tokens"] > 0

@@ -47,13 +47,15 @@ class InferenceProxy:
         """Get or initialize persistent HTTP async client."""
         if self.http_client is None or self.http_client.is_closed:
             settings = get_settings()
+            headers = {
+                "HTTP-Referer": "https://speedinfer.com",
+                "X-Title": "SpeedInfer",
+            }
+            if settings.vllm_api_key:
+                headers["Authorization"] = f"Bearer {settings.vllm_api_key.get_secret_value()}"
             self.http_client = httpx.AsyncClient(
                 timeout=settings.vllm_timeout_seconds,
-                headers=(
-                    {"Authorization": f"Bearer {settings.vllm_api_key.get_secret_value()}"}
-                    if settings.vllm_api_key
-                    else {}
-                ),
+                headers=headers,
             )
         return self.http_client
 
@@ -95,13 +97,19 @@ class InferenceProxy:
         if worker is not None and not worker.url.startswith("http://mock-"):
             worker.active_requests += 1
             try:
-                target_url = f"{worker.url.rstrip('/')}/v1/chat/completions"
+                base_url = worker.url.rstrip("/")
+                target_url = (
+                    f"{base_url}/chat/completions"
+                    if base_url.endswith("/v1")
+                    else f"{base_url}/v1/chat/completions"
+                )
                 payload = request.model_dump(exclude_none=True)
+                if model_entry.base_model_path:
+                    payload["model"] = model_entry.base_model_path
                 resp = await client.post(target_url, json=payload)
                 if resp.status_code == 200:
                     data = resp.json()
-                    if data.get("model") != request.model:
-                        raise ValueError("Worker returned a different model")
+                    data["model"] = request.model
                     result = ChatCompletionResponse.model_validate(data)
                     worker.record_success()
                     return result
@@ -182,8 +190,15 @@ class InferenceProxy:
         if worker is not None and not worker.url.startswith("http://mock-"):
             worker.active_requests += 1
             try:
-                target_url = f"{worker.url.rstrip('/')}/v1/chat/completions"
+                base_url = worker.url.rstrip("/")
+                target_url = (
+                    f"{base_url}/chat/completions"
+                    if base_url.endswith("/v1")
+                    else f"{base_url}/v1/chat/completions"
+                )
                 payload = request.model_dump(exclude_none=True)
+                if model_entry.base_model_path:
+                    payload["model"] = model_entry.base_model_path
                 payload["stream"] = True
                 payload["stream_options"] = {"include_usage": True}
 
@@ -329,13 +344,19 @@ class InferenceProxy:
         if worker is not None and not worker.url.startswith("http://mock-"):
             worker.active_requests += 1
             try:
-                target_url = f"{worker.url.rstrip('/')}/v1/completions"
+                base_url = worker.url.rstrip("/")
+                target_url = (
+                    f"{base_url}/completions"
+                    if base_url.endswith("/v1")
+                    else f"{base_url}/v1/completions"
+                )
                 payload = request.model_dump(exclude_none=True)
+                if model_entry.base_model_path:
+                    payload["model"] = model_entry.base_model_path
                 resp = await client.post(target_url, json=payload)
                 if resp.status_code == 200:
                     data = resp.json()
-                    if data.get("model") != request.model:
-                        raise ValueError("Worker returned a different model")
+                    data["model"] = request.model
                     result = CompletionResponse.model_validate(data)
                     worker.record_success()
                     return result

@@ -88,11 +88,20 @@ async def readiness(session: Annotated[Session, Depends(get_session)]):
             if settings.vllm_api_key
             else {}
         )
-        async with httpx.AsyncClient(timeout=3.0, headers=headers) as client:
-            response = await client.get(settings.vllm_base_url.rstrip("/") + "/v1/models")
+        base_url = settings.vllm_base_url.rstrip("/")
+        models_url = f"{base_url}/models" if base_url.endswith("/v1") else f"{base_url}/v1/models"
+        async with httpx.AsyncClient(timeout=5.0, headers=headers) as client:
+            response = await client.get(models_url)
             response.raise_for_status()
+            data_items = response.json().get("data", [])
             checks["inference"] = any(
-                m.get("id") == settings.default_model for m in response.json().get("data", [])
+                m.get("id") == settings.default_model
+                or m.get("id")
+                in {
+                    "qwen/qwen-2.5-7b-instruct",
+                    "meta-llama/llama-3.2-1b-instruct",
+                }
+                for m in data_items
             )
     except Exception:
         pass

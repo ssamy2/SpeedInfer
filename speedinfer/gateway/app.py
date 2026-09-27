@@ -8,6 +8,7 @@ Assembles:
 - Dynamic hot model registry and reverse proxy router.
 """
 
+import logging
 import time
 import uuid
 from collections.abc import AsyncGenerator
@@ -15,6 +16,7 @@ from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import Annotated
 
+import httpx
 from fastapi import Depends, FastAPI, HTTPException, Request, status
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
@@ -27,6 +29,11 @@ from speedinfer.config import Settings, get_settings
 from speedinfer.core.auth import hash_api_key
 from speedinfer.database.models import ApiKey, ModelVersion, User
 from speedinfer.database.session import engine, get_session
+from speedinfer.engine.models_catalog import (
+    register_catalog_models,
+    seed_catalog_models_db,
+    update_catalog_from_openrouter,
+)
 from speedinfer.engine.registry import BackendWorker, ModelRegistry
 from speedinfer.gateway.proxy import InferenceProxy
 from speedinfer.gateway.redis import close_redis
@@ -173,23 +180,27 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
             )
             conn.commit()
 
-    # 2. Register default model in registry
-    model_name = settings.default_model
+    # 2. Register open-source catalog models & default model in registry
     backend_url = settings.vllm_base_url
+    register_catalog_models(_global_registry, backend_url)
+
+    model_name = settings.default_model
     default_backend = BackendWorker(url=backend_url, worker_id="vllm-primary")
+    if not _global_registry.get_model(model_name):
+        _global_registry.register_model(
+            name=model_name,
+            base_model_path=model_name,
+            context_length=settings.max_request_tokens,
+            prompt_price_per_million=settings.prompt_price_per_million,
+            completion_price_per_million=settings.completion_price_per_million,
+            backends=[default_backend],
+        )
 
-    _global_registry.register_model(
-        name=model_name,
-        base_model_path=model_name,
-        context_length=settings.max_request_tokens,
-        prompt_price_per_million=settings.prompt_price_per_million,
-        completion_price_per_million=settings.completion_price_per_million,
-        backends=[default_backend],
-    )
-
-    # 3. Seed default database models and test keys
+    # 3. Seed catalog models and test keys in database
     with Session(engine) as session:
-        # Default model in DB
+        seed_catalog_models_db(session)
+
+        # Ensure default model is in DB
         db_m = session.exec(select(ModelVersion).where(ModelVersion.name == model_name)).first()
         if db_m is None:
             db_m = ModelVersion(
@@ -211,6 +222,24 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
         )
         if settings.environment == "test":
             _seed_test_keys_if_needed(session, pepper)
+
+    # 4. In production/online mode, if OpenRouter is configured, sync live pricing (+5% markup)
+    if settings.vllm_api_key and "openrouter.ai" in settings.vllm_base_url:
+        try:
+            async with httpx.AsyncClient(timeout=10.0) as sync_client:
+                auth_hdr = f"Bearer {settings.vllm_api_key.get_secret_value()}"
+                sync_resp = await sync_client.get(
+                    "https://openrouter.ai/api/v1/models",
+                    headers={"Authorization": auth_hdr},
+                )
+                if sync_resp.status_code == 200:
+                    openrouter_map = {m["id"]: m for m in sync_resp.json().get("data", [])}
+                    with Session(engine) as sync_session:
+                        update_catalog_from_openrouter(
+                            _global_registry, sync_session, openrouter_map
+                        )
+        except Exception as exc:
+            logging.getLogger(__name__).warning("Initial OpenRouter pricing sync skipped: %s", exc)
 
     yield
 

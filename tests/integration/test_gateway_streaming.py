@@ -191,3 +191,29 @@ async def test_streaming_done_sentinel_emitted_exactly_once(async_client, requir
 
     assert done_count == 1, f"Expected exactly 1 [DONE] sentinel, got {done_count}"
     assert total_lines[-1] == "data: [DONE]", "The very last message must be data: [DONE]"
+
+
+@pytest.mark.asyncio
+async def test_streaming_catalog_open_source_model(async_client, require_gateway):
+    """Verify streaming works for models in the open-source catalog such as Llama 3.2 1B."""
+    headers = {"Authorization": "Bearer sk-speedinfer-validkey"}
+    payload = {
+        "model": "meta-llama/llama-3.2-1b-instruct",
+        "messages": [{"role": "user", "content": "hi"}],
+        "max_tokens": 10,
+        "stream": True,
+    }
+    chunks = []
+    async with async_client.stream(
+        "POST", "/v1/chat/completions", json=payload, headers=headers
+    ) as response:
+        assert response.status_code == 200
+        async for line in response.aiter_lines():
+            line_str = line.strip()
+            if line_str.startswith("data: "):
+                data_part = line_str[6:]
+                if data_part != "[DONE]":
+                    chunks.append(json.loads(data_part))
+
+    assert len(chunks) > 0
+    assert chunks[0]["model"] == "meta-llama/llama-3.2-1b-instruct"
