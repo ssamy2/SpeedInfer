@@ -111,6 +111,72 @@ def send_email(
         return False
 
 
+def _render_email_html(heading: str, body_html: str) -> str:
+    """Wrap content in a dark-themed, responsive HTML template."""
+    return f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {{
+      margin: 0; padding: 0; background-color: #0b0f19;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      color: #e2e8f0;
+    }}
+    .wrapper {{
+      max-width: 560px; margin: 32px auto; background-color: #111827;
+      border: 1px solid #1f2937; border-radius: 12px; overflow: hidden;
+    }}
+    .header {{
+      padding: 28px 32px 20px; border-bottom: 1px solid #1f2937; text-align: center;
+      background: linear-gradient(180deg, #161f30 0%, #111827 100%);
+    }}
+    .logo {{ font-size: 24px; font-weight: 800; color: #ffffff; letter-spacing: -0.5px; }}
+    .logo span {{ color: #06b6d4; }}
+    .content {{ padding: 32px; font-size: 15px; line-height: 1.6; color: #cbd5e1; }}
+    .heading {{
+      font-size: 18px; font-weight: 700; color: #ffffff; margin-top: 0; margin-bottom: 16px;
+    }}
+    .code-box {{
+      margin: 24px 0; padding: 18px; background-color: #1e293b;
+      border: 1px solid #334155; border-radius: 8px; text-align: center;
+    }}
+    .code {{
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 32px; font-weight: 700; color: #38bdf8; letter-spacing: 8px; margin: 0;
+    }}
+    .meta-table {{ width: 100%; margin: 20px 0; border-collapse: collapse; }}
+    .meta-table td {{ padding: 10px 12px; border-bottom: 1px solid #1f2937; font-size: 14px; }}
+    .meta-table td:first-child {{ color: #94a3b8; font-weight: 500; width: 45%; }}
+    .meta-table td:last-child {{
+      color: #f8fafc; font-weight: 600; font-family: ui-monospace, monospace;
+    }}
+    .footer {{
+      padding: 20px 32px; background-color: #0d131f; border-top: 1px solid #1f2937;
+      text-align: center; font-size: 12px; color: #64748b;
+    }}
+    .footer a {{ color: #06b6d4; text-decoration: none; }}
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+    <div class="header">
+      <div class="logo">Speed<span>Infer</span></div>
+    </div>
+    <div class="content">
+      <h2 class="heading">{heading}</h2>
+      {body_html}
+    </div>
+    <div class="footer">
+      &copy; 2026 SpeedInfer AI Technologies &bull; Ultra-low latency GPU inference<br>
+      <a href="https://speedinfer.com">https://speedinfer.com</a>
+    </div>
+  </div>
+</body>
+</html>"""
+
+
 def send_verification_email(to_email: str, code: str, settings: Settings | None = None) -> bool:
     """Send a 6-digit email address verification code."""
     subject = "[SpeedInfer] Verify your email address"
@@ -118,10 +184,19 @@ def send_verification_email(to_email: str, code: str, settings: Settings | None 
         f"Welcome to SpeedInfer!\n\n"
         f"Your 6-digit verification code is: {code}\n\n"
         f"This code will expire in 15 minutes. Enter this code on the verification screen "
-        f"to activate your account and claim your complimentary inference trial credits.\n\n"
+        f"to activate your account.\n\n"
         f"If you did not request this account, please disregard this email."
     )
-    return send_email(to_email, subject, body, settings=settings)
+    html_content = (
+        f"<p>Welcome to <strong>SpeedInfer</strong>! Please verify your email address to complete "
+        f"your account activation.</p>"
+        f"<div class=\"code-box\"><div class=\"code\">{code}</div></div>"
+        f"<p style=\"color:#94a3b8; font-size:13px;\">This security code will expire in "
+        f"<strong>15 minutes</strong>. If you did not create a SpeedInfer account, you can "
+        f"safely ignore this email.</p>"
+    )
+    html_body = _render_email_html("Verify Your Email Address", html_content)
+    return send_email(to_email, subject, body, settings=settings, html_body=html_body)
 
 
 def send_password_reset_email(to_email: str, code: str, settings: Settings | None = None) -> bool:
@@ -133,7 +208,15 @@ def send_password_reset_email(to_email: str, code: str, settings: Settings | Non
         f"This code is valid for 15 minutes. If you did not initiate this request, "
         f"you can safely ignore this email; your existing password will remain secure."
     )
-    return send_email(to_email, subject, body, settings=settings)
+    html_content = (
+        f"<p>We received a request to reset your SpeedInfer account password.</p>"
+        f"<div class=\"code-box\"><div class=\"code\">{code}</div></div>"
+        f"<p style=\"color:#94a3b8; font-size:13px;\">This code is valid for "
+        f"<strong>15 minutes</strong>. If you did not initiate this request, you can safely "
+        f"ignore this email; your existing password will remain secure.</p>"
+    )
+    html_body = _render_email_html("Password Reset Request", html_content)
+    return send_email(to_email, subject, body, settings=settings, html_body=html_body)
 
 
 def send_payment_invoice_email(
@@ -158,4 +241,18 @@ def send_payment_invoice_email(
         f"SpeedInfer AI Technologies\n"
         f"https://speedinfer.com"
     )
-    return send_email(to_email, subject, body, settings=settings)
+    html_content = (
+        f"<p>Thank you for your payment. Your inference credits have been credited to your "
+        f"account and are available immediately.</p>"
+        f"<table class=\"meta-table\">"
+        f"<tr><td>Transaction Reference</td><td>{transaction_id}</td></tr>"
+        f"<tr><td>Amount Paid</td><td>${amount_usd:.2f} USD</td></tr>"
+        f"<tr><td>Credits Added</td><td>${credits_added:.2f}</td></tr>"
+        f"<tr><td>Date (UTC)</td><td>{date_str}</td></tr>"
+        f"</table>"
+        f"<p style=\"color:#94a3b8; font-size:13px;\">You can view your real-time usage and API "
+        f"keys anytime in the <a href=\"https://speedinfer.com\" style=\"color:#06b6d4;\">"
+        f"SpeedInfer Dashboard</a>.</p>"
+    )
+    html_body = _render_email_html("Payment Confirmation & Receipt", html_content)
+    return send_email(to_email, subject, body, settings=settings, html_body=html_body)
