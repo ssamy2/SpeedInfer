@@ -154,29 +154,55 @@ def _verify_webhook(body: bytes, request: Request, secret: str) -> tuple[dict[st
         raise HTTPException(status_code=400, detail="Invalid webhook signature headers.") from None
 
     secret = secret.strip()
+    candidate_keys: list[bytes] = []
     if secret.startswith("whsec_"):
         raw_b64 = secret[len("whsec_") :]
         raw_b64 += "=" * (-len(raw_b64) % 4)
         try:
-            key_bytes = base64.b64decode(raw_b64)
+            candidate_keys.append(base64.b64decode(raw_b64))
         except Exception:
-            key_bytes = secret.encode("utf-8")
+            pass
+        candidate_keys.append(secret.encode("utf-8"))
+    elif secret.startswith("ws_"):
+        candidate_keys.append(secret.encode("utf-8"))
+        candidate_keys.append(secret[len("ws_") :].encode("utf-8"))
+        try:
+            candidate_keys.append(bytes.fromhex(secret[len("ws_") :]))
+        except ValueError:
+            pass
     else:
-        key_bytes = secret.encode("utf-8")
+        candidate_keys.append(secret.encode("utf-8"))
 
     signed = f"{webhook_id}.{timestamp}.".encode() + body
-    digest = hmac.new(key_bytes, signed, hashlib.sha256).digest()
-    expected = base64.b64encode(digest).decode()
 
-    # Extract all version/sig pairs across space, comma, or multi-header separations
     matched = False
     has_v1_sig = False
-    for version, sig_val in re.findall(r"(v\d+),([A-Za-z0-9+/=_-]+)", signature):
-        if version == "v1":
-            has_v1_sig = True
-            if hmac.compare_digest(expected, sig_val):
+    sig_pairs = re.findall(r"(v\d+)[,=]([A-Za-z0-9+/=_-]+)", signature)
+
+    for k_bytes in candidate_keys:
+        digest = hmac.new(k_bytes, signed, hashlib.sha256).digest()
+        expected_b64 = base64.b64encode(digest).decode()
+        expected_hex = digest.hex()
+
+        if sig_pairs:
+            for version, sig_val in sig_pairs:
+                if version == "v1":
+                    has_v1_sig = True
+                    if hmac.compare_digest(expected_b64, sig_val) or hmac.compare_digest(
+                        expected_hex, sig_val
+                    ):
+                        matched = True
+                        break
+        else:
+            raw_sig = signature.strip()
+            if hmac.compare_digest(expected_b64, raw_sig) or hmac.compare_digest(
+                expected_hex, raw_sig
+            ):
                 matched = True
-                break
+                has_v1_sig = True
+
+        if matched:
+            break
 
     if not has_v1_sig:
         raise HTTPException(status_code=400, detail="Invalid webhook signature headers.")
