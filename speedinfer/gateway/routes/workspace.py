@@ -19,6 +19,8 @@ from speedinfer.core.security import get_current_user
 from speedinfer.database.models import User
 from speedinfer.database.session import get_session
 from speedinfer.database.workspace import WorkspaceObject, WorkspaceResource
+from speedinfer.gateway.routes.auth import calculate_user_balance
+from speedinfer.training.data_utils import validate_dataset_jsonl_bytes
 
 router = APIRouter(prefix="/v1/workspace", tags=["Workspace"])
 MAX_OBJECT_BYTES = 20 * 1024 * 1024
@@ -68,6 +70,8 @@ class ResourceRequest(BaseModel):
     sku: Literal["demo-small", "demo-medium", "demo-large"] = "demo-small"
     hours: float = PydanticField(default=1, gt=0, le=168)
     replicas: int = PydanticField(default=1, ge=1, le=4)
+    epochs: int = PydanticField(default=3, ge=1, le=50)
+    require_balance: bool = False
 
 
 class ActionRequest(BaseModel):
@@ -75,9 +79,12 @@ class ActionRequest(BaseModel):
 
 
 class EstimateRequest(BaseModel):
-    sku: Literal["demo-small", "demo-medium", "demo-large"]
-    hours: float = PydanticField(gt=0, le=168)
-    replicas: int = PydanticField(default=1, ge=1, le=4)
+    sku: Literal["demo-small", "demo-medium", "demo-large"] | None = "demo-small"
+    hours: float | None = PydanticField(default=1, gt=0, le=168)
+    replicas: int | None = PydanticField(default=1, ge=1, le=4)
+    kind: Literal["project", "bucket", "training", "deployment", "evaluation"] | None = None
+    dataset_id: str | None = None
+    epochs: int | None = PydanticField(default=3, ge=1, le=50)
 
 
 def owned(session: Session, user: User, resource_id: str, kind: str | None = None):
@@ -146,8 +153,52 @@ def pricing():
 
 
 @router.post("/estimate")
-def estimate_resource(payload: EstimateRequest, user: UserDep):
-    return estimate(payload.sku, payload.hours, payload.replicas)
+def estimate_resource(payload: EstimateRequest, user: UserDep, session: SessionDep):
+    if payload.kind == "training" and payload.dataset_id:
+        dataset = object_owned(session, user, payload.dataset_id)
+        tokens, is_valid, err_msg = validate_dataset_jsonl_bytes(dataset.content)
+        user_bal = calculate_user_balance(session, user.id)
+        epochs = payload.epochs or 3
+        if not is_valid:
+            return {
+                "currency": "USD",
+                "kind": "training",
+                "is_valid_format": False,
+                "format_error": err_msg,
+                "tokens": 0,
+                "epochs": epochs,
+                "rate_per_million": 1.5,
+                "total_usd": 0.0,
+                "charge_usd": 0.0,
+                "user_balance": user_bal,
+                "has_sufficient_balance": False,
+                "hourly_usd": 0.0,
+                "hours": 1,
+                "replicas": 1,
+            }
+        total_usd = round(1.5 * (tokens / 1_000_000) * epochs, 4)
+        return {
+            "currency": "USD",
+            "kind": "training",
+            "is_valid_format": True,
+            "format_error": None,
+            "tokens": tokens,
+            "epochs": epochs,
+            "rate_per_million": 1.5,
+            "formula": f"1.50 × ({tokens:,} / 1,000,000) × {epochs}",
+            "total_usd": total_usd,
+            "charge_usd": 0,
+            "actual_cost": total_usd,
+            "user_balance": user_bal,
+            "has_sufficient_balance": user_bal >= total_usd,
+            "hourly_usd": 0.0,
+            "hours": 1,
+            "replicas": 1,
+        }
+    sku = payload.sku or "demo-small"
+    hours = payload.hours if payload.hours is not None else 1.0
+    replicas = payload.replicas if payload.replicas is not None else 1
+    return estimate(sku, hours, replicas)
 
 
 @router.get("/resources")
@@ -207,8 +258,38 @@ def create_resource(payload: ResourceRequest, user: UserDep, session: SessionDep
         weights = object_owned(session, user, payload.weights_id)
         if weights.purpose != "weights":
             raise HTTPException(422, "Select a model weights object")
-    if payload.kind == "training" and not payload.dataset_id:
-        raise HTTPException(422, "A training dataset is required")
+    training_estimate = None
+    if payload.kind == "training":
+        if not payload.dataset_id:
+            raise HTTPException(422, "A training dataset is required")
+        dataset = object_owned(session, user, payload.dataset_id)
+        tokens, is_valid, err_msg = validate_dataset_jsonl_bytes(dataset.content)
+        if not is_valid:
+            raise HTTPException(422, f"Invalid dataset format: {err_msg}")
+        epochs = payload.epochs or 3
+        training_price = round(1.5 * (tokens / 1_000_000) * epochs, 4)
+        user_balance = calculate_user_balance(session, user.id)
+        if payload.require_balance and user_balance < training_price:
+            raise HTTPException(
+                402,
+                (
+                    f"Insufficient balance. Training requires ${training_price:.4f} USD, "
+                    f"but your available balance is ${user_balance:.4f} USD. Please top up."
+                ),
+            )
+        training_estimate = {
+            "currency": "USD",
+            "kind": "training",
+            "tokens": tokens,
+            "epochs": epochs,
+            "rate_per_million": 1.5,
+            "formula": f"1.50 × ({tokens:,} / 1,000,000) × {epochs}",
+            "total_usd": training_price,
+            "charge_usd": 0,
+            "actual_cost": training_price,
+            "user_balance": user_balance,
+            "has_sufficient_balance": user_balance >= training_price,
+        }
     if payload.artifact_id:
         artifact = owned(session, user, payload.artifact_id, "training")
         if artifact.status != "succeeded":
@@ -218,12 +299,17 @@ def create_resource(payload: ResourceRequest, user: UserDep, session: SessionDep
     if payload.kind == "evaluation" and not payload.artifact_id:
         raise HTTPException(422, "Select a completed training simulation")
     simulated = payload.kind in {"training", "deployment", "evaluation"}
+    workflow_estimate = None
+    if simulated:
+        if payload.kind == "training":
+            workflow_estimate = training_estimate
+        else:
+            workflow_estimate = estimate(payload.sku, payload.hours, payload.replicas)
+
     data.update(
         {
             "is_simulated": simulated,
-            "estimate": estimate(payload.sku, payload.hours, payload.replicas)
-            if simulated
-            else None,
+            "estimate": workflow_estimate,
             "events": [
                 {
                     "at": datetime.now(UTC).isoformat(),
@@ -323,18 +409,9 @@ async def upload_object(
     if purpose == "dataset":
         if not name.lower().endswith(".jsonl"):
             raise HTTPException(422, "Training preview accepts UTF-8 JSONL datasets")
-        try:
-            rows = [json.loads(line) for line in body.decode("utf-8").splitlines() if line.strip()]
-            if not rows or any(
-                not isinstance(row, dict)
-                or not (isinstance(row.get("text"), str) or isinstance(row.get("messages"), list))
-                for row in rows
-            ):
-                raise ValueError
-        except (ValueError, UnicodeError):
-            raise HTTPException(
-                422, "Each JSONL row needs a text string or messages array"
-            ) from None
+        _, is_valid, err_msg = validate_dataset_jsonl_bytes(bytes(body))
+        if not is_valid:
+            raise HTTPException(422, f"Each JSONL row needs a valid format: {err_msg}")
     if purpose == "weights" and not name.lower().endswith((".safetensors", ".gguf", ".bin")):
         raise HTTPException(422, "Use a .safetensors, .gguf or .bin file; files are never executed")
     # Recheck quota under an account write lock after reading the bounded body.

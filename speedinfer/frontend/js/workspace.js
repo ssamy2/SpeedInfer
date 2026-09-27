@@ -63,6 +63,9 @@ export class Workspace {
     });
     panel.addEventListener('input', event => {
       if (event.target.matches('[data-file-search]')) this.filterFiles(event.target.value);
+      if (event.target.closest('[data-workflow-form]') && (event.target.name === 'epochs' || event.target.name === 'hours' || event.target.name === 'replicas')) {
+        this.updateEstimate();
+      }
     });
   }
   reset() {
@@ -160,18 +163,97 @@ export class Workspace {
     return this.heading(`New ${kind}`,descriptions[view],this.link(view,'← Back'))+this.simulation()+
       `<form class="ws-workflow" data-workflow-form="${kind}"><div class="ws-form-main"><section class="ws-card"><h2><span class="ws-number">01</span> Project & identity</h2><div class="ws-form-grid"><label>Name<input name="name" class="form-input" required maxlength="100" placeholder="${kind}-experiment"></label><label>Project<select name="project_id" class="form-select" required>${this.options(this.items('project'),'Choose a project')}</select></label></div></section>`+
       `<section class="ws-card"><h2><span class="ws-number">02</span> Model & weights</h2><label>Base model<select name="model" class="form-select">${models.map(m=>`<option>${esc(m)}</option>`).join('')}</select></label><label>Optional weights from a bucket<select name="weights_id" class="form-select">${this.options(this.objects.filter(o=>o.purpose==='weights'),'Use base model weights')}</select></label><p class="ws-hint">Weights are separate from your dataset. Upload them in Buckets & files first.</p>${kind==='training'?'<label>Training method<select name="method" class="form-select"><option value="qlora">SFT · QLoRA (4-bit)</option><option value="lora">SFT · LoRA</option></select></label>':''}${kind!=='training'?`<label>${kind==='evaluation'?'Training result to evaluate':'Optional training simulation result'}<select name="artifact_id" class="form-select" ${kind==='evaluation'?'required':''}>${this.options(this.items('training').filter(r=>r.status==='succeeded'),'Choose a result from this project')}</select></label>`:''}</section>`+
-      (kind==='training'?`<section class="ws-card"><h2><span class="ws-number">03</span> Training data</h2><label>Dataset from a bucket<select name="dataset_id" class="form-select" required>${this.options(this.objects.filter(o=>o.purpose==='dataset'),'Select a JSONL dataset')}</select></label><p class="ws-hint">Choose your uploaded dataset independently of the model weights.</p>${this.link('buckets','Manage datasets ↗')}</section>`:'')+
-      `<section class="ws-card"><h2><span class="ws-number">${kind==='training'?'04':'03'}</span> Dedicated capacity estimate</h2><div class="ws-form-grid"><label>Dedicated capacity tier<select name="sku" class="form-select">${this.catalog.items.map(p=>`<option value="${p.sku}">${p.name} · ${p.memory_gb} GB VRAM · Dedicated Tier</option>`).join('')}</select></label><label>Estimated hours<input class="form-input" name="hours" type="number" min="0.1" max="168" step="0.1" value="1" required></label><label>Replicas<input class="form-input" name="replicas" type="number" min="1" max="4" value="1" required></label></div><p class="ws-hint">Illustrative capacity profiles for dedicated inference endpoints and managed workflows.</p></section></div><aside class="ws-card ws-review"><span class="ws-eyebrow">REVIEW YOUR WORKFLOW</span><h2>Ready when you are.</h2><p>Your configuration is saved privately to your account.</p><div class="ws-estimate" data-estimate aria-live="polite">Calculating…</div><hr><p><strong>Actual charge: $0.00</strong><br>Storage and network are not priced in this simulation.</p><label class="ws-check"><input type="checkbox" required>I understand this is a simulation.</label><button class="btn btn-primary" type="submit">Create simulation →</button></aside></form>`;
+      (kind==='training'?`<section class="ws-card"><h2><span class="ws-number">03</span> Training data &amp; parameters</h2><label>Dataset from a bucket<select name="dataset_id" class="form-select" required>${this.options(this.objects.filter(o=>o.purpose==='dataset'),'Select a JSONL dataset')}</select></label><p class="ws-hint">Choose your uploaded JSONL dataset. File format and token counts are verified automatically.</p><div class="ws-form-grid" style="margin-top:12px;"><label>Training Epochs<input class="form-input" name="epochs" type="number" min="1" max="50" step="1" value="3" required></label></div>${this.link('buckets','Manage datasets ↗')}</section>`:'')+
+      (kind!=='training'?`<section class="ws-card"><h2><span class="ws-number">03</span> Dedicated capacity estimate</h2><div class="ws-form-grid"><label>Dedicated capacity tier<select name="sku" class="form-select">${this.catalog.items.map(p=>`<option value="${p.sku}">${p.name} · ${p.memory_gb} GB VRAM · Dedicated Tier</option>`).join('')}</select></label><label>Estimated hours<input class="form-input" name="hours" type="number" min="0.1" max="168" step="0.1" value="1" required></label><label>Replicas<input class="form-input" name="replicas" type="number" min="1" max="4" value="1" required></label></div><p class="ws-hint">Illustrative capacity profiles for dedicated inference endpoints and managed workflows.</p></section>`:'')+
+      `</div><aside class="ws-card ws-review"><span class="ws-eyebrow">REVIEW YOUR WORKFLOW</span><h2>Ready when you are.</h2><p>Your configuration is saved privately to your account.</p><div class="ws-estimate" data-estimate aria-live="polite">Calculating…</div><hr>${kind==='training'?'<input type="hidden" name="require_balance" value="true">':'<p><strong>Actual charge: $0.00</strong><br>Storage and network are not priced in this simulation.</p><label class="ws-check"><input type="checkbox" required>I understand this is a simulation.</label>'}<button class="btn btn-primary" id="btn-submit-workflow" type="submit">Start ${kind==='training'?'Training Run':'Simulation'} →</button></aside></form>`;
   }
   async updateEstimate() {
     const form = this.panel.querySelector('[data-workflow-form]');
     if (!form) return;
-    const data = new FormData(form); const target = form.querySelector('[data-estimate]');
+    const kind = form.dataset.workflowForm;
+    const data = new FormData(form); 
+    const target = form.querySelector('[data-estimate]');
+    const submitBtn = form.querySelector('#btn-submit-workflow') || form.querySelector('button[type="submit"]');
     const sequence = this.estimateSequence = (this.estimateSequence || 0)+1;
+
+    if (kind === 'training') {
+      const datasetId = data.get('dataset_id');
+      const epochs = Number(data.get('epochs')) || 3;
+      if (!datasetId) {
+        if (target) target.innerHTML = `<small>Select a dataset to calculate token count and pricing.</small>`;
+        return;
+      }
+      try {
+        const result = await api.request('/v1/workspace/estimate', {
+          method: 'POST',
+          body: JSON.stringify({
+            kind: 'training',
+            dataset_id: datasetId,
+            epochs: epochs,
+            sku: 'demo-small'
+          })
+        });
+        if (sequence === this.estimateSequence && target.isConnected) {
+          if (!result.is_valid_format) {
+            target.innerHTML = `<div class="ws-estimate-error" style="color:var(--danger, #d32f2f); font-size:13px; line-height:1.4;">
+              <strong>⚠️ Invalid Dataset Format</strong>
+              <p style="margin:4px 0 0 0;">${esc(result.format_error || 'File must be valid UTF-8 JSONL with messages, prompt/completion, or text.')}</p>
+            </div>`;
+            if (submitBtn) {
+              submitBtn.disabled = true;
+              submitBtn.textContent = 'Invalid Dataset Format';
+            }
+            return;
+          }
+
+          const hasSufficient = result.has_sufficient_balance;
+          target.innerHTML = `
+            <div style="margin-bottom:8px;">
+              <small>Training cost estimate</small>
+              <div style="font-size:26px; font-weight:800; color:var(--primary); margin:2px 0;">${money(result.total_usd)}</div>
+              <div style="font-size:12px; color:var(--text-secondary); line-height:1.4;">
+                <div>Tokens: <strong>${Number(result.tokens).toLocaleString()}</strong> (${Number(result.tokens * result.epochs).toLocaleString()} total trained)</div>
+                <div>Epochs: <strong>${result.epochs}</strong> · Rate: <strong>$1.50 / 1M tokens</strong></div>
+                <div style="color:var(--text-muted); font-size:11px; margin-top:2px;">1.5 × (${Number(result.tokens).toLocaleString()} / 1M) × ${result.epochs}</div>
+              </div>
+            </div>
+            <div style="padding:8px 10px; border-radius:6px; font-size:12px; margin-top:8px; ${hasSufficient ? 'background:rgba(46,125,50,0.1); border:1px solid rgba(46,125,50,0.3); color:#2e7d32;' : 'background:rgba(211,47,47,0.1); border:1px solid rgba(211,47,47,0.3); color:#d32f2f;'}">
+              <div style="display:flex; justify-content:space-between; margin-bottom:2px;">
+                <span>Available Balance:</span>
+                <strong>${money(result.user_balance)}</strong>
+              </div>
+              <div>${hasSufficient ? '✓ Sufficient balance available' : '⚠️ Insufficient balance! Please top up your balance.'}</div>
+            </div>
+          `;
+
+          if (submitBtn) {
+            if (!hasSufficient) {
+              submitBtn.disabled = true;
+              submitBtn.textContent = `Insufficient Balance (${money(result.user_balance)})`;
+            } else {
+              submitBtn.disabled = false;
+              submitBtn.textContent = `Start Training Run (${money(result.total_usd)}) →`;
+            }
+          }
+        }
+      } catch (err) {
+        if (sequence === this.estimateSequence) target.textContent = err.message || 'Could not calculate training estimate.';
+      }
+      return;
+    }
+
     try {
       const result = await api.request('/v1/workspace/estimate',{method:'POST',body:JSON.stringify({sku:data.get('sku'),hours:Number(data.get('hours')),replicas:Number(data.get('replicas'))})});
-      if (sequence === this.estimateSequence && target.isConnected) target.innerHTML=`<small>Dedicated endpoint estimate · simulation</small><strong>${money(result.total_usd)}</strong><small>Dedicated capacity · ${result.hours} h runtime × ${result.replicas} instance(s)</small>`;
-    } catch { if (sequence === this.estimateSequence) target.textContent='Enter valid hours (0.1–168) and replicas (1–4).'; }
+      if (sequence === this.estimateSequence && target.isConnected) {
+        target.innerHTML=`<small>Dedicated endpoint estimate · simulation</small><strong>${money(result.total_usd)}</strong><small>Dedicated capacity · ${result.hours} h runtime × ${result.replicas} instance(s)</small>`;
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Create simulation →';
+        }
+      }
+    } catch { 
+      if (sequence === this.estimateSequence) target.textContent='Enter valid hours (0.1–168) and replicas (1–4).'; 
+    }
   }
   workflows(view) {
     const kind={training:'training',deployments:'deployment',evaluations:'evaluation'}[view];
@@ -218,7 +300,8 @@ export class Workspace {
       } else {
         const values=Object.fromEntries(new FormData(form));
         for (const key of ['project_id','dataset_id','weights_id','artifact_id']) if (!values[key]) delete values[key];
-        for (const key of ['hours','replicas']) if (values[key]) values[key]=Number(values[key]);
+        for (const key of ['hours','replicas','epochs']) if (values[key]) values[key]=Number(values[key]);
+        if (values.require_balance) values.require_balance = (values.require_balance === 'true' || values.require_balance === true);
         const kind=form.dataset.simple||form.dataset.workflowForm;
         const result=await api.request('/v1/workspace/resources',{method:'POST',body:JSON.stringify({...values,kind,request_id:form.dataset.requestId||(form.dataset.requestId=crypto.randomUUID())})});
         this.toast(`${kind==='bucket'?'Bucket':kind==='project'?'Project':'Simulation'} created.`,'success');

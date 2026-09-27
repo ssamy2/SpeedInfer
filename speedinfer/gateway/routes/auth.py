@@ -83,6 +83,11 @@ def _calculate_user_balance(session: Session, user_id: int) -> float:
     return total
 
 
+def calculate_user_balance(session: Session, user_id: int) -> float:
+    """Public helper to calculate user balance across active keys."""
+    return _calculate_user_balance(session, user_id)
+
+
 def _build_user_response(
     user: User,
     balance: float,

@@ -175,3 +175,57 @@ def load_and_split_dataset(
     train_data = shuffled[val_count:]
 
     return train_data, val_data
+
+
+def validate_dataset_jsonl_bytes(content: bytes) -> tuple[int, bool, str | None]:
+    """Validate JSONL dataset format and calculate approximate token count.
+
+    Checks:
+    - UTF-8 valid encoding
+    - Non-empty records
+    - Every row is valid JSON dictionary
+    - Valid dataset structure: OpenAI 'messages', ShareGPT 'conversations',
+      Alpaca instruction/output, or 'text'/'prompt'.
+
+    Returns:
+        tuple[int, bool, str | None]: (total_tokens, is_valid, error_message).
+    """
+    if not content or not content.strip():
+        return 0, False, "Dataset file is empty."
+
+    try:
+        text = content.decode("utf-8")
+    except UnicodeDecodeError:
+        return 0, False, "Dataset file is not valid UTF-8 text."
+
+    lines = [line.strip() for line in text.splitlines() if line.strip()]
+    if not lines:
+        return 0, False, "Dataset contains no valid records."
+
+    total_tokens = 0
+    for idx, line in enumerate(lines, 1):
+        try:
+            sample = json.loads(line)
+        except Exception:
+            return 0, False, f"Line {idx} is not valid JSON."
+
+        if not isinstance(sample, dict):
+            return 0, False, f"Line {idx} must be a JSON object dictionary."
+
+        fmt = detect_dataset_format(sample)
+        if fmt == "raw" and not (
+            isinstance(sample.get("text"), str) or isinstance(sample.get("prompt"), str)
+        ):
+            return (
+                0,
+                False,
+                f"Line {idx} is invalid: must contain 'messages' array, 'conversations' array, "
+                "'instruction'/'output' fields, or 'text'/'prompt' string.",
+            )
+
+        messages = normalize_to_chat_messages(sample)
+        row_text = " ".join(m["content"] for m in messages if m.get("content"))
+        tokens = max(1, len(row_text) // 4)
+        total_tokens += tokens
+
+    return max(1, total_tokens), True, None

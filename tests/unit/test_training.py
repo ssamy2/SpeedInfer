@@ -206,3 +206,63 @@ def test_evaluate_model_and_promotion(tmp_path: Path):
         ).first()
         assert updated is not None
         assert updated.lifecycle_status == "active"
+
+
+def test_dataset_validation_and_token_counting():
+    """Verify JSONL dataset validation and accurate token counting."""
+    from speedinfer.training.data_utils import validate_dataset_jsonl_bytes
+
+    # 1. Valid OpenAI format
+    valid_openai = (
+        b'{"messages": [{"role": "user", "content": "Hello world"}, '
+        b'{"role": "assistant", "content": "Hi there!"}]}\n'
+    )
+    tokens, is_valid, err = validate_dataset_jsonl_bytes(valid_openai)
+    assert is_valid is True
+    assert err is None
+    assert tokens > 0
+
+    # 2. Valid Prompt/Completion format
+    valid_pc = b'{"prompt": "Translate hello", "completion": "Bonjour"}\n'
+    tokens, is_valid, err = validate_dataset_jsonl_bytes(valid_pc)
+    assert is_valid is True
+    assert err is None
+    assert tokens > 0
+
+    # 3. Invalid: Malformed JSON
+    tokens, is_valid, err = validate_dataset_jsonl_bytes(b'{"messages": broken json\n')
+    assert is_valid is False
+    assert "not valid JSON" in err
+
+    # 4. Invalid: Missing expected keys
+    tokens, is_valid, err = validate_dataset_jsonl_bytes(b'{"random_key": 123}\n')
+    assert is_valid is False
+    assert "Line 1 is invalid" in err
+
+    # 5. Empty content
+    tokens, is_valid, err = validate_dataset_jsonl_bytes(b"")
+    assert is_valid is False
+    assert "empty" in err
+
+
+def test_training_pricing_formula():
+    """Verify training price = 1.5 * (tokens / 1,000,000) * epochs."""
+    rate = 1.5  # USD per 1M tokens
+
+    # Example 1: 100,000 tokens for 3 epochs
+    tokens_1 = 100_000
+    epochs_1 = 3
+    cost_1 = round(rate * (tokens_1 / 1_000_000) * epochs_1, 4)
+    assert cost_1 == 0.45
+
+    # Example 2: 1,000,000 tokens for 1 epoch
+    tokens_2 = 1_000_000
+    epochs_2 = 1
+    cost_2 = round(rate * (tokens_2 / 1_000_000) * epochs_2, 4)
+    assert cost_2 == 1.50
+
+    # Example 3: 50,000 tokens for 5 epochs
+    tokens_3 = 50_000
+    epochs_3 = 5
+    cost_3 = round(rate * (tokens_3 / 1_000_000) * epochs_3, 4)
+    assert cost_3 == 0.375

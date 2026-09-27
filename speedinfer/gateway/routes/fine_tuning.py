@@ -21,7 +21,9 @@ from sqlmodel import Session, select
 from speedinfer.core.auth import check_scope_permission
 from speedinfer.database.models import ApiKey, FileRecord, FineTuningJobRecord, ModelVersion, User
 from speedinfer.database.session import get_session
+from speedinfer.gateway.routes.auth import calculate_user_balance
 from speedinfer.gateway.routes.models import get_caller_auth
+from speedinfer.training.data_utils import validate_dataset_jsonl_bytes
 
 router = APIRouter(prefix="/v1", tags=["Fine-Tuning"])
 
@@ -166,6 +168,14 @@ async def create_fine_tuning_job(
             detail=f"Training file '{payload.training_file}' not found.",
         )
 
+    # Validate training file format
+    tokens, is_valid, err_msg = validate_dataset_jsonl_bytes(file_rec.content)
+    if not is_valid:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Invalid training file format: {err_msg}",
+        )
+
     # Validate validation file if provided
     if payload.validation_file:
         val_rec = session.get(FileRecord, payload.validation_file)
@@ -183,6 +193,32 @@ async def create_fine_tuning_job(
     hyper["method"] = payload.method
     if payload.suffix:
         hyper["suffix"] = payload.suffix
+
+    n_epochs = hyper.get("n_epochs", 3)
+    training_cost = round(1.5 * (tokens / 1_000_000) * n_epochs, 4)
+
+    # Check caller balance and deduct
+    if isinstance(caller, ApiKey):
+        if caller.credit_balance < training_cost:
+            raise HTTPException(
+                status_code=status.HTTP_402_PAYMENT_REQUIRED,
+                detail=(
+                    f"Insufficient credit balance on API key. Training requires "
+                    f"${training_cost:.4f} USD, but balance is ${caller.credit_balance:.4f} USD."
+                ),
+            )
+        caller.credit_balance = round(max(0.0, caller.credit_balance - training_cost), 6)
+        session.add(caller)
+    elif isinstance(caller, User):
+        user_bal = calculate_user_balance(session, caller.id)
+        if user_bal < training_cost:
+            raise HTTPException(
+                status_code=status.HTTP_402_PAYMENT_REQUIRED,
+                detail=(
+                    f"Insufficient balance. Training requires ${training_cost:.4f} USD, "
+                    f"but balance is ${user_bal:.4f} USD. Please top up your balance."
+                ),
+            )
 
     clean_model_tag = payload.model.replace("/", "-").lower()
     suffix_tag = f"-{payload.suffix.strip()}" if payload.suffix else f"-ft-{secrets.token_hex(4)}"
@@ -218,8 +254,16 @@ async def create_fine_tuning_job(
             "id": f"ftevent-{secrets.token_hex(8)}",
             "created_at": int(datetime.now(UTC).timestamp()),
             "level": "info",
-            "message": f"Validated dataset {payload.training_file} ({file_rec.size_bytes} bytes).",
-            "data": {"file_id": payload.training_file, "bytes": file_rec.size_bytes},
+            "message": (
+                f"Validated dataset {payload.training_file} ({file_rec.size_bytes} bytes, "
+                f"{tokens:,} tokens, cost: ${training_cost:.4f})."
+            ),
+            "data": {
+                "file_id": payload.training_file,
+                "bytes": file_rec.size_bytes,
+                "tokens": tokens,
+                "cost_usd": training_cost,
+            },
         },
         {
             "id": f"ftevent-{secrets.token_hex(8)}",
@@ -241,7 +285,7 @@ async def create_fine_tuning_job(
         status="running",
         fine_tuned_model=fine_tuned_name,
         hyperparameters_json=json.dumps(hyper),
-        trained_tokens=150_000,
+        trained_tokens=tokens * int(n_epochs),
         checkpoints_json=json.dumps(checkpoints),
         events_json=json.dumps(events),
     )
