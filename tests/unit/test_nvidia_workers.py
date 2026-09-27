@@ -4,10 +4,12 @@ import json
 
 import httpx
 import pytest
+from fastapi import HTTPException
 
 from speedinfer.engine.registry import BackendWorker, ModelRegistry, WorkerRuntime
 from speedinfer.engine.runtime_adapters import TritonRuntimeAdapter, probe_worker
 from speedinfer.engine.worker_config import register_configured_workers
+from speedinfer.gateway.proxy import InferenceProxy
 from speedinfer.gateway.schemas import ChatCompletionRequest
 
 
@@ -93,3 +95,39 @@ def test_worker_rejects_undeclared_model():
     worker = triton_worker()
     assert worker.supports_model("acme/model-1")
     assert not worker.supports_model("acme/model-2")
+
+
+@pytest.mark.asyncio
+async def test_proxy_dispatches_to_triton_and_rejects_unsupported_streaming():
+    def handler(request: httpx.Request) -> httpx.Response:
+        return httpx.Response(
+            200,
+            json={
+                "outputs": [
+                    {"name": "text_output", "data": [["from triton"]]},
+                    {"name": "prompt_tokens", "data": [[3]]},
+                    {"name": "completion_tokens", "data": [[2]]},
+                ]
+            },
+        )
+
+    registry = ModelRegistry()
+    entry = registry.register_model(
+        name="acme/model-1",
+        base_model_path="acme/model-1",
+        backends=[triton_worker()],
+    )
+    proxy = InferenceProxy(registry)
+    proxy.http_client = httpx.AsyncClient(transport=httpx.MockTransport(handler))
+    request = ChatCompletionRequest(
+        model="acme/model-1",
+        messages=[{"role": "user", "content": "Hello"}],
+    )
+    response = await proxy.execute_chat(request, entry)
+    assert response.choices[0].message.content == "from triton"
+    stream = proxy.stream_chat(request.model_copy(update={"stream": True}), entry)
+    with pytest.raises(HTTPException) as error:
+        await anext(stream)
+    assert error.value.status_code == 503
+    assert error.value.detail["error"]["code"] == "runtime_streaming_unavailable"
+    await proxy.close()
