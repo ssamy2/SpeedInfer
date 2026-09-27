@@ -20,7 +20,7 @@ import httpx
 from fastapi import Depends, FastAPI, HTTPException, Request, status
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse, JSONResponse
+from fastapi.responses import FileResponse, JSONResponse, RedirectResponse
 from sqlalchemy import inspect, text
 from sqlmodel import Session, SQLModel, select
 from starlette.staticfiles import StaticFiles
@@ -391,6 +391,23 @@ def create_app() -> FastAPI:
             if docs_file.exists():
                 return FileResponse(docs_file)
             return FileResponse(frontend_dir / "guide.html")
+
+        @fastapi_app.get("/company/team", include_in_schema=False)
+        @fastapi_app.get("/company/team/{full_path:path}", include_in_schema=False)
+        async def serve_team_page(full_path: str = "") -> FileResponse:
+            team_file = frontend_dir / "team.html"
+            if team_file.exists():
+                return FileResponse(team_file)
+            return FileResponse(frontend_dir / "index.html")
+
+        @fastapi_app.get("/team", include_in_schema=False)
+        @fastapi_app.get("/team/{full_path:path}", include_in_schema=False)
+        @fastapi_app.get("/company", include_in_schema=False)
+        async def redirect_to_team(full_path: str = "") -> RedirectResponse:
+            return RedirectResponse(
+                url="/company/team", status_code=status.HTTP_301_MOVED_PERMANENTLY
+            )
+
 
         @fastapi_app.get("/auth/callback", include_in_schema=False)
         async def serve_auth_callback(

@@ -325,6 +325,26 @@ async def test_public_preview_metadata_and_guide(live_contract):
     assert "https://speedinfer.com/v1" in guide.text
     assert "402" in guide.text
 
+    # Test /company/team page
+    team_resp = await client.get("/company/team")
+    assert team_resp.status_code == 200
+    assert "The Team Behind SpeedInfer" in team_resp.text
+    assert "Sami Mahmoud" in team_resp.text
+    assert "Hamza Ibrahim Khalil El-Geziry" in team_resp.text
+    assert "284191" in team_resp.text
+    assert "785-034-774" in team_resp.text
+    assert "Megsy for Digital Platforms Development and E-Commerce L.L.C" in team_resp.text
+
+    # Test redirects
+    redir_team = await client.get("/team", follow_redirects=False)
+    assert redir_team.status_code == 301
+    assert redir_team.headers["location"] == "/company/team"
+
+    redir_company = await client.get("/company", follow_redirects=False)
+    assert redir_company.status_code == 301
+    assert redir_company.headers["location"] == "/company/team"
+
+
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize("available", [False, True])
