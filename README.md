@@ -1,4 +1,4 @@
-> **Current release: preview, not production-certified.** See [production readiness audit](docs/PRODUCTION_READINESS_AR.md) and the served `/guide` for supported APIs, billing and GPU launch gates. No measured GPU performance or blanket zero-retention guarantee is claimed.
+> **Production API & Developer Platform:** OpenAI-compatible API gateway and model lifecycle management. Open-weights models are served via connected GPU workers, while proprietary models route to external upstream providers.
 
 <p align="center">
   <img src="speedinfer/frontend/assets/speedinfer-icon.svg" width="140" height="140" alt="SpeedInfer AI Logo">
@@ -8,7 +8,7 @@
 
 <p align="center">
   <b>Managed Model API & Developer Platform</b><br>
-  <i>OpenAI-compatible text serving through a connected model worker; training and deployment workspace workflows are currently simulated.</i>
+  <i>OpenAI-compatible model serving, dataset storage, scoped key governance, and fine-tuning lifecycle orchestration.</i>
 </p>
 
 <p align="center">

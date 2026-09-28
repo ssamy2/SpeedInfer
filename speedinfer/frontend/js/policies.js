@@ -1,10 +1,10 @@
 const policies = {
   terms: {title:'Terms of Service', intro:'Legal agreement for developers and enterprises using SpeedInfer.', sections:[
-    ['Service Overview','SpeedInfer Technologies provides ultra-low latency, OpenAI-compatible AI model inference, weights distribution, file storage, and fine-tuning orchestration via secure API and developer console.'],
+    ['Service Overview','SpeedInfer provides an OpenAI-compatible API gateway and control plane for AI model inference, weights distribution, dataset storage, and fine-tuning orchestration via secure developer endpoints.'],
     ['Customer Data & Intellectual Property','You retain 100% of all intellectual property rights in your prompts, datasets, fine-tuned weights, and generated completions. SpeedInfer claims zero ownership over your inputs or outputs.'],
     ['Acceptable Use & Compliance','Users agree to utilize SpeedInfer services in accordance with all applicable international laws and model licenses. Reverse engineering, abuse, Denial of Service attempts, or unauthorized access to other accounts are strictly prohibited.'],
     ['Account & Key Security','You are responsible for safeguarding your API keys and credentials. API keys should be granted least-privilege permissions and stored in secure environment variables. Stored API keys are cryptographically hashed using SHA-256 with secret salt.'],
-    ['Service Availability & SLA','SpeedInfer strives for 99.9% service uptime for production workloads with automated health monitoring, load balancing, and multi-region failover. Enterprise custom SLAs are available upon request.'],
+    ['Service Availability & Telemetry','Operational availability is monitored continuously via automated worker health probes and circuit breakers. Model serving availability depends on active connected workers and external provider endpoints. Custom enterprise SLAs are available under separate written agreements.'],
     ['Commercial Entity & Contact','Megsy for Digital Platforms Development and E-Commerce L.L.C (Operating SpeedInfer) · Cairo, Egypt. For legal notices, enterprise contracts, or billing inquiries: legal@speedinfer.com or support@speedinfer.com. Review leadership and company information at /company/team.'],
   ]},
   privacy: {title:'Privacy Policy & Data Protection',intro:'Data handling, deployment-specific retention, and privacy controls.',sections:[
@@ -16,7 +16,7 @@ const policies = {
     ['Data Deletion & Retention Rights','You may delete your API keys, uploaded datasets, and storage objects at any time through the dashboard or API. Account closure requests are processed with immediate data purging.'],
   ]},
   security: {title:'Security & Infrastructure Architecture',intro:'Defense-in-depth security controls protecting your AI workloads.',sections:[
-    ['Data Center & Infrastructure Security','SpeedInfer is hosted in Tier-III/IV enterprise datacenter facilities equipped with 24/7 physical security, biometric access, redundant power, and automated DDoS mitigation.'],
+    ['Infrastructure & Network Security','SpeedInfer control plane services are deployed in secure enterprise cloud environments featuring automated DDoS mitigation, continuous monitoring, and strict network isolation.'],
     ['Authentication & Granular RBAC','API requests authenticate using cryptographically salted SHA-256 key hashing with constant-time verification. Granular scopes (e.g. chat:completions, storage:read, training:write) enforce least-privilege security.'],
     ['Isolation & Network Boundaries','Inference workloads, file buckets, and database sessions are strictly isolated between accounts. Network perimeters are guarded with rate limiting, IP clustering defense, and automated anomaly detection.'],
     ['Responsible Disclosure','We welcome security researchers. If you identify a potential vulnerability, please report it immediately to security@speedinfer.com or support@speedinfer.com. We acknowledge and address validated reports promptly.'],

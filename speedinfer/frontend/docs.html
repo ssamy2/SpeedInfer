@@ -574,8 +574,8 @@
         <section id="overview" class="endpoint-block">
           <h1 class="endpoint-title">SpeedInfer Developer API Reference</h1>
           <p class="endpoint-desc">
-            SpeedInfer provides an ultra-low latency, OpenAI-compatible developer platform for high-throughput LLM inference, 
-            serverless fine-tuning (LoRA / QLoRA), object storage, dataset management, and scoped key governance.
+            SpeedInfer provides an OpenAI-compatible developer platform and control plane for high-throughput LLM inference, 
+            fine-tuning orchestration (LoRA / QLoRA), object storage, dataset management, and scoped key governance. Open-source models are served via connected GPU workers, while proprietary closed-source models route through external providers.
           </p>
           <div style="background:#131f17; border-left:4px solid #8cd867; padding:16px; border-radius:4px; margin-bottom:24px;">
             <strong>Authentication:</strong> All API requests require a Bearer token in the <code>Authorization</code> header.<br>
@@ -1100,7 +1100,7 @@ for await (const chunk of stream) {
       <h2 class="article-title">Scalable Object Storage for Checkpoints and RAG Datasets (التخزين السحابي)</h2>
       <div class="article-body">
         <p>
-          SpeedInfer Buckets provide high-speed S3-compatible storage co-located with GPU compute clusters. Eliminate data egress costs and latency when feeding datasets to fine-tuning and inference pipelines.
+          SpeedInfer Buckets provide high-speed S3-compatible storage integrated with our model serving and fine-tuning pipelines. Eliminate data egress costs and latency when feeding datasets to training workflows and inference endpoints.
         </p>
         <pre><code># Create bucket
 curl -X POST https://speedinfer.com/v1/buckets \

@@ -4,12 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>SpeedInfer Platform — Software-Defined AI Inference &amp; Model Orchestration</title>
-  <meta name="description" content="An enterprise-grade software platform for AI model inference, continuous batching, KV-cache acceleration, and fine-tuning workflows built on NVIDIA accelerated computing.">
+  <meta name="description" content="An enterprise-grade API gateway and control plane orchestrating connected model workers, NVIDIA-accelerated runtimes, and external model providers.">
   <link rel="canonical" href="https://speedinfer.com/product">
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="SpeedInfer">
   <meta property="og:title" content="SpeedInfer Platform — Software-Defined AI Inference &amp; Model Orchestration">
-  <meta property="og:description" content="The intelligent software layer between developer applications and accelerated GPU infrastructure.">
+  <meta property="og:description" content="The intelligent software gateway layer between developer applications, connected GPU workers, and external model providers.">
   <meta property="og:url" content="https://speedinfer.com/product">
   <meta property="og:image" content="https://speedinfer.com/static/assets/speedinfer-social-v1.png">
   <meta property="og:image:type" content="image/png">
@@ -17,7 +17,7 @@
   <meta property="og:image:height" content="630">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="SpeedInfer Platform — Software-Defined AI Inference">
-  <meta name="twitter:description" content="Software-defined inference gateway, continuous batching, model registry, and fine-tuning workflows.">
+  <meta name="twitter:description" content="Software-defined inference gateway, model registry routing, and fine-tuning workflows.">
   <meta name="twitter:image" content="https://speedinfer.com/static/assets/speedinfer-social-v1.png">
   <link rel="icon" href="/static/assets/speedinfer-icon.svg">
   <link rel="stylesheet" href="/static/css/polish.css?v=20260928-product">
@@ -31,7 +31,7 @@
 
   <!-- Top bar -->
   <div class="product-topbar">
-    SOFTWARE-DEFINED AI INFERENCE LAYER · BUILT ON NVIDIA ACCELERATED COMPUTING
+    SOFTWARE-DEFINED AI INFERENCE GATEWAY &amp; CONTROL PLANE · CONNECTED NVIDIA RUNTIMES
     <a href="/docs">Explore Interactive API Docs ↗</a>
   </div>
 
@@ -69,11 +69,11 @@
           SPEEDINFER PLATFORM · SOFTWARE ARCHITECTURE
         </div>
         <h1>
-          Software-Defined Inference.<br>
-          <em>Engineered for Scale.</em>
+          Software-Defined Gateway.<br>
+          <em>Unified Model Control Plane.</em>
         </h1>
         <p class="lead">
-          SpeedInfer is an enterprise software platform and orchestration layer that connects developer applications to high-performance AI models. We provide continuous batching, KV-cache acceleration, dynamic routing, usage metering, and fine-tuning workflows in one unified control plane.
+          SpeedInfer is the API gateway and control plane that connects developer applications to high-performance AI models. We provide unified authentication, per-token metering, model registry routing, and fine-tuning orchestration. Open-source models are served by connected model workers, while closed-source proprietary models are routed through external providers.
         </p>
         <div class="product-actions">
           <a class="btn ink-button" href="/app">Launch Developer Console <span>↗</span></a>
@@ -107,18 +107,18 @@ response = client.chat.completions.create(
       </div>
     </section>
 
-    <!-- Strategic Positioning: Software Layer, Not Bare-Metal Reseller -->
+    <!-- Strategic Positioning: Software Gateway Layer -->
     <section class="positioning-banner">
       <div class="positioning-col">
-        <h3><span style="font-size:22px;">⚙️</span> An Intelligent Software Operating Layer</h3>
+        <h3><span style="font-size:22px;">⚙️</span> Unified API Gateway &amp; Control Plane</h3>
         <p>
-          SpeedInfer is built from the ground up as a software platform. Rather than reselling raw hardware, we build the algorithms, batching schedulers, caching memory systems, authentication gates, and metering pipelines that make foundation models fast, cost-effective, and safe for mission-critical enterprise applications.
+          SpeedInfer operates strictly as a software control plane. Rather than hosting monolithic compute, we build the authentication gates, token-bucket rate limiters, model routing registries, and authoritative token metering pipelines that connect client applications to model endpoints with zero vendor lock-in.
         </p>
       </div>
       <div class="positioning-col contrast">
-        <h3><span style="font-size:22px;">⚡</span> Accelerated on NVIDIA Computing</h3>
+        <h3><span style="font-size:22px;">⚡</span> Connected NVIDIA Worker Integration</h3>
         <p>
-          Our runtime engine integrates natively with <strong>NVIDIA TensorRT-LLM, NVIDIA Triton, CUDA 12+, and PagedAttention</strong>. By scheduling inference at the iteration level and reusing prompt KV cache blocks across requests, SpeedInfer minimizes Time to First Token (TTFT) and achieves optimal hardware saturation.
+          SpeedInfer integrates with connected workers running <strong>NVIDIA TensorRT-LLM, NVIDIA Triton, CUDA 12+, and PagedAttention</strong> for open-source foundation models, while securely routing proprietary closed-source models to external providers. Connected workers handle low-level continuous batching and KV-cache reuse, with measured latency and transparent per-token billing.
         </p>
       </div>
     </section>
@@ -151,7 +151,7 @@ response = client.chat.completions.create(
         <div class="stack-layer highlight">
           <div class="layer-meta">
             <span class="layer-num">LAYER 02</span>
-            <h4>Inference Gateway</h4>
+            <h4>Inference Gateway (Control Plane)</h4>
           </div>
           <div class="layer-content">
             <p>Handles constant-time HMAC-SHA256 authentication, pre-flight credit verification, dual token-bucket rate limiting (RPM/TPM), and smart fallback routing.</p>
@@ -167,14 +167,14 @@ response = client.chat.completions.create(
         <div class="stack-layer highlight">
           <div class="layer-meta">
             <span class="layer-num">LAYER 03</span>
-            <h4>Orchestration &amp; Caching</h4>
+            <h4>Model Routing &amp; Orchestration</h4>
           </div>
           <div class="layer-content">
-            <p>Iteration-level continuous batching, dynamic prompt prefix caching, and workload-aware routing across active worker nodes.</p>
+            <p>Model registry routing, worker health selection, routing open-source models to connected GPU workers and proprietary closed-source models to external upstream providers.</p>
             <div class="layer-badges">
-              <span>Continuous Batching</span>
-              <span>KV-Cache / Prefix Reuse</span>
-              <span>Low Latency Runtime</span>
+              <span>Worker Health Selection</span>
+              <span>Open-Source Worker Routing</span>
+              <span>External Provider Dispatch</span>
               <span>Model Registry</span>
             </div>
           </div>
@@ -183,15 +183,15 @@ response = client.chat.completions.create(
         <div class="stack-layer">
           <div class="layer-meta">
             <span class="layer-num">LAYER 04</span>
-            <h4>Hardware Acceleration</h4>
+            <h4>Execution Data Plane (Workers &amp; Providers)</h4>
           </div>
           <div class="layer-content">
-            <p>Native integration with NVIDIA accelerated computing architectures (Hopper, Blackwell, Ada Lovelace) via CUDA and TensorRT-LLM.</p>
+            <p>Connected NVIDIA GPU workers execute open models via CUDA, Triton, and TensorRT-LLM (continuous batching, PagedAttention, FP8), while verified external providers serve closed-source models.</p>
             <div class="layer-badges">
               <span>NVIDIA TensorRT-LLM</span>
               <span>NVIDIA Triton</span>
-              <span>CUDA 12+</span>
-              <span>FP8 / AWQ / GPTQ</span>
+              <span>Connected Workers</span>
+              <span>External Providers</span>
             </div>
           </div>
         </div>
@@ -247,47 +247,47 @@ response = client.chat.completions.create(
             </div>
             <h3>Model Registry &amp; Catalog</h3>
             <p class="pillar-desc">
-              Dynamic model catalog supporting hot-registration, versioning, and real-time backend worker health tracking.
+              Unified model catalog indexing open-source foundation models and proprietary closed-source models with real-time health tracking.
             </p>
             <ul class="feature-checklist">
               <li><span class="check">✓</span> <strong>Hot dynamic model registration</strong> with zero gateway downtime</li>
               <li><span class="check">✓</span> <strong>State lifecycle management</strong> (Active, Degraded, Offline)</li>
               <li><span class="check">✓</span> <strong>Automated worker health probing</strong> via active <code>/ready</code> health checks</li>
-              <li><span class="check">✓</span> <strong>Unified model catalog</strong> indexing 33+ open weights and external provider families</li>
+              <li><span class="check">✓</span> <strong>Dual-source catalog</strong>: open-weights (connected workers) &amp; closed-source (external providers)</li>
               <li><span class="check">✓</span> <strong>Dynamic alias routing</strong> (e.g. <code>deepseek</code>, <code>llama</code>, <code>qwen</code>)</li>
             </ul>
           </div>
           <div class="pillar-tags">
             <span>Model Catalog</span>
             <span>Health Probes</span>
-            <span>Hot Reloading</span>
+            <span>Dual Routing</span>
             <span>Aliasing</span>
           </div>
         </article>
 
-        <!-- Pillar 3: Inference Orchestration -->
+        <!-- Pillar 3: Connected Worker Execution -->
         <article class="pillar-card">
           <div>
             <div class="pillar-top">
               <span class="pillar-num">03 / RUNTIME</span>
               <span class="pillar-icon">⚡</span>
             </div>
-            <h3>Inference Orchestration &amp; Runtime</h3>
+            <h3>Connected Worker Execution &amp; Runtime</h3>
             <p class="pillar-desc">
-              High-efficiency scheduling and memory optimization delivering ultra-low latency streaming on NVIDIA architectures.
+              Model execution running on connected NVIDIA GPU workers with continuous batching and PagedAttention, alongside verified external provider routing.
             </p>
             <ul class="feature-checklist">
-              <li><span class="check">✓</span> <strong>Continuous iteration-level batching</strong> for massive concurrent request density</li>
-              <li><span class="check">✓</span> <strong>Prompt &amp; KV Cache reuse</strong> eliminating redundant prefill computation</li>
+              <li><span class="check">✓</span> <strong>Continuous iteration-level batching</strong> running on connected workers for high concurrency</li>
+              <li><span class="check">✓</span> <strong>Prompt &amp; KV Cache reuse</strong> on worker runtimes eliminating redundant prefill computation</li>
               <li><span class="check">✓</span> <strong>PagedAttention memory management</strong> preventing GPU memory fragmentation</li>
-              <li><span class="check">✓</span> <strong>Modern architectures</strong>: DeepSeek V3/R1 (MoE &amp; MLA), Llama 3/4, Qwen 2.5/3, Nemotron</li>
-              <li><span class="check">✓</span> <strong>Hardware quantization</strong>: native FP8, AWQ, and GPTQ acceleration</li>
+              <li><span class="check">✓</span> <strong>Supported architectures</strong>: DeepSeek V3/R1 (MoE &amp; MLA), Llama 3/4, Qwen 2.5/3, Nemotron</li>
+              <li><span class="check">✓</span> <strong>External provider integration</strong> for closed-source models (OpenAI, Anthropic)</li>
             </ul>
           </div>
           <div class="pillar-tags">
-            <span>Continuous Batching</span>
+            <span>Connected Workers</span>
             <span>KV-Cache Reuse</span>
-            <span>Low-Latency TTFT</span>
+            <span>External Providers</span>
             <span>FP8 / MoE</span>
           </div>
         </article>
