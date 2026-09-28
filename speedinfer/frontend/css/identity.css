@@ -35,6 +35,7 @@ html{scroll-behavior:smooth;scroll-padding-top:90px}button,a,input,select,textar
 .technology-hub-card p { max-width:440px; color:#68735c; font-size:13px; line-height:1.8; }
 .technology-hub-card b { display:flex; justify-content:space-between; align-items:center; margin-top:auto; padding-top:25px; font-size:12px; font-weight:600; }
 .technology-hub-card i { font-style:normal; font-size:16px; }
+.technology-hub-wide { grid-column:1 / -1; min-height:210px; }
 .technology-hub-featured { background:#243629; color:#f3f8eb; border-color:#243629; }
 .technology-hub-featured>span,.technology-hub-featured p { color:#b8c8ad; }
 .contact-section { background:#eef2e5; padding-block:75px; margin-bottom:80px; border-block:1px solid #dfe7d3; }

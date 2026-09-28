@@ -19,5 +19,7 @@ logs/
 
 .agents/
 .codex/
+.codex-deck/
+output/
 
 client_secret*.json
