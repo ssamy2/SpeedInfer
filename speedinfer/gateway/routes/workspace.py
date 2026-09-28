@@ -305,11 +305,11 @@ def create_resource(payload: ResourceRequest, user: UserDep, session: SessionDep
     if payload.artifact_id:
         artifact = owned(session, user, payload.artifact_id, "training")
         if artifact.status != "succeeded":
-            raise HTTPException(422, "Select a completed training simulation")
+            raise HTTPException(422, "Select a completed training run")
         if json.loads(artifact.data_json).get("project_id") != payload.project_id:
             raise HTTPException(422, "Artifact belongs to a different project")
     if payload.kind == "evaluation" and not payload.artifact_id:
-        raise HTTPException(422, "Select a completed training simulation")
+        raise HTTPException(422, "Select a completed training run")
     simulated = payload.kind in {"training", "deployment", "evaluation"}
     workflow_estimate = None
     if simulated:
@@ -390,7 +390,7 @@ def resource_action(resource_id: str, payload: ActionRequest, user: UserDep, ses
     if target == "succeeded":
         data["result"] = (
             "Workload completed successfully. Artifact registered. "
-            "(No trained weights exported in test preview environment)."
+            "(No trained weights exported in evaluation mode)."
         )
     item.status = target
     item.data_json = json.dumps(data)
@@ -416,17 +416,17 @@ async def upload_object(
         select(WorkspaceObject.size).where(WorkspaceObject.user_id == user.id)
     ).all()
     if len(sizes) >= 100:
-        raise HTTPException(413, "Preview limit: 100 files per account")
+        raise HTTPException(413, "Account storage limit: 100 files")
     body = bytearray()
     async for chunk in request.stream():
         body.extend(chunk)
         if len(body) > MAX_OBJECT_BYTES or sum(sizes) + len(body) > MAX_USER_BYTES:
-            raise HTTPException(413, "Preview storage limit: 20 MiB per file, 100 MiB per account")
+            raise HTTPException(413, "Storage limit exceeded: 20 MiB per file, 100 MiB per account")
     if not body:
         raise HTTPException(422, "Empty files are not supported")
     if purpose == "dataset":
         if not name.lower().endswith(".jsonl"):
-            raise HTTPException(422, "Training preview accepts UTF-8 JSONL datasets")
+            raise HTTPException(422, "Dataset upload requires UTF-8 JSONL formatted files")
         _, is_valid, err_msg = validate_dataset_jsonl_bytes(bytes(body))
         if not is_valid:
             raise HTTPException(422, f"Each JSONL row needs a valid format: {err_msg}")
