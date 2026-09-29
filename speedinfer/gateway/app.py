@@ -469,6 +469,15 @@ def create_app() -> FastAPI:
                 return FileResponse(sitemap_file, media_type="application/xml")
             raise HTTPException(status_code=404, detail="sitemap.xml not found.")
 
+        @fastapi_app.api_route(
+            "/c3a8b2f91e4d07528e1c6b5a.txt", methods=["GET", "HEAD"], include_in_schema=False
+        )
+        async def serve_indexnow_key() -> FileResponse:
+            key_file = frontend_dir / "c3a8b2f91e4d07528e1c6b5a.txt"
+            if key_file.exists():
+                return FileResponse(key_file, media_type="text/plain")
+            raise HTTPException(status_code=404, detail="Key not found.")
+
         @fastapi_app.api_route("/product", methods=["GET", "HEAD"], include_in_schema=False)
         @fastapi_app.api_route(
             "/product/{full_path:path}", methods=["GET", "HEAD"], include_in_schema=False
@@ -481,6 +490,26 @@ def create_app() -> FastAPI:
             product_file = frontend_dir / "product.html"
             if product_file.exists():
                 return FileResponse(product_file)
+            return FileResponse(frontend_dir / "index.html")
+
+        @fastapi_app.api_route("/pricing", methods=["GET", "HEAD"], include_in_schema=False)
+        @fastapi_app.api_route(
+            "/pricing/{full_path:path}", methods=["GET", "HEAD"], include_in_schema=False
+        )
+        async def serve_pricing_page(full_path: str = "") -> FileResponse:
+            pricing_file = frontend_dir / "pricing.html"
+            if pricing_file.exists():
+                return FileResponse(pricing_file)
+            return FileResponse(frontend_dir / "index.html")
+
+        @fastapi_app.api_route("/models", methods=["GET", "HEAD"], include_in_schema=False)
+        @fastapi_app.api_route(
+            "/models/{full_path:path}", methods=["GET", "HEAD"], include_in_schema=False
+        )
+        async def serve_models_page(full_path: str = "") -> FileResponse:
+            models_file = frontend_dir / "models.html"
+            if models_file.exists():
+                return FileResponse(models_file)
             return FileResponse(frontend_dir / "index.html")
 
 
@@ -564,7 +593,6 @@ def create_app() -> FastAPI:
         @fastapi_app.api_route("/about", methods=["GET", "HEAD"], include_in_schema=False)
         @fastapi_app.api_route("/contact", methods=["GET", "HEAD"], include_in_schema=False)
         @fastapi_app.api_route("/ready", methods=["GET", "HEAD"], include_in_schema=False)
-        @fastapi_app.api_route("/models", methods=["GET", "HEAD"], include_in_schema=False)
         async def serve_spa(full_path: str = "") -> FileResponse:
             index_file = frontend_dir / "index.html"
             return FileResponse(index_file)

@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pricing & Plans — SpeedInfer AI Inference Gateway</title>
+  <meta name="description" content="Transparent, predictable AI model inference pricing. Pay-as-you-go serverless tokens starting at $0.20/1M tokens and dedicated private worker endpoints. Zero hidden fees.">
+  <link rel="canonical" href="https://speedinfer.com/pricing">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="SpeedInfer">
+  <meta property="og:title" content="SpeedInfer Pricing — Transparent AI Inference & Dedicated Capacity">
+  <meta property="og:description" content="Metered token pricing from $0.20 per million tokens. Calculate your AI inference costs with zero idle GPU waste.">
+  <meta property="og:url" content="https://speedinfer.com/pricing">
+  <meta property="og:image" content="https://speedinfer.com/static/assets/speedinfer-social-v1.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="SpeedInfer Pricing — Transparent AI Inference">
+  <meta name="twitter:description" content="Metered token pricing from $0.20 per million tokens. Zero idle GPU waste.">
+  <meta name="twitter:image" content="https://speedinfer.com/static/assets/speedinfer-social-v1.png">
+  
+  <meta name="google-site-verification" content="speedinfer-search-console-verification">
+  <meta name="msvalidate.01" content="speedinfer-bing-verification">
+  
+  <link rel="icon" href="/static/assets/speedinfer-icon.svg">
+  <link rel="stylesheet" href="/static/css/polish.css?v=20260929">
+  <link rel="stylesheet" href="/static/css/theme.css?v=20260929">
+  <link rel="stylesheet" href="/static/css/styles.css?v=20260929">
+  <link rel="stylesheet" href="/static/css/responsive.css?v=20260929">
+  <link rel="stylesheet" href="/static/css/identity.css?v=20260929">
+  <link rel="stylesheet" href="/static/css/product.css?v=20260929">
+
+  <!-- Schema.org Structured Data: Product, Offers, BreadcrumbList, FAQPage -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          {
+            "@type": "ListItem",
+            "position": 1,
+            "name": "Home",
+            "item": "https://speedinfer.com/"
+          },
+          {
+            "@type": "ListItem",
+            "position": 2,
+            "name": "Pricing",
+            "item": "https://speedinfer.com/pricing"
+          }
+        ]
+      },
+      {
+        "@type": "Product",
+        "name": "SpeedInfer AI Inference Gateway",
+        "description": "High-throughput, OpenAI-compatible AI model inference gateway with authoritative token metering.",
+        "brand": {
+          "@type": "Brand",
+          "name": "SpeedInfer"
+        },
+        "offers": [
+          {
+            "@type": "Offer",
+            "name": "Pay-As-You-Go Serverless Inference",
+            "price": "0.20",
+            "priceCurrency": "USD",
+            "description": "$0.20 per 1M input tokens and $0.60 per 1M output tokens for open foundation models.",
+            "availability": "https://schema.org/InStock",
+            "url": "https://speedinfer.com/pricing"
+          },
+          {
+            "@type": "Offer",
+            "name": "Dedicated Standard Worker Endpoint",
+            "price": "0.50",
+            "priceCurrency": "USD",
+            "priceSpecification": {
+              "@type": "UnitPriceSpecification",
+              "price": "0.50",
+              "priceCurrency": "USD",
+              "unitCode": "HUR"
+            },
+            "description": "Dedicated 24GB GPU worker endpoint for isolated parameter serving.",
+            "availability": "https://schema.org/InStock",
+            "url": "https://speedinfer.com/pricing"
+          }
+        ]
+      },
+      {
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "How does SpeedInfer token metering and billing work?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Inference is billed authoritatively per token based on exact upstream consumption. A conservative credit reservation is held when the request starts, and unused balance is refunded immediately when the response completes."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Are there monthly platform fees or minimum spending commitments?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "No. The Pay-As-You-Go API requires no monthly subscription or upfront contract. You only pay for the tokens you generate with prepaid account credits."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Can I use standard OpenAI SDKs with SpeedInfer?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Yes. SpeedInfer is a 100% drop-in replacement for OpenAI API endpoints. Simply point base_url to https://speedinfer.com/v1 and provide your SpeedInfer API key."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "What is the difference between Serverless and Dedicated Endpoints?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Serverless inference routes requests on-demand across shared connected GPU workers and external model providers with zero idle charges. Dedicated Endpoints provide dedicated GPU worker capacity for guaranteed private throughput and custom LoRA adapters."
+            }
+          }
+        ]
+      }
+    ]
+  }
+  </script>
+
+  <style>
+    .pricing-hero {
+      padding: 72px 0 48px;
+      text-align: center;
+    }
+    .pricing-hero h1 {
+      font-size: clamp(36px, 5vw, 60px);
+      line-height: 1.1;
+      letter-spacing: -0.04em;
+      margin: 16px 0;
+      color: var(--text-primary);
+    }
+    .pricing-hero p {
+      max-width: 640px;
+      margin: 0 auto 32px;
+      font-size: 18px;
+      line-height: 1.6;
+      color: var(--text-secondary);
+    }
+    .tier-cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 28px;
+      margin-bottom: 72px;
+    }
+    .tier-card {
+      background: #ffffff;
+      border: 1px solid var(--border-subtle);
+      border-radius: 18px;
+      padding: 40px 32px;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .tier-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 12px 30px rgba(0,0,0,0.06);
+    }
+    .tier-card.featured {
+      background: #fbfdf7;
+      border: 2px solid #bcd87c;
+    }
+    .tier-badge {
+      position: absolute;
+      top: -12px;
+      right: 28px;
+      background: #d5f091;
+      color: #243516;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 4px 12px;
+      border-radius: 20px;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+    .tier-price {
+      font-size: 48px;
+      font-weight: 700;
+      color: var(--text-primary);
+      line-height: 1;
+      margin: 20px 0 8px;
+    }
+    .tier-price small {
+      font-size: 15px;
+      font-weight: 500;
+      color: var(--text-secondary);
+    }
+    .tier-features {
+      list-style: none;
+      padding: 0;
+      margin: 28px 0;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      flex-grow: 1;
+    }
+    .tier-features li {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 14.5px;
+      color: var(--text-secondary);
+    }
+    .tier-features li span {
+      color: #4b7a1f;
+      font-weight: bold;
+    }
+    .comparison-table-wrap {
+      margin: 72px 0;
+      background: #fff;
+      border: 1px solid var(--border-subtle);
+      border-radius: 18px;
+      overflow: hidden;
+      padding: 32px;
+    }
+    .comparison-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14.5px;
+    }
+    .comparison-table th, .comparison-table td {
+      padding: 16px;
+      text-align: left;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+    .comparison-table th {
+      background: #fafbfa;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+    .faq-section {
+      max-width: 820px;
+      margin: 72px auto;
+    }
+    .faq-item {
+      border-bottom: 1px solid var(--border-subtle);
+      padding: 24px 0;
+    }
+    .faq-item h3 {
+      font-size: 18px;
+      margin: 0 0 10px;
+      color: var(--text-primary);
+    }
+    .faq-item p {
+      margin: 0;
+      line-height: 1.6;
+      color: var(--text-secondary);
+      font-size: 15px;
+    }
+  </style>
+</head>
+<body class="pricing-page">
+
+  <!-- Header -->
+  <header class="site-header site-width">
+    <a href="/" class="wordmark" aria-label="SpeedInfer home">
+      <span class="brand-symbol">
+        <svg viewBox="0 0 32 32" fill="none" aria-hidden="true">
+          <path d="M7 8h20L17 16H5l10 8h10" stroke="currentColor" stroke-width="5" stroke-linejoin="round"/>
+        </svg>
+      </span>SpeedInfer<span class="wordmark-period">.</span>
+    </a>
+    <nav aria-label="Main navigation">
+      <a href="/product">Product</a>
+      <a href="/models">Models</a>
+      <a href="/architecture">Architecture</a>
+      <a href="/nvidia">NVIDIA Stack</a>
+      <a href="/pricing" aria-current="page" style="font-weight:700; color:var(--text-primary); text-decoration:underline; text-underline-offset:6px;">Pricing</a>
+      <a href="/company/team">Company</a>
+      <a href="/docs">Docs ↗</a>
+    </nav>
+    <div class="site-actions">
+      <a class="text-button" href="/">Home</a>
+      <a class="btn ink-button" href="/app">Developer Console <span>↗</span></a>
+    </div>
+  </header>
+
+  <main class="site-width" id="main">
+    <!-- Hero -->
+    <section class="pricing-hero">
+      <div class="eyebrow"><span class="small-orbit"></span> TRANSPARENT &amp; METERED PRICING</div>
+      <h1>Predictable compute.<br><em>Zero idle waste.</em></h1>
+      <p>Pay solely for the tokens you stream across top open foundation models, or plan dedicated worker endpoints with dedicated orchestration.</p>
+    </section>
+
+    <!-- Pricing Cards -->
+    <div class="tier-cards">
+      <!-- Pay As You Go -->
+      <article class="tier-card featured">
+        <div class="tier-badge">Developer Choice</div>
+        <div class="eyebrow" style="color:#577227;">SERVERLESS INFERENCE</div>
+        <h2 style="font-size:24px; margin:8px 0 0;">Pay-As-You-Go API</h2>
+        <p style="font-size:13.5px; color:var(--text-secondary); margin-top:6px;">Instant access via OpenAI SDK. High availability with zero monthly commitments.</p>
+        
+        <div class="tier-price">
+          $0.20 <small>/ 1M prompt tokens</small>
+        </div>
+        <div style="font-size:18px; font-weight:600; color:var(--text-primary); margin-bottom:12px;">
+          $0.60 <small style="font-size:13px; color:var(--text-secondary); font-weight:normal;">/ 1M completion tokens</small>
+        </div>
+
+        <ul class="tier-features">
+          <li><span>✓</span> Drop-in OpenAI API SDK compatibility</li>
+          <li><span>✓</span> Real-time Server-Sent Events (SSE) streaming</li>
+          <li><span>✓</span> Dual-source routing: Connected workers &amp; closed providers</li>
+          <li><span>✓</span> Authoritative exact token metering &amp; refunds</li>
+          <li><span>✓</span> Scoped API keys with per-key RPM &amp; TPM limits</li>
+          <li><span>✓</span> No minimum commitment or monthly fee</li>
+        </ul>
+
+        <a class="btn ink-button" href="/app" style="width:100%; justify-content:center;">Start Free Trial <span>↗</span></a>
+      </article>
+
+      <!-- Dedicated Endpoints -->
+      <article class="tier-card">
+        <div class="tier-badge" style="background:#e8ecd9; color:#495632;">Production Ready</div>
+        <div class="eyebrow" style="color:#577227;">MANAGED WORKERS</div>
+        <h2 style="font-size:24px; margin:8px 0 0;">Dedicated Endpoints</h2>
+        <p style="font-size:13.5px; color:var(--text-secondary); margin-top:6px;">Isolated parameter scaling, custom LoRA adapter serving, and predictable dedicated latency.</p>
+        
+        <div class="tier-price">
+          $0.50 <small>/ hour starting</small>
+        </div>
+        <div style="font-size:14px; color:var(--text-secondary); margin-bottom:12px;">
+          Available in 24GB, 48GB, and 80GB worker profiles
+        </div>
+
+        <ul class="tier-features">
+          <li><span>✓</span> Dedicated GPU memory for zero-queue latency</li>
+          <li><span>✓</span> Custom LoRA &amp; QLoRA fine-tuned checkpoint deployment</li>
+          <li><span>✓</span> Dynamic tensor parallelism &amp; FP8 acceleration</li>
+          <li><span>✓</span> Private VPC networking &amp; custom security boundaries</li>
+          <li><span>✓</span> S3-compatible dataset &amp; weights bucket storage</li>
+          <li><span>✓</span> Enterprise telemetry and custom SLA agreements</li>
+        </ul>
+
+        <a class="btn lime-button" href="mailto:sales@speedinfer.com" style="width:100%; justify-content:center;">Talk to Sales <span>↗</span></a>
+      </article>
+    </div>
+
+    <!-- Models Rates Table -->
+    <section class="comparison-table-wrap">
+      <div class="eyebrow" style="color:#577227; margin-bottom:8px;">TOKEN PRICING BREAKDOWN</div>
+      <h2 style="font-size:24px; margin:0 0 20px;">Foundation Models Catalog Pricing</h2>
+      <table class="comparison-table">
+        <thead>
+          <tr>
+            <th>Model</th>
+            <th>Type</th>
+            <th>Context Window</th>
+            <th>Input (per 1M)</th>
+            <th>Output (per 1M)</th>
+            <th>Execution Layer</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>DeepSeek V3 (671B MoE)</strong></td>
+            <td>Open Weights</td>
+            <td>64,000</td>
+            <td>$0.20</td>
+            <td>$0.60</td>
+            <td>Connected NVIDIA GPU Worker</td>
+          </tr>
+          <tr>
+            <td><strong>DeepSeek R1 (Reasoning)</strong></td>
+            <td>Open Weights</td>
+            <td>64,000</td>
+            <td>$0.40</td>
+            <td>$1.80</td>
+            <td>Connected NVIDIA GPU Worker</td>
+          </tr>
+          <tr>
+            <td><strong>Meta Llama 3.3 70B Instruct</strong></td>
+            <td>Open Weights</td>
+            <td>128,000</td>
+            <td>$0.35</td>
+            <td>$0.90</td>
+            <td>Connected NVIDIA GPU Worker</td>
+          </tr>
+          <tr>
+            <td><strong>Qwen 2.5 72B Instruct</strong></td>
+            <td>Open Weights</td>
+            <td>32,768</td>
+            <td>$0.35</td>
+            <td>$0.90</td>
+            <td>Connected NVIDIA GPU Worker</td>
+          </tr>
+          <tr>
+            <td><strong>NVIDIA Nemotron 70B</strong></td>
+            <td>Open Weights</td>
+            <td>32,768</td>
+            <td>$0.35</td>
+            <td>$0.90</td>
+            <td>TensorRT-LLM Connected Worker</td>
+          </tr>
+          <tr>
+            <td><strong>OpenAI GPT-4o</strong></td>
+            <td>Proprietary</td>
+            <td>128,000</td>
+            <td>$2.50</td>
+            <td>$10.00</td>
+            <td>External Provider Routing</td>
+          </tr>
+          <tr>
+            <td><strong>Anthropic Claude 3.5 Sonnet</strong></td>
+            <td>Proprietary</td>
+            <td>200,000</td>
+            <td>$3.00</td>
+            <td>$15.00</td>
+            <td>External Provider Routing</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- FAQ -->
+    <section class="faq-section">
+      <div class="eyebrow" style="text-align:center; color:#577227;">FREQUENTLY ASKED QUESTIONS</div>
+      <h2 style="text-align:center; font-size:32px; margin:12px 0 36px;">Everything you need to know about billing.</h2>
+      
+      <div class="faq-item">
+        <h3>How does SpeedInfer handle credit reservations?</h3>
+        <p>Before dispatching inference to a worker, the gateway reserves a conservative balance based on your requested max_tokens. When the response finishes, SpeedInfer authoritatively settles against the exact tokens reported by the runtime engine and immediately refunds unconsumed credits to your balance.</p>
+      </div>
+
+      <div class="faq-item">
+        <h3>What payment methods are supported?</h3>
+        <p>Prepaid credit top-ups are processed securely via certified PCI-DSS compliant payment gateways (supporting credit cards, debit cards, and Apple Pay). Enterprise custom invoicing with wire transfers is available for monthly volumes over $2,000.</p>
+      </div>
+
+      <div class="faq-item">
+        <h3>Are failed or interrupted requests billed?</h3>
+        <p>No. If a model worker experiences an unrecoverable failure or disconnects mid-stream, the reservation is released and your balance is not charged for unserved completions.</p>
+      </div>
+
+      <div class="faq-item">
+        <h3>Can I host my fine-tuned LoRA checkpoints?</h3>
+        <p>Yes. Custom LoRA adapters fine-tuned on SpeedInfer or uploaded through S3-compatible buckets can be loaded onto Dedicated Endpoints or hot-swapped for low-latency specialized inference.</p>
+      </div>
+    </section>
+
+    <!-- Call to Action -->
+    <section class="product-cta" style="margin-bottom:72px;">
+      <div>
+        <h2>Ready to build with SpeedInfer?</h2>
+        <p>Sign up now, create an API key, and begin making inference calls with instant trial credit.</p>
+      </div>
+      <div style="display:flex; gap:16px; flex-wrap:wrap;">
+        <a class="btn ink-button" href="/app">Start Building <span>↗</span></a>
+        <a class="btn btn-secondary" href="/docs">Read API Docs <span>↗</span></a>
+      </div>
+    </section>
+  </main>
+
+  <!-- Footer -->
+  <footer class="site-footer site-width">
+    <div>
+      <a class="wordmark" href="/">SpeedInfer.</a>
+      <p>Open intelligence. In your hands.</p>
+    </div>
+    <nav aria-label="Footer navigation">
+      <a href="/product">Product</a>
+      <a href="/models">Models</a>
+      <a href="/pricing" aria-current="page">Pricing</a>
+      <a href="/architecture">Architecture</a>
+      <a href="/nvidia">NVIDIA Stack</a>
+      <a href="/company/team">Company &amp; Team</a>
+      <a href="/guide">Developer guide</a>
+      <a href="/terms">Terms</a>
+      <a href="/privacy">Privacy</a>
+      <a href="/docs">Docs ↗</a>
+      <a href="mailto:sales@speedinfer.com">Contact ↗</a>
+    </nav>
+    <small>© 2026 Megsy for Digital Platforms Development and E-Commerce L.L.C · Operating SpeedInfer · Cairo, Egypt</small>
+  </footer>
+
+</body>
+</html>

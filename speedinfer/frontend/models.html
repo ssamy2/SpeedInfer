@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Supported Foundation Models Catalog &amp; API — SpeedInfer</title>
+  <meta name="description" content="Explore state-of-the-art open-weights and proprietary models available on SpeedInfer. DeepSeek V3, DeepSeek R1, Meta Llama 3.3, Qwen 2.5, Nemotron, Mistral, GPT-4o, and Claude 3.5.">
+  <link rel="canonical" href="https://speedinfer.com/models">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="SpeedInfer">
+  <meta property="og:title" content="Foundation Models Catalog — SpeedInfer">
+  <meta property="og:description" content="Single OpenAI-compatible API for open-weights and proprietary models with low latency and metered billing.">
+  <meta property="og:url" content="https://speedinfer.com/models">
+  <meta property="og:image" content="https://speedinfer.com/static/assets/speedinfer-social-v1.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Foundation Models Catalog — SpeedInfer">
+  <meta name="twitter:description" content="Single OpenAI-compatible API for leading open and closed LLMs.">
+  <meta name="twitter:image" content="https://speedinfer.com/static/assets/speedinfer-social-v1.png">
+
+  <meta name="google-site-verification" content="speedinfer-search-console-verification">
+  <meta name="msvalidate.01" content="speedinfer-bing-verification">
+
+  <link rel="icon" href="/static/assets/speedinfer-icon.svg">
+  <link rel="stylesheet" href="/static/css/polish.css?v=20260929">
+  <link rel="stylesheet" href="/static/css/theme.css?v=20260929">
+  <link rel="stylesheet" href="/static/css/styles.css?v=20260929">
+  <link rel="stylesheet" href="/static/css/responsive.css?v=20260929">
+  <link rel="stylesheet" href="/static/css/identity.css?v=20260929">
+  <link rel="stylesheet" href="/static/css/product.css?v=20260929">
+
+  <!-- Schema.org Structured Data: ItemList of Models & Breadcrumbs -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          {
+            "@type": "ListItem",
+            "position": 1,
+            "name": "Home",
+            "item": "https://speedinfer.com/"
+          },
+          {
+            "@type": "ListItem",
+            "position": 2,
+            "name": "Models",
+            "item": "https://speedinfer.com/models"
+          }
+        ]
+      },
+      {
+        "@type": "ItemList",
+        "name": "SpeedInfer Supported Foundation Models",
+        "description": "Catalog of leading AI models available through the unified SpeedInfer OpenAI-compatible API gateway.",
+        "itemListElement": [
+          {
+            "@type": "ListItem",
+            "position": 1,
+            "name": "DeepSeek V3 (671B MoE)",
+            "description": "High-throughput open mixture-of-experts model optimized for general reasoning and code."
+          },
+          {
+            "@type": "ListItem",
+            "position": 2,
+            "name": "DeepSeek R1 (Reasoning)",
+            "description": "Open reasoning and chain-of-thought model trained with large-scale reinforcement learning."
+          },
+          {
+            "@type": "ListItem",
+            "position": 3,
+            "name": "Meta Llama 3.3 70B Instruct",
+            "description": "Enterprise-grade instruction-tuned model with 128K context window."
+          },
+          {
+            "@type": "ListItem",
+            "position": 4,
+            "name": "Qwen 2.5 72B Instruct",
+            "description": "Multilingual and coding-optimized open model by Alibaba Cloud."
+          },
+          {
+            "@type": "ListItem",
+            "position": 5,
+            "name": "NVIDIA Nemotron 70B",
+            "description": "Synthetic data generation and agentic reasoning model optimized for TensorRT-LLM."
+          },
+          {
+            "@type": "ListItem",
+            "position": 6,
+            "name": "OpenAI GPT-4o",
+            "description": "Omni-modal flagship model from OpenAI routed via upstream provider integration."
+          },
+          {
+            "@type": "ListItem",
+            "position": 7,
+            "name": "Anthropic Claude 3.5 Sonnet",
+            "description": "Industry-leading reasoning and artifact generation model routed via upstream provider integration."
+          }
+        ]
+      }
+    ]
+  }
+  </script>
+
+  <style>
+    .models-hero {
+      padding: 64px 0 36px;
+      text-align: center;
+    }
+    .models-hero h1 {
+      font-size: clamp(34px, 5vw, 56px);
+      line-height: 1.1;
+      letter-spacing: -0.04em;
+      margin: 16px 0;
+      color: var(--text-primary);
+    }
+    .models-hero p {
+      max-width: 680px;
+      margin: 0 auto 32px;
+      font-size: 18px;
+      line-height: 1.6;
+      color: var(--text-secondary);
+    }
+    .filter-bar {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 40px;
+    }
+    .filter-btn {
+      padding: 8px 18px;
+      border-radius: 20px;
+      border: 1px solid var(--border-subtle);
+      background: #fff;
+      font-size: 13.5px;
+      font-weight: 500;
+      cursor: pointer;
+      color: var(--text-secondary);
+      transition: all 0.2s ease;
+    }
+    .filter-btn.active, .filter-btn:hover {
+      background: #111a14;
+      color: #e5f0d7;
+      border-color: #111a14;
+    }
+    .models-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+      gap: 24px;
+      margin-bottom: 72px;
+    }
+    .model-card {
+      background: #ffffff;
+      border: 1px solid var(--border-subtle);
+      border-radius: 16px;
+      padding: 28px;
+      display: flex;
+      flex-direction: column;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .model-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 24px rgba(0,0,0,0.05);
+    }
+    .model-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+    .model-badge {
+      font-size: 11px;
+      font-weight: 700;
+      padding: 3px 10px;
+      border-radius: 12px;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+    .badge-open {
+      background: #eef7dc;
+      color: #3f681a;
+      border: 1px solid #d4eb9b;
+    }
+    .badge-closed {
+      background: #f1f3f5;
+      color: #495057;
+      border: 1px solid #dee2e6;
+    }
+    .model-title {
+      font-size: 20px;
+      font-weight: 600;
+      margin: 0 0 6px;
+      color: var(--text-primary);
+    }
+    .model-meta {
+      font-size: 13px;
+      color: var(--text-secondary);
+      margin-bottom: 16px;
+      line-height: 1.5;
+    }
+    .model-specs {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      padding: 14px 0;
+      border-top: 1px solid var(--border-subtle);
+      border-bottom: 1px solid var(--border-subtle);
+      margin-bottom: 20px;
+      font-size: 13px;
+    }
+    .spec-label {
+      color: var(--text-secondary);
+      margin-bottom: 2px;
+    }
+    .spec-val {
+      font-weight: 600;
+      color: var(--text-primary);
+      font-family: var(--font-mono);
+    }
+    .model-cta {
+      margin-top: auto;
+      display: flex;
+      gap: 10px;
+    }
+    .code-preview {
+      background: #111a14;
+      color: #dcf890;
+      padding: 20px;
+      border-radius: 14px;
+      font-family: var(--font-mono);
+      font-size: 13.5px;
+      overflow-x: auto;
+      margin: 32px 0 72px;
+    }
+  </style>
+</head>
+<body class="models-page">
+
+  <!-- Header -->
+  <header class="site-header site-width">
+    <a href="/" class="wordmark" aria-label="SpeedInfer home">
+      <span class="brand-symbol">
+        <svg viewBox="0 0 32 32" fill="none" aria-hidden="true">
+          <path d="M7 8h20L17 16H5l10 8h10" stroke="currentColor" stroke-width="5" stroke-linejoin="round"/>
+        </svg>
+      </span>SpeedInfer<span class="wordmark-period">.</span>
+    </a>
+    <nav aria-label="Main navigation">
+      <a href="/product">Product</a>
+      <a href="/models" aria-current="page" style="font-weight:700; color:var(--text-primary); text-decoration:underline; text-underline-offset:6px;">Models</a>
+      <a href="/pricing">Pricing</a>
+      <a href="/architecture">Architecture</a>
+      <a href="/nvidia">NVIDIA Stack</a>
+      <a href="/company/team">Company</a>
+      <a href="/docs">Docs ↗</a>
+    </nav>
+    <div class="site-actions">
+      <a class="text-button" href="/">Home</a>
+      <a class="btn ink-button" href="/app">Developer Console <span>↗</span></a>
+    </div>
+  </header>
+
+  <main class="site-width" id="main">
+    <!-- Hero -->
+    <section class="models-hero">
+      <div class="eyebrow"><span class="small-orbit"></span> UNIFIED INFERENCE CATALOG</div>
+      <h1>Every leading model.<br><em>One OpenAI-compatible API.</em></h1>
+      <p>Stream tokens from high-efficiency open foundation models hosted on connected GPU workers or access proprietary models through unified gateway routing.</p>
+      
+      <!-- Filter Bar -->
+      <div class="filter-bar">
+        <button class="filter-btn active" data-filter="all">All Models</button>
+        <button class="filter-btn" data-filter="open">Open Weights (GPU Workers)</button>
+        <button class="filter-btn" data-filter="reasoning">Reasoning &amp; Math</button>
+        <button class="filter-btn" data-filter="coding">Code Generation</button>
+        <button class="filter-btn" data-filter="proprietary">Closed APIs</button>
+      </div>
+    </section>
+
+    <!-- Models Grid -->
+    <div class="models-grid">
+
+      <!-- DeepSeek V3 -->
+      <article class="model-card" data-category="open coding">
+        <div class="model-header">
+          <span class="model-badge badge-open">Connected Worker</span>
+          <span style="font-size:12px; color:var(--text-secondary); font-family:var(--font-mono);">671B (37B active)</span>
+        </div>
+        <h2 class="model-title">DeepSeek V3</h2>
+        <p class="model-meta">High-throughput mixture-of-experts model excelling at complex coding, mathematics, and multilingual tasks.</p>
+        <div class="model-specs">
+          <div><div class="spec-label">Context Window</div><div class="spec-val">64,000 tokens</div></div>
+          <div><div class="spec-label">Input / Output Rate</div><div class="spec-val">$0.20 / $0.60 per 1M</div></div>
+          <div><div class="spec-label">Architecture</div><div class="spec-val">Multi-head Latent Attn</div></div>
+          <div><div class="spec-label">Execution</div><div class="spec-val">Connected Worker</div></div>
+        </div>
+        <div class="model-cta">
+          <a class="btn ink-button" href="/app" style="flex:1; justify-content:center;">Test in Console <span>↗</span></a>
+          <a class="outline-link" href="/docs#chat-completions" style="padding:10px 14px;">Docs ↗</a>
+        </div>
+      </article>
+
+      <!-- DeepSeek R1 -->
+      <article class="model-card" data-category="open reasoning">
+        <div class="model-header">
+          <span class="model-badge badge-open">Connected Worker</span>
+          <span style="font-size:12px; color:var(--text-secondary); font-family:var(--font-mono);">Reasoning CoT</span>
+        </div>
+        <h2 class="model-title">DeepSeek R1</h2>
+        <p class="model-meta">Open reasoning model trained via large-scale reinforcement learning. Features full chain-of-thought outputs.</p>
+        <div class="model-specs">
+          <div><div class="spec-label">Context Window</div><div class="spec-val">64,000 tokens</div></div>
+          <div><div class="spec-label">Input / Output Rate</div><div class="spec-val">$0.40 / $1.80 per 1M</div></div>
+          <div><div class="spec-label">MATH-500 Score</div><div class="spec-val">90.2% verified</div></div>
+          <div><div class="spec-label">Execution</div><div class="spec-val">Connected Worker</div></div>
+        </div>
+        <div class="model-cta">
+          <a class="btn ink-button" href="/app" style="flex:1; justify-content:center;">Test in Console <span>↗</span></a>
+          <a class="outline-link" href="/docs#chat-completions" style="padding:10px 14px;">Docs ↗</a>
+        </div>
+      </article>
+
+      <!-- Meta Llama 3.3 70B -->
+      <article class="model-card" data-category="open coding">
+        <div class="model-header">
+          <span class="model-badge badge-open">Connected Worker</span>
+          <span style="font-size:12px; color:var(--text-secondary); font-family:var(--font-mono);">70B Dense</span>
+        </div>
+        <h2 class="model-title">Llama 3.3 70B Instruct</h2>
+        <p class="model-meta">Meta’s flagship instruction-tuned open model with native 128K context for enterprise-grade reasoning and summarization.</p>
+        <div class="model-specs">
+          <div><div class="spec-label">Context Window</div><div class="spec-val">128,000 tokens</div></div>
+          <div><div class="spec-label">Input / Output Rate</div><div class="spec-val">$0.35 / $0.90 per 1M</div></div>
+          <div><div class="spec-label">Architecture</div><div class="spec-val">Grouped-Query Attn</div></div>
+          <div><div class="spec-label">Execution</div><div class="spec-val">Connected Worker</div></div>
+        </div>
+        <div class="model-cta">
+          <a class="btn ink-button" href="/app" style="flex:1; justify-content:center;">Test in Console <span>↗</span></a>
+          <a class="outline-link" href="/docs#chat-completions" style="padding:10px 14px;">Docs ↗</a>
+        </div>
+      </article>
+
+      <!-- Qwen 2.5 72B -->
+      <article class="model-card" data-category="open coding math">
+        <div class="model-header">
+          <span class="model-badge badge-open">Connected Worker</span>
+          <span style="font-size:12px; color:var(--text-secondary); font-family:var(--font-mono);">72B Dense</span>
+        </div>
+        <h2 class="model-title">Qwen 2.5 72B Instruct</h2>
+        <p class="model-meta">Alibaba's premier open language model with outstanding benchmark performance in mathematics, coding, and multilingual tasks.</p>
+        <div class="model-specs">
+          <div><div class="spec-label">Context Window</div><div class="spec-val">32,768 tokens</div></div>
+          <div><div class="spec-label">Input / Output Rate</div><div class="spec-val">$0.35 / $0.90 per 1M</div></div>
+          <div><div class="spec-label">MATH-500 Score</div><div class="spec-val">83.1% verified</div></div>
+          <div><div class="spec-label">Execution</div><div class="spec-val">Connected Worker</div></div>
+        </div>
+        <div class="model-cta">
+          <a class="btn ink-button" href="/app" style="flex:1; justify-content:center;">Test in Console <span>↗</span></a>
+          <a class="outline-link" href="/docs#chat-completions" style="padding:10px 14px;">Docs ↗</a>
+        </div>
+      </article>
+
+      <!-- NVIDIA Nemotron 70B -->
+      <article class="model-card" data-category="open reasoning">
+        <div class="model-header">
+          <span class="model-badge badge-open">TensorRT-LLM</span>
+          <span style="font-size:12px; color:var(--text-secondary); font-family:var(--font-mono);">70B Agentic</span>
+        </div>
+        <h2 class="model-title">NVIDIA Nemotron 70B</h2>
+        <p class="model-meta">Optimized by NVIDIA for high-efficiency agentic workflows, synthetic data generation, and enterprise LLM pipelines.</p>
+        <div class="model-specs">
+          <div><div class="spec-label">Context Window</div><div class="spec-val">32,768 tokens</div></div>
+          <div><div class="spec-label">Input / Output Rate</div><div class="spec-val">$0.35 / $0.90 per 1M</div></div>
+          <div><div class="spec-label">Hardware Target</div><div class="spec-val">NVIDIA TensorRT-LLM</div></div>
+          <div><div class="spec-label">Execution</div><div class="spec-val">Connected Worker</div></div>
+        </div>
+        <div class="model-cta">
+          <a class="btn ink-button" href="/app" style="flex:1; justify-content:center;">Test in Console <span>↗</span></a>
+          <a class="outline-link" href="/nvidia" style="padding:10px 14px;">NVIDIA Stack ↗</a>
+        </div>
+      </article>
+
+      <!-- OpenAI GPT-4o -->
+      <article class="model-card" data-category="proprietary">
+        <div class="model-header">
+          <span class="model-badge badge-closed">External API</span>
+          <span style="font-size:12px; color:var(--text-secondary); font-family:var(--font-mono);">Proprietary</span>
+        </div>
+        <h2 class="model-title">OpenAI GPT-4o</h2>
+        <p class="model-meta">OpenAI's high-intelligence flagship model seamlessly accessible under the same SpeedInfer API keys and unified billing.</p>
+        <div class="model-specs">
+          <div><div class="spec-label">Context Window</div><div class="spec-val">128,000 tokens</div></div>
+          <div><div class="spec-label">Input / Output Rate</div><div class="spec-val">$2.50 / $10.00 per 1M</div></div>
+          <div><div class="spec-label">Routing</div><div class="spec-val">External Upstream Provider</div></div>
+          <div><div class="spec-label">Billing</div><div class="spec-val">Unified Metering</div></div>
+        </div>
+        <div class="model-cta">
+          <a class="btn ink-button" href="/app" style="flex:1; justify-content:center;">Test in Console <span>↗</span></a>
+          <a class="outline-link" href="/docs" style="padding:10px 14px;">API Docs ↗</a>
+        </div>
+      </article>
+
+    </div>
+
+    <!-- Quickstart Code -->
+    <section>
+      <div class="eyebrow" style="color:#577227;">RAPID INTEGRATION</div>
+      <h2 style="font-size:26px; margin:8px 0 16px;">Call any model with the standard OpenAI SDK</h2>
+      <pre class="code-preview"><code>import os
+from openai import OpenAI
+
+# Simply configure your SpeedInfer credentials
+client = OpenAI(
+    base_url="https://speedinfer.com/v1",
+    api_key=os.environ.get("SPEEDINFER_API_KEY"),
+)
+
+# Call any open foundation model or proprietary closed model
+response = client.chat.completions.create(
+    model="deepseek-ai/DeepSeek-V3",  # Or "meta-llama/Llama-3.3-70B-Instruct"
+    messages=[
+        {"role": "system", "content": "You are an expert software architect."},
+        {"role": "user", "content": "Explain KV-cache reuse in high-concurrency LLM inference."}
+    ],
+    max_tokens=256,
+    temperature=0.7,
+    stream=True
+)
+
+for chunk in response:
+    content = chunk.choices[0].delta.content or ""
+    print(content, end="", flush=True)</code></pre>
+    </section>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="site-footer site-width">
+    <div>
+      <a class="wordmark" href="/">SpeedInfer.</a>
+      <p>Open intelligence. In your hands.</p>
+    </div>
+    <nav aria-label="Footer navigation">
+      <a href="/product">Product</a>
+      <a href="/models" aria-current="page">Models</a>
+      <a href="/pricing">Pricing</a>
+      <a href="/architecture">Architecture</a>
+      <a href="/nvidia">NVIDIA Stack</a>
+      <a href="/company/team">Company &amp; Team</a>
+      <a href="/guide">Developer guide</a>
+      <a href="/terms">Terms</a>
+      <a href="/privacy">Privacy</a>
+      <a href="/docs">Docs ↗</a>
+      <a href="mailto:sales@speedinfer.com">Contact ↗</a>
+    </nav>
+    <small>© 2026 Megsy for Digital Platforms Development and E-Commerce L.L.C · Operating SpeedInfer · Cairo, Egypt</small>
+  </footer>
+
+  <script>
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        const filter = btn.dataset.filter;
+        document.querySelectorAll('.model-card').forEach(card => {
+          if (filter === 'all') {
+            card.style.display = 'flex';
+          } else {
+            const categories = card.dataset.category || '';
+            card.style.display = categories.includes(filter) ? 'flex' : 'none';
+          }
+        });
+      });
+    });
+  </script>
+
+</body>
+</html>

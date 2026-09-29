@@ -1,4 +1,15 @@
 User-agent: *
 Allow: /
+Disallow: /v1/auth/
+Disallow: /v1/keys/
+Disallow: /v1/workspace/
+Disallow: /auth/
+Disallow: /app/
+
+# Explicitly allow public APIs and documentation assets
+Allow: /v1/models
+Allow: /v1/health
+Allow: /api/docs
+Allow: /static/
 
 Sitemap: https://speedinfer.com/sitemap.xml
