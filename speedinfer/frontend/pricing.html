@@ -72,16 +72,8 @@
           },
           {
             "@type": "Offer",
-            "name": "Dedicated Standard Worker Endpoint",
-            "price": "0.50",
-            "priceCurrency": "USD",
-            "priceSpecification": {
-              "@type": "UnitPriceSpecification",
-              "price": "0.50",
-              "priceCurrency": "USD",
-              "unitCode": "HUR"
-            },
-            "description": "Dedicated 24GB GPU worker endpoint for isolated parameter serving.",
+            "name": "Enterprise Dedicated Endpoints",
+            "description": "Single-tenant private model deployment with guaranteed provisioned throughput and enterprise SLA.",
             "availability": "https://schema.org/InStock",
             "url": "https://speedinfer.com/pricing"
           }
@@ -119,7 +111,7 @@
             "name": "What is the difference between Serverless and Dedicated Endpoints?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Serverless inference routes requests on-demand across shared connected GPU workers and external model providers with zero idle charges. Dedicated Endpoints provide dedicated GPU worker capacity for guaranteed private throughput and custom LoRA adapters."
+              "text": "Serverless inference routes requests on-demand across shared connected model workers and external providers with zero idle charges. Dedicated Endpoints provide isolated single-tenant model instances with guaranteed concurrency and custom fine-tuned LoRA checkpoints for enterprise production workloads."
             }
           }
         ]
@@ -324,20 +316,20 @@
 
       <!-- Dedicated Endpoints -->
       <article class="tier-card">
-        <div class="tier-badge" style="background:#e8ecd9; color:#495632;">Production Ready</div>
-        <div class="eyebrow" style="color:#577227;">MANAGED WORKERS</div>
+        <div class="tier-badge" style="background:#e8ecd9; color:#495632;">Enterprise Tier</div>
+        <div class="eyebrow" style="color:#577227;">PROVISIONED CAPACITY</div>
         <h2 style="font-size:24px; margin:8px 0 0;">Dedicated Endpoints</h2>
-        <p style="font-size:13.5px; color:var(--text-secondary); margin-top:6px;">Isolated parameter scaling, custom LoRA adapter serving, and predictable dedicated latency.</p>
+        <p style="font-size:13.5px; color:var(--text-secondary); margin-top:6px;">Isolated single-tenant model serving, custom LoRA weights, and guaranteed provisioned throughput.</p>
         
         <div class="tier-price">
-          $0.50 <small>/ hour starting</small>
+          Custom <small style="font-size:15px; color:var(--text-secondary); font-weight:normal;">/ tailored concurrency</small>
         </div>
         <div style="font-size:14px; color:var(--text-secondary); margin-bottom:12px;">
-          Available in 24GB, 48GB, and 80GB worker profiles
+          Tailored to your production volume and SLA requirements
         </div>
 
         <ul class="tier-features">
-          <li><span>✓</span> Dedicated GPU memory for zero-queue latency</li>
+          <li><span>✓</span> Single-tenant model isolation for zero-queue latency</li>
           <li><span>✓</span> Custom LoRA &amp; QLoRA fine-tuned checkpoint deployment</li>
           <li><span>✓</span> Dynamic tensor parallelism &amp; FP8 acceleration</li>
           <li><span>✓</span> Private VPC networking &amp; custom security boundaries</li>
