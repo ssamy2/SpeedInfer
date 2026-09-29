@@ -191,14 +191,68 @@
           {
                     "@type": "ListItem",
                     "position": 26,
-                    "name": "OpenAI GPT-4o (Omni Model)",
-                    "description": "OpenAI flagship intelligence routed through SpeedInfer unified keys with instant upstream fallback. Context: 128,000 tokens. Rates: $2.5000 input / $10.0000 output per 1M."
+                    "name": "GPT-5.6 Sol (Frontier \u00b7 Multimodal)",
+                    "description": "OpenAI flagship intelligence delivering premier reasoning, advanced code synthesis, and 1M multimodal context. Context: 1,050,000 tokens. Rates: $2.1000 input / $10.5000 output per 1M."
           },
           {
                     "@type": "ListItem",
                     "position": 27,
-                    "name": "Claude 3.5 Sonnet (Frontier Model)",
-                    "description": "Industry standard model for complex software engineering and multi-step reasoning tasks. Context: 200,000 tokens. Rates: $3.0000 input / $15.0000 output per 1M."
+                    "name": "GPT-5.6 Terra (Multimodal \u00b7 Reasoning)",
+                    "description": "Balanced frontier workload model combining rapid generative throughput with rigorous multi-step problem solving. Context: 1,050,000 tokens. Rates: $2.1000 input / $12.6000 output per 1M."
+          },
+          {
+                    "@type": "ListItem",
+                    "position": 28,
+                    "name": "GPT-5.6 Luna (Multimodal \u00b7 Efficient)",
+                    "description": "High-volume, ultra-cost-efficient multimodal model designed for large-scale enterprise automation. Context: 1,050,000 tokens. Rates: $0.2100 input / $1.2600 output per 1M."
+          },
+          {
+                    "@type": "ListItem",
+                    "position": 29,
+                    "name": "OpenAI o1 (Deep Reasoning CoT)",
+                    "description": "OpenAI chain-of-thought reasoning model designed to deliberate before answering complex scientific and coding problems. Context: 200,000 tokens. Rates: $15.7500 input / $63.0000 output per 1M."
+          },
+          {
+                    "@type": "ListItem",
+                    "position": 30,
+                    "name": "OpenAI o3-mini (Fast Reasoning STEM)",
+                    "description": "High-speed reasoning model specialized in STEM, competitive coding, and multi-step logic at low token latency. Context: 200,000 tokens. Rates: $1.1550 input / $4.6200 output per 1M."
+          },
+          {
+                    "@type": "ListItem",
+                    "position": 31,
+                    "name": "OpenAI GPT-4o (Omni Model)",
+                    "description": "Versatile omni-modal intelligence with native image, text, and structured JSON parsing under unified API keys. Context: 128,000 tokens. Rates: $2.6250 input / $10.5000 output per 1M."
+          },
+          {
+                    "@type": "ListItem",
+                    "position": 32,
+                    "name": "Claude Fable 5 (Adaptive Reasoning \u00b7 Vision)",
+                    "description": "Anthropic pinnacle frontier intelligence for adaptive reasoning, deep research, and high-consequence complex workflows. Context: 1,000,000 tokens. Rates: $10.5000 input / $52.5000 output per 1M."
+          },
+          {
+                    "@type": "ListItem",
+                    "position": 33,
+                    "name": "Claude Opus 5 (Deep Agents & Coding)",
+                    "description": "Flagship autonomous agent and software engineering model with 1M context and frontier coding capabilities. Context: 1,000,000 tokens. Rates: $5.2500 input / $26.2500 output per 1M."
+          },
+          {
+                    "@type": "ListItem",
+                    "position": 34,
+                    "name": "Claude Sonnet 5 (Speed & Frontier Intelligence)",
+                    "description": "Industry leading balance of frontier intelligence, low latency, and multi-file code editing capabilities. Context: 1,000,000 tokens. Rates: $2.1000 input / $10.5000 output per 1M."
+          },
+          {
+                    "@type": "ListItem",
+                    "position": 35,
+                    "name": "Claude 3.5 Sonnet (Frontier Coding & Artifacts)",
+                    "description": "Enterprise standard model for multi-agent frameworks, coding tasks, and structured artifact generation. Context: 200,000 tokens. Rates: $3.1500 input / $15.7500 output per 1M."
+          },
+          {
+                    "@type": "ListItem",
+                    "position": 36,
+                    "name": "Claude Haiku 4.5 (Fast \u00b7 Multimodal)",
+                    "description": "Low-latency multimodal model excelling at real-time customer support, document extraction, and rapid triage. Context: 200,000 tokens. Rates: $1.0500 input / $5.2500 output per 1M."
           }
 ]
       }
@@ -374,7 +428,7 @@
       
       <!-- Filter Bar -->
       <div class="filter-bar">
-        <button class="filter-btn active" data-filter="all">All Models (27)</button>
+        <button class="filter-btn active" data-filter="all">All Models (36)</button>
         <button class="filter-btn" data-filter="open">Open Weights</button>
         <button class="filter-btn" data-filter="reasoning">Reasoning &amp; Math</button>
         <button class="filter-btn" data-filter="coding">Coding</button>
@@ -962,21 +1016,205 @@
         </div>
       </article>
 
+      <!-- GPT-5.6 Sol -->
+      <article class="model-card" data-category="proprietary multimodal reasoning coding">
+        <div class="model-header">
+          <span class="model-badge badge-closed">External API</span>
+          <span style="font-size:12px; color:var(--text-secondary); font-family:var(--font-mono);">Frontier · Multimodal</span>
+        </div>
+        <h2 class="model-title">GPT-5.6 Sol</h2>
+        <p class="model-meta">OpenAI flagship intelligence delivering premier reasoning, advanced code synthesis, and 1M multimodal context.</p>
+        <div style="margin-bottom:12px; font-family:var(--font-mono); font-size:12px; color:#577227; background:#f4f6ee; padding:6px 10px; border-radius:6px; word-break:break-all;">
+          <code>openai/gpt-5.6-sol</code>
+        </div>
+        <div class="model-specs">
+          <div><div class="spec-label">Context Window</div><div class="spec-val">1,050,000 tokens</div></div>
+          <div><div class="spec-label">Input / Output Rate</div><div class="spec-val">$2.1000 / $10.5000</div></div>
+          <div><div class="spec-label">Architecture / Type</div><div class="spec-val">Frontier · Multimodal</div></div>
+          <div><div class="spec-label">Execution Layer</div><div class="spec-val">External Provider Routing</div></div>
+        </div>
+        <div class="model-cta">
+          <a class="btn ink-button" href="/app" style="flex:1; justify-content:center;">Test in Console <span>↗</span></a>
+          <a class="outline-link" href="/docs#chat-completions" style="padding:10px 14px;">Docs ↗</a>
+        </div>
+      </article>
+
+      <!-- GPT-5.6 Terra -->
+      <article class="model-card" data-category="proprietary multimodal reasoning">
+        <div class="model-header">
+          <span class="model-badge badge-closed">External API</span>
+          <span style="font-size:12px; color:var(--text-secondary); font-family:var(--font-mono);">Multimodal · Reasoning</span>
+        </div>
+        <h2 class="model-title">GPT-5.6 Terra</h2>
+        <p class="model-meta">Balanced frontier workload model combining rapid generative throughput with rigorous multi-step problem solving.</p>
+        <div style="margin-bottom:12px; font-family:var(--font-mono); font-size:12px; color:#577227; background:#f4f6ee; padding:6px 10px; border-radius:6px; word-break:break-all;">
+          <code>openai/gpt-5.6-terra</code>
+        </div>
+        <div class="model-specs">
+          <div><div class="spec-label">Context Window</div><div class="spec-val">1,050,000 tokens</div></div>
+          <div><div class="spec-label">Input / Output Rate</div><div class="spec-val">$2.1000 / $12.6000</div></div>
+          <div><div class="spec-label">Architecture / Type</div><div class="spec-val">Multimodal · Reasoning</div></div>
+          <div><div class="spec-label">Execution Layer</div><div class="spec-val">External Provider Routing</div></div>
+        </div>
+        <div class="model-cta">
+          <a class="btn ink-button" href="/app" style="flex:1; justify-content:center;">Test in Console <span>↗</span></a>
+          <a class="outline-link" href="/docs#chat-completions" style="padding:10px 14px;">Docs ↗</a>
+        </div>
+      </article>
+
+      <!-- GPT-5.6 Luna -->
+      <article class="model-card" data-category="proprietary multimodal lightweight">
+        <div class="model-header">
+          <span class="model-badge badge-closed">External API</span>
+          <span style="font-size:12px; color:var(--text-secondary); font-family:var(--font-mono);">Multimodal · Efficient</span>
+        </div>
+        <h2 class="model-title">GPT-5.6 Luna</h2>
+        <p class="model-meta">High-volume, ultra-cost-efficient multimodal model designed for large-scale enterprise automation.</p>
+        <div style="margin-bottom:12px; font-family:var(--font-mono); font-size:12px; color:#577227; background:#f4f6ee; padding:6px 10px; border-radius:6px; word-break:break-all;">
+          <code>openai/gpt-5.6-luna</code>
+        </div>
+        <div class="model-specs">
+          <div><div class="spec-label">Context Window</div><div class="spec-val">1,050,000 tokens</div></div>
+          <div><div class="spec-label">Input / Output Rate</div><div class="spec-val">$0.2100 / $1.2600</div></div>
+          <div><div class="spec-label">Architecture / Type</div><div class="spec-val">Multimodal · Efficient</div></div>
+          <div><div class="spec-label">Execution Layer</div><div class="spec-val">External Provider Routing</div></div>
+        </div>
+        <div class="model-cta">
+          <a class="btn ink-button" href="/app" style="flex:1; justify-content:center;">Test in Console <span>↗</span></a>
+          <a class="outline-link" href="/docs#chat-completions" style="padding:10px 14px;">Docs ↗</a>
+        </div>
+      </article>
+
+      <!-- OpenAI o1 -->
+      <article class="model-card" data-category="proprietary reasoning math coding">
+        <div class="model-header">
+          <span class="model-badge badge-closed">External API</span>
+          <span style="font-size:12px; color:var(--text-secondary); font-family:var(--font-mono);">Deep Reasoning CoT</span>
+        </div>
+        <h2 class="model-title">OpenAI o1</h2>
+        <p class="model-meta">OpenAI chain-of-thought reasoning model designed to deliberate before answering complex scientific and coding problems.</p>
+        <div style="margin-bottom:12px; font-family:var(--font-mono); font-size:12px; color:#577227; background:#f4f6ee; padding:6px 10px; border-radius:6px; word-break:break-all;">
+          <code>openai/o1</code>
+        </div>
+        <div class="model-specs">
+          <div><div class="spec-label">Context Window</div><div class="spec-val">200,000 tokens</div></div>
+          <div><div class="spec-label">Input / Output Rate</div><div class="spec-val">$15.7500 / $63.0000</div></div>
+          <div><div class="spec-label">Architecture / Type</div><div class="spec-val">Deep Reasoning CoT</div></div>
+          <div><div class="spec-label">Execution Layer</div><div class="spec-val">External Provider Routing</div></div>
+        </div>
+        <div class="model-cta">
+          <a class="btn ink-button" href="/app" style="flex:1; justify-content:center;">Test in Console <span>↗</span></a>
+          <a class="outline-link" href="/docs#chat-completions" style="padding:10px 14px;">Docs ↗</a>
+        </div>
+      </article>
+
+      <!-- OpenAI o3-mini -->
+      <article class="model-card" data-category="proprietary reasoning math coding">
+        <div class="model-header">
+          <span class="model-badge badge-closed">External API</span>
+          <span style="font-size:12px; color:var(--text-secondary); font-family:var(--font-mono);">Fast Reasoning STEM</span>
+        </div>
+        <h2 class="model-title">OpenAI o3-mini</h2>
+        <p class="model-meta">High-speed reasoning model specialized in STEM, competitive coding, and multi-step logic at low token latency.</p>
+        <div style="margin-bottom:12px; font-family:var(--font-mono); font-size:12px; color:#577227; background:#f4f6ee; padding:6px 10px; border-radius:6px; word-break:break-all;">
+          <code>openai/o3-mini</code>
+        </div>
+        <div class="model-specs">
+          <div><div class="spec-label">Context Window</div><div class="spec-val">200,000 tokens</div></div>
+          <div><div class="spec-label">Input / Output Rate</div><div class="spec-val">$1.1550 / $4.6200</div></div>
+          <div><div class="spec-label">Architecture / Type</div><div class="spec-val">Fast Reasoning STEM</div></div>
+          <div><div class="spec-label">Execution Layer</div><div class="spec-val">External Provider Routing</div></div>
+        </div>
+        <div class="model-cta">
+          <a class="btn ink-button" href="/app" style="flex:1; justify-content:center;">Test in Console <span>↗</span></a>
+          <a class="outline-link" href="/docs#chat-completions" style="padding:10px 14px;">Docs ↗</a>
+        </div>
+      </article>
+
       <!-- OpenAI GPT-4o -->
-      <article class="model-card" data-category="proprietary multimodal">
+      <article class="model-card" data-category="proprietary multimodal coding">
         <div class="model-header">
           <span class="model-badge badge-closed">External API</span>
           <span style="font-size:12px; color:var(--text-secondary); font-family:var(--font-mono);">Omni Model</span>
         </div>
         <h2 class="model-title">OpenAI GPT-4o</h2>
-        <p class="model-meta">OpenAI flagship intelligence routed through SpeedInfer unified keys with instant upstream fallback.</p>
+        <p class="model-meta">Versatile omni-modal intelligence with native image, text, and structured JSON parsing under unified API keys.</p>
         <div style="margin-bottom:12px; font-family:var(--font-mono); font-size:12px; color:#577227; background:#f4f6ee; padding:6px 10px; border-radius:6px; word-break:break-all;">
           <code>openai/gpt-4o</code>
         </div>
         <div class="model-specs">
           <div><div class="spec-label">Context Window</div><div class="spec-val">128,000 tokens</div></div>
-          <div><div class="spec-label">Input / Output Rate</div><div class="spec-val">$2.5000 / $10.0000</div></div>
+          <div><div class="spec-label">Input / Output Rate</div><div class="spec-val">$2.6250 / $10.5000</div></div>
           <div><div class="spec-label">Architecture / Type</div><div class="spec-val">Omni Model</div></div>
+          <div><div class="spec-label">Execution Layer</div><div class="spec-val">External Provider Routing</div></div>
+        </div>
+        <div class="model-cta">
+          <a class="btn ink-button" href="/app" style="flex:1; justify-content:center;">Test in Console <span>↗</span></a>
+          <a class="outline-link" href="/docs#chat-completions" style="padding:10px 14px;">Docs ↗</a>
+        </div>
+      </article>
+
+      <!-- Claude Fable 5 -->
+      <article class="model-card" data-category="proprietary reasoning multimodal coding">
+        <div class="model-header">
+          <span class="model-badge badge-closed">External API</span>
+          <span style="font-size:12px; color:var(--text-secondary); font-family:var(--font-mono);">Adaptive Reasoning · Vision</span>
+        </div>
+        <h2 class="model-title">Claude Fable 5</h2>
+        <p class="model-meta">Anthropic pinnacle frontier intelligence for adaptive reasoning, deep research, and high-consequence complex workflows.</p>
+        <div style="margin-bottom:12px; font-family:var(--font-mono); font-size:12px; color:#577227; background:#f4f6ee; padding:6px 10px; border-radius:6px; word-break:break-all;">
+          <code>anthropic/claude-fable-5</code>
+        </div>
+        <div class="model-specs">
+          <div><div class="spec-label">Context Window</div><div class="spec-val">1,000,000 tokens</div></div>
+          <div><div class="spec-label">Input / Output Rate</div><div class="spec-val">$10.5000 / $52.5000</div></div>
+          <div><div class="spec-label">Architecture / Type</div><div class="spec-val">Adaptive Reasoning · Vision</div></div>
+          <div><div class="spec-label">Execution Layer</div><div class="spec-val">External Provider Routing</div></div>
+        </div>
+        <div class="model-cta">
+          <a class="btn ink-button" href="/app" style="flex:1; justify-content:center;">Test in Console <span>↗</span></a>
+          <a class="outline-link" href="/docs#chat-completions" style="padding:10px 14px;">Docs ↗</a>
+        </div>
+      </article>
+
+      <!-- Claude Opus 5 -->
+      <article class="model-card" data-category="proprietary reasoning coding">
+        <div class="model-header">
+          <span class="model-badge badge-closed">External API</span>
+          <span style="font-size:12px; color:var(--text-secondary); font-family:var(--font-mono);">Deep Agents & Coding</span>
+        </div>
+        <h2 class="model-title">Claude Opus 5</h2>
+        <p class="model-meta">Flagship autonomous agent and software engineering model with 1M context and frontier coding capabilities.</p>
+        <div style="margin-bottom:12px; font-family:var(--font-mono); font-size:12px; color:#577227; background:#f4f6ee; padding:6px 10px; border-radius:6px; word-break:break-all;">
+          <code>anthropic/claude-opus-5</code>
+        </div>
+        <div class="model-specs">
+          <div><div class="spec-label">Context Window</div><div class="spec-val">1,000,000 tokens</div></div>
+          <div><div class="spec-label">Input / Output Rate</div><div class="spec-val">$5.2500 / $26.2500</div></div>
+          <div><div class="spec-label">Architecture / Type</div><div class="spec-val">Deep Agents & Coding</div></div>
+          <div><div class="spec-label">Execution Layer</div><div class="spec-val">External Provider Routing</div></div>
+        </div>
+        <div class="model-cta">
+          <a class="btn ink-button" href="/app" style="flex:1; justify-content:center;">Test in Console <span>↗</span></a>
+          <a class="outline-link" href="/docs#chat-completions" style="padding:10px 14px;">Docs ↗</a>
+        </div>
+      </article>
+
+      <!-- Claude Sonnet 5 -->
+      <article class="model-card" data-category="proprietary reasoning coding multimodal">
+        <div class="model-header">
+          <span class="model-badge badge-closed">External API</span>
+          <span style="font-size:12px; color:var(--text-secondary); font-family:var(--font-mono);">Speed & Frontier Intelligence</span>
+        </div>
+        <h2 class="model-title">Claude Sonnet 5</h2>
+        <p class="model-meta">Industry leading balance of frontier intelligence, low latency, and multi-file code editing capabilities.</p>
+        <div style="margin-bottom:12px; font-family:var(--font-mono); font-size:12px; color:#577227; background:#f4f6ee; padding:6px 10px; border-radius:6px; word-break:break-all;">
+          <code>anthropic/claude-sonnet-5</code>
+        </div>
+        <div class="model-specs">
+          <div><div class="spec-label">Context Window</div><div class="spec-val">1,000,000 tokens</div></div>
+          <div><div class="spec-label">Input / Output Rate</div><div class="spec-val">$2.1000 / $10.5000</div></div>
+          <div><div class="spec-label">Architecture / Type</div><div class="spec-val">Speed & Frontier Intelligence</div></div>
           <div><div class="spec-label">Execution Layer</div><div class="spec-val">External Provider Routing</div></div>
         </div>
         <div class="model-cta">
@@ -989,17 +1227,40 @@
       <article class="model-card" data-category="proprietary coding reasoning">
         <div class="model-header">
           <span class="model-badge badge-closed">External API</span>
-          <span style="font-size:12px; color:var(--text-secondary); font-family:var(--font-mono);">Frontier Model</span>
+          <span style="font-size:12px; color:var(--text-secondary); font-family:var(--font-mono);">Frontier Coding & Artifacts</span>
         </div>
         <h2 class="model-title">Claude 3.5 Sonnet</h2>
-        <p class="model-meta">Industry standard model for complex software engineering and multi-step reasoning tasks.</p>
+        <p class="model-meta">Enterprise standard model for multi-agent frameworks, coding tasks, and structured artifact generation.</p>
         <div style="margin-bottom:12px; font-family:var(--font-mono); font-size:12px; color:#577227; background:#f4f6ee; padding:6px 10px; border-radius:6px; word-break:break-all;">
           <code>anthropic/claude-3.5-sonnet</code>
         </div>
         <div class="model-specs">
           <div><div class="spec-label">Context Window</div><div class="spec-val">200,000 tokens</div></div>
-          <div><div class="spec-label">Input / Output Rate</div><div class="spec-val">$3.0000 / $15.0000</div></div>
-          <div><div class="spec-label">Architecture / Type</div><div class="spec-val">Frontier Model</div></div>
+          <div><div class="spec-label">Input / Output Rate</div><div class="spec-val">$3.1500 / $15.7500</div></div>
+          <div><div class="spec-label">Architecture / Type</div><div class="spec-val">Frontier Coding & Artifacts</div></div>
+          <div><div class="spec-label">Execution Layer</div><div class="spec-val">External Provider Routing</div></div>
+        </div>
+        <div class="model-cta">
+          <a class="btn ink-button" href="/app" style="flex:1; justify-content:center;">Test in Console <span>↗</span></a>
+          <a class="outline-link" href="/docs#chat-completions" style="padding:10px 14px;">Docs ↗</a>
+        </div>
+      </article>
+
+      <!-- Claude Haiku 4.5 -->
+      <article class="model-card" data-category="proprietary multimodal lightweight">
+        <div class="model-header">
+          <span class="model-badge badge-closed">External API</span>
+          <span style="font-size:12px; color:var(--text-secondary); font-family:var(--font-mono);">Fast · Multimodal</span>
+        </div>
+        <h2 class="model-title">Claude Haiku 4.5</h2>
+        <p class="model-meta">Low-latency multimodal model excelling at real-time customer support, document extraction, and rapid triage.</p>
+        <div style="margin-bottom:12px; font-family:var(--font-mono); font-size:12px; color:#577227; background:#f4f6ee; padding:6px 10px; border-radius:6px; word-break:break-all;">
+          <code>anthropic/claude-haiku-4.5</code>
+        </div>
+        <div class="model-specs">
+          <div><div class="spec-label">Context Window</div><div class="spec-val">200,000 tokens</div></div>
+          <div><div class="spec-label">Input / Output Rate</div><div class="spec-val">$1.0500 / $5.2500</div></div>
+          <div><div class="spec-label">Architecture / Type</div><div class="spec-val">Fast · Multimodal</div></div>
           <div><div class="spec-label">Execution Layer</div><div class="spec-val">External Provider Routing</div></div>
         </div>
         <div class="model-cta">
