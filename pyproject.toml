@@ -6,6 +6,7 @@ build-backend = "hatchling.build"
 name = "speedinfer"
 version = "0.1.0"
 description = "High-performance OpenAI-compatible TensorRT-LLM inference engine and developer platform"
+license = "Apache-2.0"
 requires-python = ">=3.12"
 dependencies = [
   "alembic>=1.14,<2",

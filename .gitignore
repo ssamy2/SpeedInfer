@@ -23,3 +23,4 @@ logs/
 output/
 
 client_secret*.json
+*.ics
