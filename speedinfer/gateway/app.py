@@ -478,6 +478,15 @@ def create_app() -> FastAPI:
                 return FileResponse(key_file, media_type="text/plain")
             raise HTTPException(status_code=404, detail="Key not found.")
 
+        @fastapi_app.api_route(
+            "/google04f6c6ef414dafb8.html", methods=["GET", "HEAD"], include_in_schema=False
+        )
+        async def serve_google_verification() -> FileResponse:
+            verify_file = frontend_dir / "google04f6c6ef414dafb8.html"
+            if verify_file.exists():
+                return FileResponse(verify_file, media_type="text/html")
+            raise HTTPException(status_code=404, detail="Verification file not found.")
+
         @fastapi_app.api_route("/product", methods=["GET", "HEAD"], include_in_schema=False)
         @fastapi_app.api_route(
             "/product/{full_path:path}", methods=["GET", "HEAD"], include_in_schema=False
